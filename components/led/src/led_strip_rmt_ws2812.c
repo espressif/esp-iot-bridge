@@ -69,12 +69,14 @@ static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, si
         *item_num = 0;
         return;
     }
+
     const rmt_item32_t bit0 = {{{ ws2812_t0h_ticks, 1, ws2812_t0l_ticks, 0 }}}; //Logical 0
     const rmt_item32_t bit1 = {{{ ws2812_t1h_ticks, 1, ws2812_t1l_ticks, 0 }}}; //Logical 1
     size_t size = 0;
     size_t num = 0;
     uint8_t *psrc = (uint8_t *)src;
     rmt_item32_t *pdest = dest;
+
     while (size < src_size && num < wanted_num) {
         for (int i = 0; i < 8; i++) {
             // MSB first
@@ -83,12 +85,15 @@ static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, si
             } else {
                 pdest->val =  bit0.val;
             }
+
             num++;
             pdest++;
         }
+
         size++;
         psrc++;
     }
+
     *translated_size = size;
     *item_num = num;
 }

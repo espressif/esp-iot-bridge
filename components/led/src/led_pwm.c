@@ -382,7 +382,7 @@ esp_err_t led_pwm_init(ledc_timer_t timer_num, ledc_mode_t speed_mode, uint32_t 
     };
 
     ret = ledc_timer_config(&ledc_time_config);
-    // ESP_QCLOUD_ERROR_CHECK(ret != ESP_OK, ret, "LEDC timer configuration");
+    // ESP_ERROR_RETURN(ret != ESP_OK, ret, "LEDC timer configuration");
 
     if (g_gamma_table == NULL) {
         g_gamma_table = calloc(GAMMA_TABLE_SIZE, sizeof(uint16_t));
@@ -428,9 +428,9 @@ esp_err_t led_pwm_deinit()
 esp_err_t led_pwm_regist_channel(ledc_channel_t channel, gpio_num_t gpio_num)
 {
     esp_err_t ret = ESP_OK;
-    // ESP_QCLOUD_ERROR_CHECK(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
+    // ESP_ERROR_RETURN(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
 #ifdef CONFIG_SPIRAM_SUPPORT
-    // ESP_QCLOUD_ERROR_CHECK(gpio_num != GPIO_NUM_16 || gpio_num != GPIO_NUM_17, ESP_ERR_INVALID_ARG,
+    // ESP_ERROR_RETURN(gpio_num != GPIO_NUM_16 || gpio_num != GPIO_NUM_17, ESP_ERR_INVALID_ARG,
     //                     "gpio_num must not conflict to PSRAM(IO16 && IO17)");
 #endif
     const ledc_channel_config_t ledc_ch_config = {
@@ -442,15 +442,15 @@ esp_err_t led_pwm_regist_channel(ledc_channel_t channel, gpio_num_t gpio_num)
     };
 
     ret = ledc_channel_config(&ledc_ch_config);
-    // ESP_QCLOUD_ERROR_CHECK(ret != ESP_OK, ret, "LEDC channel configuration, %d", ledc_ch_config.gpio_num);
+    // ESP_ERROR_RETURN(ret != ESP_OK, ret, "LEDC channel configuration, %d", ledc_ch_config.gpio_num);
 
     return ret;
 }
 
 esp_err_t led_pwm_get_channel(ledc_channel_t channel, uint8_t *dst)
 {
-    // ESP_QCLOUD_ERROR_CHECK(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
-    // ESP_QCLOUD_ERROR_CHECK(dst == NULL, MDF_ERR_INVALID_ARG, "dst should not be NULL");
+    // ESP_ERROR_RETURN(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
+    // ESP_ERROR_RETURN(dst == NULL, MDF_ERR_INVALID_ARG, "dst should not be NULL");
     int cur = g_light_config->fade_data[channel].cur;
     *dst = FIXED_2_FLOATING(cur, LEDC_FIXED_Q);
 
@@ -459,7 +459,7 @@ esp_err_t led_pwm_get_channel(ledc_channel_t channel, uint8_t *dst)
 
 esp_err_t led_pwm_set_channel(ledc_channel_t channel, uint8_t value, uint32_t fade_ms)
 {
-    // ESP_QCLOUD_ERROR_CHECK(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
+    // ESP_ERROR_RETURN(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
     ledc_fade_data_t *fade_data = g_light_config->fade_data + channel;
 
     fade_data->final = FLOATINT_2_FIXED(value, LEDC_FIXED_Q);
@@ -489,7 +489,7 @@ esp_err_t led_pwm_set_channel(ledc_channel_t channel, uint8_t value, uint32_t fa
 
 esp_err_t led_pwm_start_blink(ledc_channel_t channel, uint8_t value, uint32_t period_ms, bool fade_flag)
 {
-    // ESP_QCLOUD_ERROR_CHECK(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
+    // ESP_ERROR_RETURN(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
     ledc_fade_data_t *fade_data = g_light_config->fade_data + channel;
 
     fade_data->final = fade_data->cur = FLOATINT_2_FIXED(value, LEDC_FIXED_Q);
@@ -507,7 +507,7 @@ esp_err_t led_pwm_start_blink(ledc_channel_t channel, uint8_t value, uint32_t pe
 
 esp_err_t led_pwm_stop_blink(ledc_channel_t channel)
 {
-    // ESP_QCLOUD_ERROR_CHECK(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
+    // ESP_ERROR_RETURN(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
     ledc_fade_data_t *fade_data = g_light_config->fade_data + channel;
     fade_data->cycle = fade_data->num = 0;
 
@@ -516,7 +516,7 @@ esp_err_t led_pwm_stop_blink(ledc_channel_t channel)
 
 esp_err_t led_pwm_set_gamma_table(const uint16_t gamma_table[GAMMA_TABLE_SIZE])
 {
-    // ESP_QCLOUD_ERROR_CHECK(g_gamma_table == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
+    // ESP_ERROR_RETURN(g_gamma_table == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
     memcpy(g_gamma_table, gamma_table, GAMMA_TABLE_SIZE * sizeof(uint16_t));
 
     return ESP_OK;

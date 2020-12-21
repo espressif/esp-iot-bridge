@@ -33,7 +33,7 @@ extern "C" {
   * @brief Initialize and set the ledc timer for the iot led
   *
   * @param timer_num The timer index of ledc timer group used for iot led
-  *     This parameter can be one of LEDC_TIMER_x where x can be (0 .. 3) 
+  *     This parameter can be one of LEDC_TIMER_x where x can be (0 .. 3)
   *
   * @param speed_mode speed mode of ledc timer
   *     This parameter can be one of LEDC_x_SPEED_MODE where x can be (LOW, HIGH)
@@ -43,59 +43,59 @@ extern "C" {
   *
   * @return
   *	    - ESP_OK if sucess
-  *     - ESP_QCLOUD_ERR_INVALID_ARG Parameter error
-  *     - ESP_FAIL Can not find a proper pre-divider number base on the given frequency 
+  *     - ESP_ERR_INVALID_ARG Parameter error
+  *     - ESP_FAIL Can not find a proper pre-divider number base on the given frequency
   *         and the current duty_resolution.
 */
 esp_err_t led_pwm_init(ledc_timer_t timer_num, ledc_mode_t speed_mode, uint32_t freq_hz);
 
 /**
   * @brief DeInitializes the iot led and free resource
-  * 
+  *
   * @return
   *	    - ESP_OK if sucess
 */
 esp_err_t led_pwm_deinit();
 
 /**
-  * @brief Set the ledc channel used by iot led and associate the gpio port used 
+  * @brief Set the ledc channel used by iot led and associate the gpio port used
   *     for output
-  * 
+  *
   * @param channel The ledc channel
   *     This parameter can be LEDC_CHANNEL_x where x can be (0 .. 15)
   * @param gpio_num the ledc output gpio_num
   *     This parameter can be GPIO_NUM_x where x can be (0, 33)
-  * 
-  * @note If the operation of esp32 depends on SPI FLASH or PSRAM, then these related 
+  *
+  * @note If the operation of esp32 depends on SPI FLASH or PSRAM, then these related
   *     pins should not be set to output.
-  *         
+  *
   * @return
   *	    - ESP_OK if sucess
-  *     - ESP_QCLOUD_ERR_INVALID_ARG Parameter error
+  *     - ESP_ERR_INVALID_ARG Parameter error
   *	    - ESP_ERR_INVALID_STATE if lot_led_init() is not called yet
 */
 esp_err_t led_pwm_regist_channel(ledc_channel_t channel, gpio_num_t gpio_num);
 
 /**
-  * @brief Returns the channel value 
+  * @brief Returns the channel value
   * @note before calling this function, you need to call led_pwm_regist_channel() to
   *     set the channel
-  * 
+  *
   * @param channel The ledc channel
   *     This parameter can be LEDC_CHANNEL_x where x can be (0 .. 15)
   * @param dst The address where the channel value is stored
   * @return
   *     - ESP_OK if sucess
-  *	    - ESP_QCLOUD_ERR_INVALID_ARG if dst is NULL
+  *	    - ESP_ERR_INVALID_ARG if dst is NULL
   *	    - ESP_ERR_INVALID_STATE if lot_led_init() is not called yet
 */
-esp_err_t led_pwm_get_channel(ledc_channel_t channel, uint8_t* dst);
+esp_err_t led_pwm_get_channel(ledc_channel_t channel, uint8_t *dst);
 
 /**
   * @brief Set the fade state for the specified channel
   * @note before calling this function, you need to call led_pwm_regist_channel() to
   *     set the channel
-  * 
+  *
   * @param channel The ledc channel
   *     This parameter can be LEDC_CHANNEL_x where x can be (0 .. 15)
   * @param value The target output brightness of iot led
@@ -111,7 +111,7 @@ esp_err_t led_pwm_set_channel(ledc_channel_t channel, uint8_t value, uint32_t fa
   * @brief Set the blink state or loop fade for the specified channel
   * @note before calling this function, you need to call led_pwm_regist_channel() to
   *     set the channel
-  *         
+  *
   * @param channel The ledc channel
   *     This parameter can be LEDC_CHANNEL_x where x can be (0 .. 15)
   * @param value The output brightness of iot led
@@ -128,7 +128,7 @@ esp_err_t led_pwm_start_blink(ledc_channel_t channel, uint8_t value, uint32_t pe
 
 /**
   * @brief Stop the blink state or loop fade for the specified channel
-  * 
+  *
   * @param channel The ledc channel
   *     This parameter can be LEDC_CHANNEL_x where x can be (0 .. 15)
   * @return
@@ -138,16 +138,16 @@ esp_err_t led_pwm_start_blink(ledc_channel_t channel, uint8_t value, uint32_t pe
 esp_err_t led_pwm_stop_blink(ledc_channel_t channel);
 
 /**
-  * @brief Set the specified gamma_table to control the fade effect, usually 
+  * @brief Set the specified gamma_table to control the fade effect, usually
   *     no need to set
-  * 
+  *
   * @param gamma_table[GAMMA_TABLE_SIZE] Expected gamma table value
   *
-  * @note  Gamma_table is the dimming curve used by the led_pwm driver. 
-  *     The element type is uint16_t. Each element is treated as a binary 
-  *     fixed-point number. The decimal point is before the eighth bit 
-  *     and after the ninth bit, so the range of expressions can be 
-  *     0x00.00 ~ 0xff.ff. 
+  * @note  Gamma_table is the dimming curve used by the led_pwm driver.
+  *     The element type is uint16_t. Each element is treated as a binary
+  *     fixed-point number. The decimal point is before the eighth bit
+  *     and after the ninth bit, so the range of expressions can be
+  *     0x00.00 ~ 0xff.ff.
   * @note default gamma_table is created in led_pwm_init()
   *
   * @return

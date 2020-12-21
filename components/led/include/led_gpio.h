@@ -34,10 +34,10 @@ typedef enum {
 
 typedef enum {
     LED_GPIO_NORMAL_MODE,        /**< led normal */
-    LED_GPIO_NIGHT_MODE,         /**< led night mode, always turn off led */ 
+    LED_GPIO_NIGHT_MODE,         /**< led night mode, always turn off led */
 } led_gpio_mode_t;
 
-typedef void* led_handle_t;
+typedef void *led_handle_t;
 
 /**
   * @brief  led initialize.

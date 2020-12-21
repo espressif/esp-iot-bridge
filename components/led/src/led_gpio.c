@@ -40,13 +40,13 @@
 #define IOT_CHECK(tag, a, ret)  if(!(a)) {                                 \
         ESP_LOGE(tag,"%s:%d (%s)", __FILE__, __LINE__, __FUNCTION__);      \
         return (ret);                                                      \
-        }
+    }
 
 #define ERR_ASSERT(tag, param)      IOT_CHECK(tag, (param) == ESP_OK, ESP_FAIL)
 #define POINT_ASSERT(tag, param)	IOT_CHECK(tag, (param) != NULL, ESP_FAIL)
 #define RES_ASSERT(tag, res, ret)   IOT_CHECK(tag, (res) != pdFALSE, ret)
 
-static const char* TAG = "LED";
+static const char *TAG = "LED";
 static uint8_t g_night_duty = 0;
 static bool g_init_flg = false;
 typedef struct {
@@ -65,12 +65,12 @@ static esp_err_t led_ledctimer_set(ledc_timer_t timer_num, uint32_t freq_hz, led
         .speed_mode = speed_mode,
         .timer_num = timer_num
     };
-    ERR_ASSERT(TAG, ledc_timer_config(&ledc_timer)); 
+    ERR_ASSERT(TAG, ledc_timer_config(&ledc_timer));
     return ESP_OK;
 }
 
 static esp_err_t gpio_ledc_bind(ledc_timer_t timer_num, ledc_channel_t channel, int gpio_num,
-                                   uint32_t duty, ledc_mode_t speed_mode)
+                                uint32_t duty, ledc_mode_t speed_mode)
 {
     ledc_channel_config_t ledc_channel = {
         .channel = channel,
@@ -86,34 +86,34 @@ static esp_err_t gpio_ledc_bind(ledc_timer_t timer_num, ledc_channel_t channel, 
 
 static esp_err_t led_level_set(led_handle_t led_handle, uint8_t level)
 {
-    led_dev_t* led_dev = (led_dev_t*) led_handle;
+    led_dev_t *led_dev = (led_dev_t *) led_handle;
+
     if (level) {
         if (led_dev->mode == LED_GPIO_NIGHT_MODE) {
-            ERR_ASSERT(TAG, gpio_ledc_bind(LED_NORMAL_TIMER, LED_NIGHT_MODE_CHANNEL, led_dev->io_num, 
-                        g_night_duty * LED_BRIGHT_DUTY / 100, LED_SPEED_MODE));
-        }
-        else {
+            ERR_ASSERT(TAG, gpio_ledc_bind(LED_NORMAL_TIMER, LED_NIGHT_MODE_CHANNEL, led_dev->io_num,
+                                           g_night_duty * LED_BRIGHT_DUTY / 100, LED_SPEED_MODE));
+        } else {
             gpio_set_level(led_dev->io_num, (~(led_dev->dark_level)) & 0x1);
             gpio_matrix_out(led_dev->io_num, SIG_GPIO_OUT_IDX, 0, 0);
         }
-    }
-    else {
+    } else {
         gpio_set_level(led_dev->io_num, led_dev->dark_level);
         gpio_matrix_out(led_dev->io_num, SIG_GPIO_OUT_IDX, 0, 0);
     }
+
     return ESP_OK;
 }
 
 static esp_err_t led_quick_blink(led_handle_t led_handle)
 {
-    led_dev_t* led_dev = (led_dev_t*) led_handle;
+    led_dev_t *led_dev = (led_dev_t *) led_handle;
     ERR_ASSERT(TAG, gpio_ledc_bind(LED_QUICK_BLINK_TIMER, LED_QUICK_BLINK_CHANNEL, led_dev->io_num, LED_QUICK_BLINK_DUTY, LED_SPEED_MODE));
     return ESP_OK;
 }
 
 static esp_err_t led_slow_blink(led_handle_t led_handle)
 {
-    led_dev_t* led_dev = (led_dev_t*) led_handle;
+    led_dev_t *led_dev = (led_dev_t *) led_handle;
     ERR_ASSERT(TAG, gpio_ledc_bind(LED_SLOW_BLINK_TIMER, LED_SLOW_BLINK_CHANNEL, led_dev->io_num, LED_SLOW_BLINK_DUTY, LED_SPEED_MODE));
     return ESP_OK;
 }
@@ -134,15 +134,20 @@ esp_err_t led_gpio_setup()
 
 led_handle_t led_gpio_create(uint8_t io_num, led_dark_level_t dark_level)
 {
-    if(!g_init_flg) {
+    if (!g_init_flg) {
         led_gpio_setup();
         g_init_flg = true;
     }
-    led_dev_t *led_p = (led_dev_t*)calloc(1, sizeof(led_dev_t));
+
+    led_dev_t *led_p = (led_dev_t *)calloc(1, sizeof(led_dev_t));
     led_p->io_num = io_num;
     led_p->dark_level = dark_level;
     led_p->state = LED_GPIO_OFF;
     led_p->mode = LED_GPIO_NORMAL_MODE;
+
+    gpio_reset_pin(io_num);
+    gpio_set_direction(io_num, GPIO_MODE_OUTPUT);
+
     led_gpio_state_write(led_p, LED_GPIO_OFF);
     return (led_handle_t) led_p;
 }
@@ -156,31 +161,37 @@ esp_err_t led_gpio_delete(led_handle_t led_handle)
 
 esp_err_t led_gpio_state_write(led_handle_t led_handle, led_gpio_status_t state)
 {
-    led_dev_t* led_dev = (led_dev_t*) led_handle;
+    led_dev_t *led_dev = (led_dev_t *) led_handle;
     POINT_ASSERT(TAG, led_dev);
+
     switch (state) {
         case LED_GPIO_OFF:
             led_level_set(led_handle, 0);
             break;
+
         case LED_GPIO_ON:
             led_level_set(led_handle, 1);
             break;
+
         case LED_GPIO_QUICK_BLINK:
             led_quick_blink(led_handle);
             break;
+
         case LED_GPIO_SLOW_BLINK:
             led_slow_blink(led_handle);
             break;
+
         default:
             break;
     }
+
     led_dev->state = state;
     return ESP_OK;
 }
 
 esp_err_t led_gpio_mode_write(led_handle_t led_handle, led_gpio_mode_t mode)
 {
-    led_dev_t* led_dev = (led_dev_t*) led_handle;
+    led_dev_t *led_dev = (led_dev_t *) led_handle;
     POINT_ASSERT(TAG, led_dev);
     led_dev->mode = mode;
     led_gpio_state_write(led_handle, led_dev->state);
@@ -201,13 +212,13 @@ uint8_t led_gpio_night_duty_read()
 
 led_gpio_status_t led_gpio_state_read(led_handle_t led_handle)
 {
-    led_dev_t* led_dev = (led_dev_t*) led_handle;
+    led_dev_t *led_dev = (led_dev_t *) led_handle;
     return led_dev->state;
 }
 
 led_gpio_mode_t led_gpio_mode_read(led_handle_t led_handle)
 {
-    led_dev_t* led_dev = (led_dev_t*) led_handle;
+    led_dev_t *led_dev = (led_dev_t *) led_handle;
     return led_dev->mode;
 }
 

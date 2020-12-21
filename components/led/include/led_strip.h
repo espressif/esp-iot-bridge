@@ -109,7 +109,7 @@ typedef struct {
 #define LED_STRIP_DEFAULT_CONFIG(number, dev_hdl) \
     {                                             \
         .max_leds = number,                       \
-        .dev = dev_hdl,                           \
+                    .dev = dev_hdl,                           \
     }
 
 /**
