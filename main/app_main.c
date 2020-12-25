@@ -12,8 +12,16 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "driver/gpio.h"
+// #include "esp_neif_type.h"
+
+#include "esp_netif.h"
+
+#include "esp_eth.h"
 
 #include "esp_storage.h"
+#include "esp_gateway_wifi.h"
+#include "esp_gateway_eth.h"
+#include "esp_gateway_modem.h"
 
 #include "led_gpio.h"
 #include "button.h"
@@ -62,8 +70,13 @@ void app_main(void)
 {
     // feat_type_t feat_type = FEAT_TYPE_WIFI;
 
+    esp_log_level_set("*", ESP_LOG_INFO);
+
     esp_storage_init();
     esp_storage_get("feat_type", &g_feat_type, sizeof(feat_type_t));
+
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     ESP_LOGI(TAG, "feat_type: %d", g_feat_type);
 
@@ -78,21 +91,40 @@ void app_main(void)
     button_add_tap_cb(button_handle, BUTTON_CB_TAP, button_tap_cb, NULL);
     button_add_press_cb(button_handle, 3, button_press_3sec_cb, NULL);
 
+    g_feat_type = FEAT_TYPE_MODEM;
+
     switch (g_feat_type) {
         case FEAT_TYPE_BLE:
 
             break;
 
         case FEAT_TYPE_WIFI:
-
+            esp_gateway_wifi_init(WIFI_MODE_APSTA);
+            esp_gateway_wifi_set(WIFI_MODE_STA, "esp-guest", "esp-guest");
+            esp_gateway_wifi_set(WIFI_MODE_AP, "esp_router", "espressif");
+            esp_gateway_wifi_sta_connected(portMAX_DELAY);
+            esp_gateway_wifi_napt_enable();
             break;
 
-        case FEAT_TYPE_MODEM:
+        case FEAT_TYPE_MODEM:{
+            esp_netif_t *ppp_netif = esp_gateway_modem_init();
+            esp_netif_t *ap_netif  = esp_gateway_wifi_init(WIFI_MODE_AP);
+    
+            esp_netif_dns_info_t dns;
+            ESP_ERROR_CHECK(esp_netif_get_dns_info(ppp_netif, ESP_NETIF_DNS_MAIN, &dns));
+            esp_gateway_wifi_set_dhcps(ap_netif, dns.ip.u_addr.ip4.addr);
 
+            esp_gateway_wifi_set(WIFI_MODE_AP, "4g_gateway", "espressif");
+            vTaskDelay(pdMS_TO_TICKS(100));
+
+            esp_gateway_wifi_napt_enable();
             break;
+        }
 
         case FEAT_TYPE_ETH:
-
+            esp_gateway_eth_init();
+            esp_gateway_wifi_init(WIFI_MODE_AP);
+            esp_gateway_wifi_set(WIFI_MODE_AP, "esp_router", "espressif");
             break;
 
         default:

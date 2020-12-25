@@ -3,6 +3,8 @@ add_compile_options(-fdiagnostics-color=always)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
+# set(EXTRA_COMPONENT_DIRS "components/esp_modem")
+
 string(REGEX REPLACE ".*/\(.*\)" "\\1" CURDIR ${CMAKE_CURRENT_SOURCE_DIR})
 project(${CURDIR})
 
