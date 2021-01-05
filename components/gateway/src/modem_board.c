@@ -142,11 +142,11 @@ esp_modem_dce_t *sim7600_board_create(esp_modem_dce_config_t *config)
     sim7600_board_t *board = calloc(1, sizeof(sim7600_board_t));
     ESP_MODEM_EXAMPLE_CHECK(board, "failed to allocate board-sim7600 object", err);
     ESP_MODEM_EXAMPLE_CHECK(esp_modem_dce_init(&board->parent, config) == ESP_OK, "Failed to init sim7600", err);
-    /* power on sequence (typical values for SIM7600 Ton=500ms, Ton-status=16s) */
-    board->power_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 12, /*inactive_level*/ 1, /*active_width*/
-                                                              500, /*inactive_width*/ 16000);
-    /* reset sequence (typical values for SIM7600 Treset=200ms, wait 10s after reset */
-    board->reset_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 13, /*inactive_level*/ 1, /*active_width*/
+    // /* power on sequence (typical values for SIM7600 Ton=500ms, Ton-status=16s) */
+    // board->power_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 12, /*inactive_level*/ 1, /*active_width*/
+    //                                                           500, /*inactive_width*/ 16000);
+    // /* reset sequence (typical values for SIM7600 Treset=200ms, wait 10s after reset */
+    board->reset_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 15, /*inactive_level*/ 1, /*active_width*/
                                                               200, /*inactive_width*/ 10000);
     board->parent.deinit = sim7600_board_deinit;
     board->reset = sim7600_board_reset;

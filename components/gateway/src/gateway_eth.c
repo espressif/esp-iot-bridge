@@ -24,11 +24,12 @@ static const char *TAG                 = "gateway_eth";
 static esp_eth_handle_t s_eth_handle   = NULL;
 static xQueueHandle flow_control_queue = NULL;
 static bool s_wifi_is_connected        = false;
+static bool s_wifi_is_started          = false;
 static bool s_ethernet_is_connected    = false;
 static wifi_mode_t g_wifi_mode     = WIFI_MODE_AP;
 
-#define FLOW_CONTROL_QUEUE_TIMEOUT_MS (100)
-#define FLOW_CONTROL_QUEUE_LENGTH (40)
+#define FLOW_CONTROL_QUEUE_TIMEOUT_MS (200)
+#define FLOW_CONTROL_QUEUE_LENGTH (50)
 #define FLOW_CONTROL_WIFI_SEND_TIMEOUT_MS (100)
 
 typedef struct {
@@ -61,7 +62,7 @@ static esp_err_t pkt_eth2wifi(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
     };
 
     if (xQueueSend(flow_control_queue, &msg, pdMS_TO_TICKS(FLOW_CONTROL_QUEUE_TIMEOUT_MS)) != pdTRUE) {
-        ESP_LOGE(TAG, "send flow control message failed or timeout");
+        ESP_LOGE(TAG, "send flow control message failed or timeout, free_heap: %d", esp_get_free_heap_size());
         free(buffer);
         ret = ESP_FAIL;
     }
@@ -85,15 +86,26 @@ static void eth2wifi_flow_control_task(void *args)
                      MAC2STR((uint8_t *)msg.packet), MAC2STR((uint8_t *)msg.packet + 6), MAC2STR((uint8_t *)msg.packet + 12));
 
             if (g_wifi_mode == WIFI_MODE_STA && !s_wifi_is_connected) {
-                esp_wifi_set_mac(WIFI_IF_STA, (uint8_t *)msg.packet + 6);
-                esp_wifi_connect();
+                uint8_t pc_mac[6] ={0};
+                uint8_t sta_mac[6] ={0};
+                memcpy(pc_mac, msg.packet + 6, 6);
+                esp_wifi_get_mac(WIFI_IF_STA, sta_mac);
+
+                ESP_LOGI(TAG, "set STA MAC: " MACSTR", pc_mac: " MACSTR, MAC2STR(sta_mac), MAC2STR(pc_mac));
+
+                if(memcmp(sta_mac, pc_mac, 6) || !s_wifi_is_started) {
+                    s_wifi_is_started = true;
+                    esp_wifi_start();
+                    esp_wifi_set_mac(WIFI_IF_STA, (uint8_t *)msg.packet + 6);
+                    esp_wifi_connect();
+                }
             }
 
             if (s_wifi_is_connected && msg.length) {
                 do {
-                    vTaskDelay(pdMS_TO_TICKS(timeout));
-                    timeout += 2;
                     res = esp_wifi_internal_tx(g_wifi_mode - 1, msg.packet, msg.length);
+                    vTaskDelay(pdMS_TO_TICKS(timeout));
+                    timeout += 5;
                 } while (res && timeout < FLOW_CONTROL_WIFI_SEND_TIMEOUT_MS);
 
                 if (res != ESP_OK) {
@@ -115,18 +127,22 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     switch (event_id) {
         case ETHERNET_EVENT_CONNECTED: {
             ESP_LOGI(TAG, "Ethernet Link Up");
-            uint8_t eth_mac[6] = {0};
             s_ethernet_is_connected = true;
-            esp_eth_ioctl(s_eth_handle, ETH_CMD_G_MAC_ADDR, eth_mac);
-            esp_wifi_set_mac(WIFI_IF_AP, eth_mac);
-            ESP_LOGW(TAG, "eth_mac: " MACSTR, MAC2STR(eth_mac));
+
+            if(g_wifi_mode == WIFI_MODE_AP){
+                uint8_t eth_mac[6] = {0};
+                esp_eth_ioctl(s_eth_handle, ETH_CMD_G_MAC_ADDR, eth_mac);
+                esp_wifi_set_mac(WIFI_MODE_AP, eth_mac);
+                ESP_LOGI(TAG, "eth_mac: " MACSTR, MAC2STR(eth_mac));
+            }
             break;
         }
 
         case ETHERNET_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "Ethernet Link Down");
             s_ethernet_is_connected = false;
-            // ESP_ERROR_CHECK(esp_wifi_stop());
+            s_wifi_is_started = false;
+            ESP_ERROR_CHECK(esp_wifi_stop());
             break;
 
         case ETHERNET_EVENT_START:
@@ -154,6 +170,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
 
             if (!s_con_cnt) {
                 s_wifi_is_connected = true;
+                s_wifi_is_started = true;
                 esp_wifi_internal_reg_rxcb(ESP_IF_WIFI_AP, pkt_wifi2eth);
             }
 
@@ -172,15 +189,21 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
             break;
 
         case WIFI_EVENT_STA_CONNECTED:
+            ESP_LOGI(TAG, "Wi-Fi STA connected");
+            s_wifi_is_started = true;
             s_wifi_is_connected = true;
+
             esp_wifi_internal_reg_rxcb(ESP_IF_WIFI_STA, pkt_wifi2eth);
             break;
 
         case WIFI_EVENT_STA_DISCONNECTED:
-            ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED");
+            ESP_LOGI(TAG, "Wi-Fi STA disconnected");
             s_wifi_is_connected = false;
             esp_wifi_internal_reg_rxcb(ESP_IF_WIFI_STA, NULL);
-            // esp_wifi_connect();
+
+            if(s_ethernet_is_connected) {
+                esp_wifi_connect();
+            }
             break;
 
         default:
@@ -209,6 +232,9 @@ static esp_err_t initialize_flow_control(void)
 
 esp_err_t esp_gateway_eth_init(void)
 {
+    esp_wifi_get_mode(&g_wifi_mode);
+    ESP_LOGI(TAG, "wifi mode: %d", g_wifi_mode);
+
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, eth_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, wifi_event_handler, NULL));
