@@ -146,8 +146,8 @@ esp_modem_dce_t *sim7600_board_create(esp_modem_dce_config_t *config)
     // board->power_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 12, /*inactive_level*/ 1, /*active_width*/
     //                                                           500, /*inactive_width*/ 16000);
     // /* reset sequence (typical values for SIM7600 Treset=200ms, wait 10s after reset */
-    board->reset_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 15, /*inactive_level*/ 1, /*active_width*/
-                                                              200, /*inactive_width*/ 10000);
+    // board->reset_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 15, /*inactive_level*/ 1, /*active_width*/
+    //                                                           200, /*inactive_width*/ 10000);
     board->parent.deinit = sim7600_board_deinit;
     board->reset = sim7600_board_reset;
     board->power_down = sim7600_board_power_down;

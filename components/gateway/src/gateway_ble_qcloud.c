@@ -142,10 +142,10 @@ void esp_gateway_qcloud_init()
     /**
      * @brief Add debug function, you can use serial command and remote debugging.
      */
-    // esp_qcloud_log_config_t log_config = {
-    //     .log_level_uart = ESP_LOG_INFO,
-    // };
-    // ESP_ERROR_CHECK(esp_qcloud_log_init(&log_config));
+    esp_qcloud_log_config_t log_config = {
+        .log_level_uart = ESP_LOG_INFO,
+    };
+    ESP_ERROR_CHECK(esp_qcloud_log_init(&log_config));
     /**
      * @brief Set log level
      * @note  This function can not raise log level above the level set using

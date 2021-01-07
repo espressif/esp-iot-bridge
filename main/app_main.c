@@ -65,7 +65,7 @@ static void button_press_3sec_cb(void *arg)
     esp_storage_set("feat_type", &g_feat_type, sizeof(feat_type_t));
     led_gpio_state_write(g_led_handle_list[g_feat_type], LED_GPIO_QUICK_BLINK);
 
-    vTaskDelay(pdMS_TO_TICKS(3000));
+    vTaskDelay(pdMS_TO_TICKS(2000));
     esp_restart();
 }
 
@@ -107,6 +107,7 @@ void app_main(void)
             driver_cfg.gpio_green = GPIO_NUM_13;
             driver_cfg.gpio_blue  = GPIO_NUM_14;
             ESP_ERROR_CHECK(light_driver_init(&driver_cfg));
+            light_driver_set_switch(true);
 
             esp_gateway_qcloud_init();
             esp_gateway_ble_init();
