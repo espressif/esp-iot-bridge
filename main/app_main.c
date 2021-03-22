@@ -22,10 +22,8 @@
 #include "esp_gateway_wifi.h"
 #include "esp_gateway_eth.h"
 #include "esp_gateway_modem.h"
-#include "esp_gateway_ble.h"
 
 #include "led_gpio.h"
-#include "light_driver.h"
 #include "button.h"
 
 #define GPIO_LED_BLE   GPIO_NUM_15
@@ -35,8 +33,9 @@
 
 #define GPIO_BUTTON_SW1 GPIO_NUM_34
 
+#define MODEM_IS_OPEN CONFIG_MODEM_IS_OPEN
+
 typedef enum {
-    FEAT_TYPE_BLE,
     FEAT_TYPE_WIFI,
     FEAT_TYPE_MODEM,
     FEAT_TYPE_ETH,
@@ -44,7 +43,7 @@ typedef enum {
 } feat_type_t;
 
 static feat_type_t g_feat_type = FEAT_TYPE_WIFI;
-static led_handle_t g_led_handle_list[4] = {NULL};
+static led_handle_t g_led_handle_list[3] = {NULL};
 
 static const char *TAG = "main";
 
@@ -81,7 +80,6 @@ void app_main(void)
     ESP_LOGI(TAG, "feat_type: %d", g_feat_type);
 
     g_led_handle_list[FEAT_TYPE_WIFI] = led_gpio_create(GPIO_LED_WIFI, LED_GPIO_DARK_HIGH);
-    g_led_handle_list[FEAT_TYPE_BLE]  = led_gpio_create(GPIO_LED_BLE, LED_GPIO_DARK_HIGH);
     g_led_handle_list[FEAT_TYPE_ETH]  = led_gpio_create(GPIO_LED_ETH, LED_GPIO_DARK_HIGH);
     g_led_handle_list[FEAT_TYPE_MODEM] = led_gpio_create(GPIO_LED_MODEM, LED_GPIO_DARK_HIGH);
 
@@ -93,24 +91,6 @@ void app_main(void)
     button_add_press_cb(button_handle, 3, button_press_3sec_cb, NULL);
 
     switch (g_feat_type) {
-        case FEAT_TYPE_BLE:
-            ESP_LOGI(TAG, "============================");
-            ESP_LOGI(TAG, "BLE Gateway");
-            ESP_LOGI(TAG, "============================");
-
-            /**
-             * @brief Initialize Application specific hardware drivers and set initial state.
-             */
-            light_driver_config_t driver_cfg = COFNIG_LIGHT_TYPE_DEFAULT();
-            driver_cfg.gpio_red   = GPIO_NUM_12;
-            driver_cfg.gpio_green = GPIO_NUM_13;
-            driver_cfg.gpio_blue  = GPIO_NUM_14;
-            ESP_ERROR_CHECK(light_driver_init(&driver_cfg));
-            light_driver_set_switch(true);
-
-            esp_gateway_ble_init();
-            break;
-
         case FEAT_TYPE_WIFI:
             ESP_LOGI(TAG, "============================");
             ESP_LOGI(TAG, "Wi-Fi Repeater");
@@ -125,6 +105,7 @@ void app_main(void)
             break;
 
         case FEAT_TYPE_MODEM: {
+#if MODEM_IS_OPEN
             ESP_LOGI(TAG, "============================");
             ESP_LOGI(TAG, "4G Router");
             ESP_LOGI(TAG, "============================");
@@ -141,6 +122,7 @@ void app_main(void)
             vTaskDelay(pdMS_TO_TICKS(100));
 
             esp_gateway_wifi_napt_enable();
+#endif
             break;
         }
 

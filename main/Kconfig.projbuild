@@ -1,4 +1,10 @@
-menu "Light Configuration"
+menu "APP Configuration"
+    config MODEM_IS_OPEN
+        bool "Enable the Modem function"
+        default n
+        help
+            "Turn on the portable Wi-Fi function,it can convert the 4G network into a wifi signal"
+
     menu "Light development board selection "
         choice LIGHT_TYPE
             prompt "light hardware type"
