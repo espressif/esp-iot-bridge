@@ -71,7 +71,7 @@ static void on_modem_event(void *arg, esp_event_base_t event_base,
         }
     } else if (event_base == NETIF_PPP_STATUS) {
         ESP_LOGI(TAG, "PPP netif event! %d", event_id);
-        if (event_id == NETIF_PPP_CONNECT_FAILED) {
+        if (event_id == NETIF_PPP_ERRORCONNECT) {
             xEventGroupSetBits(connection_events, DISCONNECT_BIT);
         }
     }

@@ -12,7 +12,6 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "driver/gpio.h"
-// #include "esp_neif_type.h"
 
 #include "esp_netif.h"
 
@@ -109,7 +108,6 @@ void app_main(void)
             ESP_ERROR_CHECK(light_driver_init(&driver_cfg));
             light_driver_set_switch(true);
 
-            esp_gateway_qcloud_init();
             esp_gateway_ble_init();
             break;
 

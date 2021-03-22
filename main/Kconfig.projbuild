@@ -1,4 +1,4 @@
-menu "ESP QCloud Example Configuration"
+menu "Light Configuration"
     menu "Light development board selection "
         choice LIGHT_TYPE
             prompt "light hardware type"
