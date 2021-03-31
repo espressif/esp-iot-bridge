@@ -1,4 +1,4 @@
-// Copyright 2017 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef __LIGHT_DRIVER_H__
+#define __LIGHT_DRIVER_H__
 
-#include "led_pwm.h"
+#include "iot_led.h"
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
+#define LIGHT_STATUS_STORE_KEY   "light_status"
+
 /**
  * @brief The mode of the five-color light
  */
-enum light_mode {
+typedef enum light_mode {
     MODE_NONE                = 0,
     MODE_RGB                 = 1,
     MODE_HSV                 = 2,
@@ -36,7 +39,8 @@ enum light_mode {
     MODE_WARM_DECREASE       = 7,
     MODE_BRIGHTNESS_INCREASE = 8,
     MODE_BRIGHTNESS_DECREASE = 9,
-};
+    MODE_HSL                 = 10,
+} light_mode_t;
 
 /**
  * @brief Light driven configuration
@@ -86,30 +90,31 @@ typedef struct {
 #endif /**< LIGHT_TYPE_DEFAULT */
 
 /**
- * @brief Light initialize.
+ * @brief  Light initialize
  *
- * @param[in] config [description]
+ * @param  config [description]
  *
  * @return
  *      - ESP_OK
- *      - ESP_FAIL
+ *      - ESP_ERR_INVALID_ARG
  */
 esp_err_t light_driver_init(light_driver_config_t *config);
 
 /**
- * @brief Light deinitialize.
+ * @brief  Light deinitialize
  *
  * @return
  *      - ESP_OK
- *      - ESP_FAIL
+ *      - ESP_ERR_INVALID_ARG
  */
 esp_err_t light_driver_deinit(void);
 
+
 /**
- * @brief Set the fade time of the light.
+ * @brief Set the fade time of the light
  *
- * @param[in] fade_period_ms  The time from the current color to the next color.
- * @param[in] blink_period_ms Light flashing frequency.
+ * @param  fade_period_ms  The time from the current color to the next color
+ * @param  blink_period_ms Light flashing frequency
  *
  * @return
  *      - ESP_OK
@@ -117,240 +122,79 @@ esp_err_t light_driver_deinit(void);
  */
 esp_err_t light_driver_config(uint32_t fade_period_ms, uint32_t blink_period_ms);
 
+/**@{*/
 /**
- * @brief Set the hue of the light.
- * 
- * @param[in] hue Value ranges from 0 to 360.
+ * @brief  Set the status of the light
+ *
+ *
  * @return
  *      - ESP_OK
- *      - ESP_FAIL
+ *      - ESP_ERR_INVALID_ARG
  */
 esp_err_t light_driver_set_hue(uint16_t hue);
-
-/**
- * @brief Set the saturation of the light.
- * 
- * @param[in] saturation Value ranges from 0 to 100.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL
- */
 esp_err_t light_driver_set_saturation(uint8_t saturation);
-
-/**
- * @brief Set the saturation of the light.
- * 
- * @param[in] value Value ranges from 0 to 100.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL
- */
 esp_err_t light_driver_set_value(uint8_t value);
-
-/**
- * @brief Set the color temperature of the light.
- * 
- * @param[in] color_temperature Value ranges from 0 to 100.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL
- */
 esp_err_t light_driver_set_color_temperature(uint8_t color_temperature);
-
-/**
- * @brief Set the color brightness of the light.
- * 
- * @param[in] brightness Value ranges from 0 to 100.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL
- */
 esp_err_t light_driver_set_brightness(uint8_t brightness);
-
-/**
- * @brief Use HSV to set the light.
- * 
- * @param[in] hue Value ranges from 0 to 360.
- * @param[in] saturation Value ranges from 0 to 100.
- * @param[in] value Value ranges from 0 to 100.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL 
- */
 esp_err_t light_driver_set_hsv(uint16_t hue, uint8_t saturation, uint8_t value);
-
-/**
- * @brief Use CTB to set up lights.
- * 
- * @param[in] color_temperature Value ranges from 0 to 100.
- * @param[in] brightness Value ranges from 0 to 100.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL 
- */
+esp_err_t light_driver_set_hsl(uint16_t hue, uint8_t saturation, uint8_t lightness);
+esp_err_t light_driver_set_lightness(uint8_t lightness);
 esp_err_t light_driver_set_ctb(uint8_t color_temperature, uint8_t brightness);
-
-/**
- * @brief Set the state of the light
- * 
- * @param[in] status On or off
- * @return
- *      - ESP_OK
- *      - ESP_FAIL 
- */
 esp_err_t light_driver_set_switch(bool status);
+esp_err_t light_driver_set_mode(light_mode_t mode);
 
+/**@}*/
+
+/**@{*/
 /**
- * @brief Get the hue of the light.
- * 
- * @return Current hue.
+ * @brief  Set the status of the light
  */
 uint16_t light_driver_get_hue(void);
-
-/**
- * @brief Get the saturation of the light.
- * 
- * @return Current saturation. 
- */
 uint8_t light_driver_get_saturation(void);
-
-/**
- * @brief Get the value of the light.
- * 
- * @return Current value. 
- */
 uint8_t light_driver_get_value(void);
-
-/**
- * @brief Get the HSV of the light.
- * 
- * @param[in/out] hue This variable is used to store hue.
- * @param[in/out] saturation This variable is used to store saturation.
- * @param[in/out] value This variable is used to store value.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL 
- */
 esp_err_t light_driver_get_hsv(uint16_t *hue, uint8_t *saturation, uint8_t *value);
-
-/**
- * @brief Get the color temperature of the light.
- * 
- * @return Current color temperature.
- */
+uint8_t light_driver_get_lightness(void);
+esp_err_t light_driver_get_hsl(uint16_t *hue, uint8_t *saturation, uint8_t *lightness);
 uint8_t light_driver_get_color_temperature(void);
-
-/**
- * @brief Get the brightness of the light.
- * 
- * @return Current brightness. 
- */
 uint8_t light_driver_get_brightness(void);
-
-/**
- * @brief Get the CTB of the light.
- * 
- * @param[in/out] color_temperature This variable is used to store color temperature.
- * @param[in/out] brightness This variable is used to store brightness.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL 
- */
 esp_err_t light_driver_get_ctb(uint8_t *color_temperature, uint8_t *brightness);
-
-/**
- * @brief Get the state of the light.
- * 
- * @return true Turn on the light.
- * @return false Turn off the light.
- */
 bool light_driver_get_switch(void);
-
-/**
- * @brief Get the mode of the light.
- * 
- * @return Current mode.  
- */
 uint8_t light_driver_get_mode(void);
+/**@}*/
 
+/**@{*/
 /**
- * @brief Get the type of the light.
- * 
- * @return Pointer to type. 
- */
-char *light_driver_get_type(void);
-
-
-/**
- * @brief  Used to indicate the operating mode, such as configuring the network mode, upgrading mode.
+ * @brief  Used to indicate the operating mode, such as configuring the network mode, upgrading mode
  *
- * @note   The state of the light is not saved in nvs.
+ * @note   The state of the light is not saved in nvs
+ *
  * @return
  *      - ESP_OK
- *      - ESP_QCLOUD_ERR_INVALID_ARG
+ *      - ESP_ERR_INVALID_ARG
  */
 esp_err_t light_driver_set_rgb(uint8_t red, uint8_t green, uint8_t blue);
-
-/**
- * @brief Turn on breathing light mode.
- * 
- * @param[] red Value ranges from 0 to 255.
- * @param[] green Value ranges from 0 to 255.
- * @param[] blue  Value ranges from 0 to 255.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL 
- */
 esp_err_t light_driver_breath_start(uint8_t red, uint8_t green, uint8_t blue);
-
-/**
- * @brief Turn off breathing light mode.
- * 
- * @return
- *      - ESP_OK
- *      - ESP_FAIL
- */
 esp_err_t light_driver_breath_stop(void);
+esp_err_t light_driver_blink_start(uint8_t red, uint8_t green, uint8_t blue);
+esp_err_t light_driver_blink_stop(void);
+/**@}*/
 
+/**@{*/
 /**
- * @brief Brightness gradient.
- * 
- * @param[in] brightness Value ranges from 0 to 100.
+ * @brief  Color gradient
+ *
  * @return
  *      - ESP_OK
- *      - ESP_FAIL
+ *      - ESP_ERR_INVALID_ARG
  */
 esp_err_t light_driver_fade_brightness(uint8_t brightness);
-
-/**
- * @brief Hue gradient
- * 
- * @param[in] hue Value ranges from 0 to 360.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL
- */
 esp_err_t light_driver_fade_hue(uint16_t hue);
-
-/**
- * @brief Color temperature gradient
- * 
- * @param[in] color_temperature Value ranges from 0 to 100.
- * @return
- *      - ESP_OK
- *      - ESP_FAIL
- */
 esp_err_t light_driver_fade_warm(uint8_t color_temperature);
-
-/**
- * @brief Stop fade function.
- * 
- * @return
- *      - ESP_OK
- *      - ESP_FAIL
- */
 esp_err_t light_driver_fade_stop(void);
+/**@}*/
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif/**< __LIGHT_DRIVER_H__ */
