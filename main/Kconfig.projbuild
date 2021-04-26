@@ -4,4 +4,88 @@ menu "APP Configuration"
         default n
         help
             "Turn on the portable Wi-Fi function,it can convert the 4G network into a wifi signal"
+
+    if MODEM_IS_OPEN
+        menu "4G Router"
+            config 4G_ROUTER_AP_SSID
+                string "SSID as AP"
+                default "4g_router"
+                help
+                    Set the SSID of 4G AP interface.
+
+            config 4G_ROUTER_AP_PASSWORD
+                string "Password as AP"
+                default "espressif"
+                help
+                    Set the password of 4G AP interface.
+        endmenu
+    endif
+
+    menu "WiFi Router"
+        config WIFI_ROUTER_AP_SSID
+            string "SSID as AP"
+            default "wifi_router"
+            help
+                Set the SSID of Wi-Fi AP interface.
+
+        config WIFI_ROUTER_AP_PASSWORD
+            string "Password as AP"
+            default "12345678"
+            help
+                Set the password of Wi-Fi AP interface.
+
+        config WIFI_ROUTER_STA_SSID
+            string "SSID as STA"
+            default "esp-guest"
+            help
+                Set the SSID of Wi-Fi STA interface.
+
+        config WIFI_ROUTER_STA_PASSWORD
+            string "Password as STA"
+            default "esp-guest"
+            help
+                Set the password of Wi-Fi STA interface.
+    endmenu
+
+    menu "Ethernet Router"
+        config ETH_ROUTER_WIFI_SSID
+            string "Wi-Fi SSID"
+            default "eth2ap"
+            help
+                Set the SSID of Wi-Fi ap interface.
+
+        config ETH_ROUTER_WIFI_PASSWORD
+            string "Wi-Fi Password"
+            default "12345678"
+            help
+                Set the password of Wi-Fi ap interface.
+
+        config ETH_ROUTER_WIFI_CHANNEL
+            int "WiFi channel"
+            range 1 13
+            default 1
+            help
+                Set the channel of Wi-Fi ap.
+
+        config ETH_ROUTER_MAX_STA_CONN
+            int "Maximum STA connections"
+            default 4
+            help
+                Maximum number of the station that allowed to connect to current Wi-Fi hotspot.
+    endmenu
+
+    menu "Ethernet wireless network adapter"
+        config WIFI_STA_SSID
+            string "Wi-Fi SSID"
+            default "esp-guest"
+            help
+                Set the SSID of Wi-Fi sta interface.
+
+        config WIFI_STA_PASSWORD
+            string "Wi-Fi Password"
+            default "esp-guest"
+            help
+                Set the password of Wi-Fi sta interface.
+    endmenu
+
 endmenu

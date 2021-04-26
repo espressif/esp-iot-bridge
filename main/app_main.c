@@ -99,8 +99,8 @@ void app_main(void)
             esp_bt_mem_release(ESP_BT_MODE_BTDM);
 
             esp_gateway_wifi_init(WIFI_MODE_APSTA);
-            esp_gateway_wifi_set(WIFI_MODE_STA, "esp-guest", "esp-guest");
-            esp_gateway_wifi_set(WIFI_MODE_AP, "wifi_router", "espressif");
+            esp_gateway_wifi_set(WIFI_MODE_STA, CONFIG_WIFI_ROUTER_STA_SSID, CONFIG_WIFI_ROUTER_STA_PASSWORD);
+            esp_gateway_wifi_set(WIFI_MODE_AP, CONFIG_WIFI_ROUTER_AP_SSID, CONFIG_WIFI_ROUTER_AP_PASSWORD);
             esp_gateway_wifi_sta_connected(portMAX_DELAY);
             esp_gateway_wifi_napt_enable();
             break;
@@ -119,7 +119,7 @@ void app_main(void)
             ESP_ERROR_CHECK(esp_netif_get_dns_info(ppp_netif, ESP_NETIF_DNS_MAIN, &dns));
             ESP_ERROR_CHECK(esp_gateway_wifi_set_dhcps(ap_netif, dns.ip.u_addr.ip4.addr));
 
-            esp_gateway_wifi_set(WIFI_MODE_AP, "4g_router", "espressif");
+            esp_gateway_wifi_set(WIFI_MODE_AP, CONFIG_4G_ROUTER_AP_SSID, CONFIG_4G_ROUTER_AP_PASSWORD);
             vTaskDelay(pdMS_TO_TICKS(100));
 
             esp_gateway_wifi_napt_enable();
@@ -137,7 +137,7 @@ void app_main(void)
                 esp_gateway_wifi_ap_init();
             } else {
                 esp_gateway_wifi_init(WIFI_MODE_STA);
-                esp_gateway_wifi_set(WIFI_MODE_STA, "esp-guest", "esp-guest");
+                esp_gateway_wifi_set(WIFI_MODE_STA, CONFIG_WIFI_STA_SSID, CONFIG_WIFI_STA_PASSWORD);
             }
 
             esp_gateway_eth_init();
