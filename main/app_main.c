@@ -22,6 +22,7 @@
 #include "esp_gateway_wifi.h"
 #include "esp_gateway_eth.h"
 #include "esp_gateway_modem.h"
+#include "esp_gateway_netif_virtual.h"
 
 #include "led_gpio.h"
 #include "button.h"
@@ -133,14 +134,15 @@ void app_main(void)
             esp_bt_mem_release(ESP_BT_MODE_BTDM);
 
             if (gpio_get_level(GPIO_BUTTON_SW1)) {
-                esp_gateway_wifi_init(WIFI_MODE_AP);
-                esp_gateway_wifi_set(WIFI_MODE_AP, "eth_router", "espressif");
+                esp_gateway_wifi_ap_init();
             } else {
                 esp_gateway_wifi_init(WIFI_MODE_STA);
                 esp_gateway_wifi_set(WIFI_MODE_STA, "esp-guest", "esp-guest");
             }
 
             esp_gateway_eth_init();
+
+            esp_gateway_netif_virtual_init();
 
             break;
 
