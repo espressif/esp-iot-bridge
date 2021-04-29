@@ -81,14 +81,6 @@ static esp_err_t esp_modem_post_attach_init(esp_netif_t * esp_netif, void * args
     };
     driver->base.netif = esp_netif;
     ESP_ERROR_CHECK(esp_netif_set_driver_config(esp_netif, &driver_ifconfig));
-    // check if PPP error events are enabled, if not, do enable the error occurred/state changed
-    // to notify the modem layer when switching modes
-    esp_netif_ppp_config_t ppp_config;
-    esp_netif_ppp_get_params(esp_netif, &ppp_config);
-    if (!ppp_config.ppp_error_event_enabled) {
-        ppp_config.ppp_error_event_enabled = true;
-        esp_netif_ppp_set_params(esp_netif, &ppp_config);
-    }
 
     ESP_ERROR_CHECK(esp_event_handler_register(NETIF_PPP_STATUS, ESP_EVENT_ANY_ID, &on_ppp_changed, dte));
     return ESP_OK;
