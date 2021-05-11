@@ -2,35 +2,65 @@ stages:
   - build
   - deploy
 
-variables:
-  BATCH_BUILD: "1"
-  V: "0"
-  MAKEFLAGS: "-j5 --no-keep-going"
-  IDF_CI_BUILD: "1"
-
-before_script:
-  - export IDF_PATH=~/.espressif/idf/esp-idf-v4.2
-  - cd $IDF_PATH
-  - git pull
-  - git submodule update --init --recursive
-  - ./install.sh
-  - . ./export.sh
-  - cd -
-
-.build_examples_template: &build_examples_template
+esp32_v4.3_build:
   stage: build
-  image: $CI_DOCKER_REGISTRY/ae-esp32-ci-env:latest-3cf42c4c
+  image: $CI_DOCKER_REGISTRY/esp32-ci-env
   tags:
     - build
 
-build_demo_cmake:
-  <<: *build_examples_template
+  variables:
+    GIT_STRATEGY: clone
+    
+  before_script:
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
+    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+
   script:
+    - git clone -b release/v4.3 ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - export IDF_PATH=$(pwd)/esp-idf
+    - source $IDF_PATH/tools/ci/configure_ci_environment.sh
+    - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+    - cd $IDF_PATH
+    - git submodule update --init --recursive
+    - cd ..
+
     - idf.py set-target esp32
     - idf.py build
-    - idf.py set-target esp32s2
+
+
+esp32_master_build:
+  stage: build
+  image: $CI_DOCKER_REGISTRY/esp32-ci-env
+  tags:
+    - build
+
+  variables:
+    GIT_STRATEGY: clone
+
+  before_script:
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
+    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+
+  script:
+    - git clone -b master ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - export IDF_PATH=$(pwd)/esp-idf
+    - source $IDF_PATH/tools/ci/configure_ci_environment.sh
+    - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+    - cd $IDF_PATH
+    - git submodule update --init --recursive
+    - cd ..
+
+    - idf.py set-target esp32
     - idf.py build
-    - cd ../../
+
 
 push_master_to_github:
   stage: deploy
@@ -51,5 +81,5 @@ push_master_to_github:
     - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-    - git remote add github git@github.com:espressif/esp-qcloud.git
+    - git remote add github git@github.com:espressif/esp-gateway.git
     - eval $(git for-each-ref --shell bash --format 'if [ $CI_BUILD_REF == %(objectname) ]; then git checkout -B %(refname:strip=3); git push --follow-tags github %(refname:strip=3); fi;' $GITHUB_PUSH_REFS)
