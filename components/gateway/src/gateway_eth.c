@@ -17,6 +17,7 @@
 #include "esp_wifi.h"
 #include "nvs_flash.h"
 #include "esp_private/wifi.h"
+#include "netif/ethernet.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 
@@ -32,6 +33,12 @@ static wifi_mode_t g_wifi_mode     = WIFI_MODE_AP;
 #define FLOW_CONTROL_QUEUE_LENGTH (50)
 #define FLOW_CONTROL_WIFI_SEND_TIMEOUT_MS (100)
 
+extern esp_netif_t* virtual_netif;
+extern uint8_t virtual_mac[];
+const uint8_t ipv4_multicast[3] = {0x01, 0x00, 0x5e};
+const uint8_t ipv6_multicast[3] = {0x33, 0x33};
+const uint8_t ip_broadcast[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+
 typedef struct {
     void *packet;
     uint16_t length;
@@ -40,6 +47,20 @@ typedef struct {
 // Forward packets from Wi-Fi to Ethernet
 static esp_err_t pkt_wifi2eth(void *buffer, uint16_t len, void *eb)
 {
+    if (g_wifi_mode == WIFI_MODE_AP) {
+        struct eth_hdr* eth_header = NULL;
+        eth_header = buffer;
+        if ((memcmp(virtual_mac, eth_header->dest.addr, 6) == 0)
+            || (memcmp(ipv4_multicast, eth_header->dest.addr, sizeof(ipv4_multicast)) == 0)
+            || (memcmp(ipv6_multicast, eth_header->dest.addr, sizeof(ipv6_multicast)) == 0)
+            || (memcmp(ip_broadcast, eth_header->dest.addr, sizeof(ip_broadcast)) == 0)) {
+                void* data = malloc(len);
+                assert(data);
+                memcpy(data, buffer, len);
+                esp_netif_receive(virtual_netif, data, len, NULL);
+        }
+    }
+    
     if (s_ethernet_is_connected) {
         if (esp_eth_transmit(s_eth_handle, buffer, len) != ESP_OK) {
             ESP_LOGE(TAG, "Ethernet send packet failed");
@@ -47,6 +68,20 @@ static esp_err_t pkt_wifi2eth(void *buffer, uint16_t len, void *eb)
     }
 
     esp_wifi_internal_free_rx_buffer(eb);
+    return ESP_OK;
+}
+
+esp_err_t pkt_virnet2eth(void *buffer, uint16_t len)
+{
+    if (s_wifi_is_connected) {
+        esp_wifi_internal_tx(g_wifi_mode - 1, buffer, len);
+    }
+
+    if (s_ethernet_is_connected) {
+        if (esp_eth_transmit(s_eth_handle, buffer, len) != ESP_OK) {
+            ESP_LOGE(TAG, "Ethernet send packet failed");
+        }
+    }
     return ESP_OK;
 }
 
@@ -61,10 +96,29 @@ static esp_err_t pkt_eth2wifi(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
         .length = len
     };
 
-    if (xQueueSend(flow_control_queue, &msg, pdMS_TO_TICKS(FLOW_CONTROL_QUEUE_TIMEOUT_MS)) != pdTRUE) {
-        ESP_LOGE(TAG, "send flow control message failed or timeout, free_heap: %d", esp_get_free_heap_size());
-        free(buffer);
-        ret = ESP_FAIL;
+    if (g_wifi_mode == WIFI_MODE_STA) {
+        if (xQueueSend(flow_control_queue, &msg, pdMS_TO_TICKS(FLOW_CONTROL_QUEUE_TIMEOUT_MS)) != pdTRUE) {
+            ESP_LOGE(TAG, "send flow control message failed or timeout, free_heap: %d", esp_get_free_heap_size());
+            free(buffer);
+            ret = ESP_FAIL;
+        }
+    } else if (g_wifi_mode == WIFI_MODE_AP) {
+        struct eth_hdr* eth_header = NULL;
+        bool stack_run = false;
+        eth_header = msg.packet;
+        if ((memcmp(virtual_mac, eth_header->dest.addr, 6) == 0)
+            || (memcmp(ipv4_multicast, eth_header->dest.addr, sizeof(ipv4_multicast)) == 0)
+            || (memcmp(ipv6_multicast, eth_header->dest.addr, sizeof(ipv6_multicast)) == 0)
+            || (memcmp(ip_broadcast, eth_header->dest.addr, sizeof(ip_broadcast)) == 0)) {
+            esp_netif_receive(virtual_netif, msg.packet, msg.length, NULL);
+            stack_run = true;
+        }
+        if (s_wifi_is_connected) {
+            esp_wifi_internal_tx(ESP_IF_WIFI_AP, msg.packet, msg.length);
+        }
+        if (!stack_run) {
+            free(msg.packet);
+        }
     }
 
     return ret;
@@ -103,7 +157,7 @@ static void eth2wifi_flow_control_task(void *args)
 
             if (s_wifi_is_connected && msg.length) {
                 do {
-                    res = esp_wifi_internal_tx(g_wifi_mode - 1, msg.packet, msg.length);
+                    res = esp_wifi_internal_tx(ESP_IF_WIFI_STA, msg.packet, msg.length);
                     vTaskDelay(pdMS_TO_TICKS(timeout));
                     timeout += 5;
                 } while (res && timeout < FLOW_CONTROL_WIFI_SEND_TIMEOUT_MS);
@@ -134,7 +188,10 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
                 esp_eth_ioctl(s_eth_handle, ETH_CMD_G_MAC_ADDR, eth_mac);
                 esp_wifi_set_mac(WIFI_MODE_AP, eth_mac);
                 ESP_LOGI(TAG, "eth_mac: " MACSTR, MAC2STR(eth_mac));
+                ESP_ERROR_CHECK(esp_wifi_start());
             }
+            esp_netif_action_start(virtual_netif, NULL, 0, NULL);
+            esp_netif_dhcpc_start(virtual_netif);
             break;
         }
 
@@ -143,6 +200,8 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
             s_ethernet_is_connected = false;
             s_wifi_is_started = false;
             ESP_ERROR_CHECK(esp_wifi_stop());
+            esp_netif_dhcpc_stop(virtual_netif);
+            esp_netif_action_stop(virtual_netif, NULL, 0, NULL);
             break;
 
         case ETHERNET_EVENT_START:
@@ -172,6 +231,8 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                 s_wifi_is_connected = true;
                 s_wifi_is_started = true;
                 esp_wifi_internal_reg_rxcb(ESP_IF_WIFI_AP, pkt_wifi2eth);
+                wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
+                ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",MAC2STR(event->mac), event->aid);
             }
 
             s_con_cnt++;
@@ -220,7 +281,7 @@ static esp_err_t initialize_flow_control(void)
         return ESP_FAIL;
     }
 
-    BaseType_t ret = xTaskCreate(eth2wifi_flow_control_task, "flow_ctl", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    BaseType_t ret = xTaskCreate(eth2wifi_flow_control_task, "flow_ctl", 2048, NULL, (tskIDLE_PRIORITY + 5), NULL);
 
     if (ret != pdTRUE) {
         ESP_LOGE(TAG, "create flow control task failed");
@@ -238,8 +299,9 @@ esp_err_t esp_gateway_eth_init(void)
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, eth_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, wifi_event_handler, NULL));
-
-    ESP_ERROR_CHECK(initialize_flow_control());
+    if (g_wifi_mode == WIFI_MODE_STA) {
+        ESP_ERROR_CHECK(initialize_flow_control());
+    }
 
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
@@ -285,6 +347,7 @@ esp_err_t esp_gateway_eth_init(void)
     esp_eth_phy_t *phy = esp_eth_phy_new_dm9051(&phy_config);
 #endif
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy);
+    memcpy(virtual_mac, mac, 6);
     config.stack_input = pkt_eth2wifi;
     ESP_ERROR_CHECK(esp_eth_driver_install(&config, &s_eth_handle));
     esp_eth_ioctl(s_eth_handle, ETH_CMD_S_PROMISCUOUS, (void *)true);

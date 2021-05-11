@@ -49,6 +49,30 @@ static void event_handler(void *arg, esp_event_base_t event_base,
     }
 }
 
+esp_err_t esp_gateway_wifi_ap_init(void)
+{
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    wifi_config_t wifi_config = {
+        .ap = {
+            .ssid = CONFIG_ETH_ROUTER_WIFI_SSID,
+            .ssid_len = strlen(CONFIG_ETH_ROUTER_WIFI_SSID),
+            .password = CONFIG_ETH_ROUTER_WIFI_PASSWORD,
+            .max_connection = CONFIG_ETH_ROUTER_MAX_STA_CONN,
+            .authmode = WIFI_AUTH_WPA_WPA2_PSK,
+            .channel = CONFIG_ETH_ROUTER_WIFI_CHANNEL // default: channel 1
+        },
+    };
+    if (strlen(CONFIG_ETH_ROUTER_WIFI_PASSWORD) == 0) {
+        wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+    }
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
+
+    return ESP_OK;
+}
+
 esp_netif_t *esp_gateway_wifi_init(wifi_mode_t mode)
 {
     if (s_wifi_event_group) {
