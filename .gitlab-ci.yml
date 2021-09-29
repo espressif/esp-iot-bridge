@@ -34,7 +34,7 @@ esp32_v4.3_build:
 
 esp32_master_build:
   stage: build
-  image: $CI_DOCKER_REGISTRY/esp32-ci-env
+  image: $CI_DOCKER_REGISTRY/esp-env:v4.4-1
   tags:
     - build
 
