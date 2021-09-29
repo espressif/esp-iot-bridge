@@ -141,7 +141,7 @@ esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *p
         strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
 
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
-    
+
         ESP_LOGI(TAG, "softap ssid: %s password: %s", ssid, password);
     }
 

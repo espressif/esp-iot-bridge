@@ -112,10 +112,22 @@ void app_main(void)
             ESP_LOGI(TAG, "============================");
             esp_bt_mem_release(ESP_BT_MODE_BTDM);
 
-            esp_gateway_wifi_init(WIFI_MODE_APSTA);
+            /* Create STA netif */
+            esp_netif_t *sta_wifi_netif = esp_gateway_wifi_init(WIFI_MODE_STA);
             esp_gateway_wifi_set(WIFI_MODE_STA, CONFIG_WIFI_ROUTER_STA_SSID, CONFIG_WIFI_ROUTER_STA_PASSWORD);
-            esp_gateway_wifi_set(WIFI_MODE_AP, CONFIG_WIFI_ROUTER_AP_SSID, CONFIG_WIFI_ROUTER_AP_PASSWORD);
             esp_gateway_wifi_sta_connected(portMAX_DELAY);
+
+            /* Create AP netif  */
+            esp_netif_t *ap_wifi_netif = esp_netif_create_default_wifi_ap();
+
+            /* Config dns info for AP */
+            esp_netif_dns_info_t dns;
+            ESP_ERROR_CHECK(esp_netif_get_dns_info(sta_wifi_netif, ESP_NETIF_DNS_MAIN, &dns));
+            ESP_LOGI(TAG, "Main DNS: " IPSTR, IP2STR(&dns.ip.u_addr.ip4));
+            ESP_ERROR_CHECK(esp_gateway_wifi_set_dhcps(ap_wifi_netif, dns.ip.u_addr.ip4.addr));
+
+            ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
+            esp_gateway_wifi_set(WIFI_MODE_AP, CONFIG_WIFI_ROUTER_AP_SSID, CONFIG_WIFI_ROUTER_AP_PASSWORD);
             esp_gateway_wifi_napt_enable();
             break;
 
