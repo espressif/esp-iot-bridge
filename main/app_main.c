@@ -26,50 +26,34 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "driver/gpio.h"
-
+#include "esp_wifi.h"
 #include "esp_netif.h"
-
 #include "esp_eth.h"
 
 #include "esp_storage.h"
 #include "esp_gateway_wifi.h"
 #include "esp_gateway_eth.h"
 #include "esp_gateway_modem.h"
+#include "esp_gateway_vendor_ie.h"
 #include "esp_gateway_netif_virtual.h"
 
+#include "led_strip.h"
 #include "led_gpio.h"
 #include "button.h"
+#include "esp_gateway_config.h"
 
-#define GPIO_LED_WIFI  CONFIG_GPIO_LED_WIFI
-#define GPIO_LED_MODEM CONFIG_GPIO_LED_MODEM
-#define GPIO_LED_ETH   CONFIG_GPIO_LED_ETH
+#if SET_VENDOR_IE
+vendor_ie_data_t *esp_gateway_vendor_ie;
+ap_router_t *ap_router;
+#endif // SET_VENDOR_IE
+char router_mac[MAC_LEN] = {0};
 
-#define GPIO_BUTTON_SW1 CONFIG_GPIO_BUTTON_SW1
-
-#define MODEM_IS_OPEN CONFIG_MODEM_IS_OPEN
-
-#define ESP_GATEWAY_WIFI_ROUTER_STA_SSID     CONFIG_WIFI_ROUTER_STA_SSID
-#define ESP_GATEWAY_WIFI_ROUTER_STA_PASSWORD CONFIG_WIFI_ROUTER_STA_PASSWORD
-#define ESP_GATEWAY_WIFI_ROUTER_AP_SSID      CONFIG_WIFI_ROUTER_AP_SSID
-#define ESP_GATEWAY_WIFI_ROUTER_AP_PASSWORD  CONFIG_WIFI_ROUTER_AP_PASSWORD
-#define ESP_GATEWAY_4G_ROUTER_AP_SSID        CONFIG_4G_ROUTER_AP_SSID
-#define ESP_GATEWAY_4G_ROUTER_AP_PASSWORD    CONFIG_4G_ROUTER_AP_PASSWORD
-#define ESP_GATEWAY_ETH_STA_SSID             CONFIG_ETH_STA_SSID
-#define ESP_GATEWAY_ETH_STA_PASSWORD         CONFIG_ETH_STA_PASSWORD
-
-#define ESP_GATEWAY_AP_CUSTOM_IP             CONFIG_AP_CUSTOM_IP
-#define ESP_GATEWAY_AP_STATIC_IP_ADDR        CONFIG_AP_STATIC_IP_ADDR
-#define ESP_GATEWAY_AP_STATIC_GW_ADDR        CONFIG_AP_STATIC_GW_ADDR
-#define ESP_GATEWAY_AP_STATIC_NETMASK_ADDR   CONFIG_AP_STATIC_NETMASK_ADDR
-
-typedef enum {
-    FEAT_TYPE_WIFI,
-    FEAT_TYPE_MODEM,
-    FEAT_TYPE_ETH,
-    FEAT_TYPE_MAX,
-} feat_type_t;
-
-static feat_type_t g_feat_type = FEAT_TYPE_WIFI;
+#if CONFIG_IDF_TARGET_ESP32C3
+static led_strip_t *pStrip_a;
+static uint8_t s_led_state = 0;
+static uint32_t blink_period = 1;
+#endif // CONFIG_IDF_TARGET_ESP32C3
+feat_type_t g_feat_type = FEAT_TYPE_WIFI;
 static led_handle_t g_led_handle_list[3] = {NULL};
 
 static const char *TAG = "main";
@@ -93,6 +77,31 @@ static void button_press_3sec_cb(void *arg)
     esp_restart();
 }
 
+#if CONFIG_IDF_TARGET_ESP32C3
+static void configure_led_strip(void)
+{
+    ESP_LOGI(TAG, "Example configured to blink addressable LED!");
+    /* LED strip initialization with the GPIO and pixels number*/
+    pStrip_a = led_strip_init(CONFIG_BLINK_LED_RMT_CHANNEL, GPIO_BLINK, 1);
+    /* Set all LED off to clear all pixels */
+    pStrip_a->clear(pStrip_a, 50);
+}
+
+static void blink_led(void)
+{
+    /* If the addressable LED is enabled */
+    if (s_led_state) {
+        /* Set the LED pixel using RGB from 0 (0%) to 255 (100%) for each color */
+        pStrip_a->set_pixel(pStrip_a, 0, 16, 16, 16);
+        /* Refresh the strip to send data */
+        pStrip_a->refresh(pStrip_a, 100);
+    } else {
+        /* Set all LED off to clear all pixels */
+        pStrip_a->clear(pStrip_a, 50);
+    }
+}
+#endif // CONFIG_IDF_TARGET_ESP32C3
+
 void app_main(void)
 {
     esp_log_level_set("*", ESP_LOG_INFO);
@@ -104,7 +113,10 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     ESP_LOGI(TAG, "feat_type: %d", g_feat_type);
-
+#if CONFIG_IDF_TARGET_ESP32C3
+    /* Configure the peripheral according to the LED type */
+    configure_led_strip();
+#endif // CONFIG_IDF_TARGET_ESP32C3
     g_led_handle_list[FEAT_TYPE_WIFI] = led_gpio_create(GPIO_LED_WIFI, LED_GPIO_DARK_HIGH);
     g_led_handle_list[FEAT_TYPE_ETH]  = led_gpio_create(GPIO_LED_ETH, LED_GPIO_DARK_HIGH);
     g_led_handle_list[FEAT_TYPE_MODEM] = led_gpio_create(GPIO_LED_MODEM, LED_GPIO_DARK_HIGH);
@@ -124,8 +136,40 @@ void app_main(void)
 
             /* Create STA netif */
             esp_netif_t *sta_wifi_netif = esp_gateway_wifi_init(WIFI_MODE_STA);
-            esp_gateway_wifi_set(WIFI_MODE_STA, ESP_GATEWAY_WIFI_ROUTER_STA_SSID, ESP_GATEWAY_WIFI_ROUTER_STA_PASSWORD);
+
+#if SET_VENDOR_IE
+            ap_router = malloc(sizeof(ap_router_t));
+            memset(ap_router, 0, sizeof(*ap_router));
+            esp_gateway_vendor_ie = esp_wifi_vendor_ie_init();
+            ESP_ERROR_CHECK(esp_wifi_set_vendor_ie(true, WIFI_VND_IE_TYPE_BEACON, WIFI_VND_IE_ID_0, esp_gateway_vendor_ie));
+            ESP_ERROR_CHECK(esp_wifi_set_vendor_ie_cb((esp_vendor_ie_cb_t)esp_gateway_vendor_ie_cb, NULL));
+
+            for (int i = 0; i < 2; i++) {
+                ESP_ERROR_CHECK(esp_wifi_scan_start(NULL, true));
+            }
+            ESP_ERROR_CHECK(esp_wifi_scan_stop());
+
+            if (ap_router->level != WIFI_ROUTER_LEVEL_0) {
+                ESP_LOGI(TAG, "wifi_router_level: %d", ap_router->level);
+                esp_gateway_wifi_set(WIFI_MODE_STA, ESP_GATEWAY_WIFI_ROUTER_AP_SSID, ESP_GATEWAY_WIFI_ROUTER_AP_PASSWORD, ap_router->router_mac);
+            } else {
+                ESP_LOGI(TAG, "wifi_router_level: %d", ap_router->level);
+                esp_gateway_wifi_set(WIFI_MODE_STA, ESP_GATEWAY_WIFI_ROUTER_STA_SSID, ESP_GATEWAY_WIFI_ROUTER_STA_PASSWORD, NULL);
+            }
             esp_gateway_wifi_sta_connected(portMAX_DELAY);
+
+            /* Update vendor_ie info */
+            ESP_ERROR_CHECK(esp_wifi_set_vendor_ie(false, WIFI_VND_IE_TYPE_BEACON, WIFI_VND_IE_ID_0, esp_gateway_vendor_ie));
+            (*esp_gateway_vendor_ie).payload[MAX_CONNECT_NUMBER] = 8;
+            (*esp_gateway_vendor_ie).payload[STATION_NUMBER] = 0;
+            (*esp_gateway_vendor_ie).payload[ROUTER_RSSI] = ap_router->rssi;
+            (*esp_gateway_vendor_ie).payload[CONNECT_ROUTER_STATUS] = 1;
+            (*esp_gateway_vendor_ie).payload[LEVEL] = ap_router->level + 1;
+            ESP_ERROR_CHECK(esp_wifi_set_vendor_ie(true, WIFI_VND_IE_TYPE_BEACON, WIFI_VND_IE_ID_0, esp_gateway_vendor_ie));
+#else
+            esp_gateway_wifi_set(WIFI_MODE_STA, ESP_GATEWAY_WIFI_ROUTER_STA_SSID, ESP_GATEWAY_WIFI_ROUTER_STA_PASSWORD, NULL);
+            esp_gateway_wifi_sta_connected(portMAX_DELAY);
+#endif // SET_VENDOR_IE
 
             /* Create AP netif  */
             esp_netif_t *ap_wifi_netif = esp_netif_create_default_wifi_ap();
@@ -141,10 +185,21 @@ void app_main(void)
             ESP_ERROR_CHECK(esp_gateway_wifi_set_dhcps(ap_wifi_netif, dns.ip.u_addr.ip4.addr));
 
             ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
-            esp_gateway_wifi_set(WIFI_MODE_AP, ESP_GATEWAY_WIFI_ROUTER_AP_SSID, ESP_GATEWAY_WIFI_ROUTER_AP_PASSWORD);
-            vTaskDelay(pdMS_TO_TICKS(100));
+            esp_gateway_wifi_set(WIFI_MODE_AP, ESP_GATEWAY_WIFI_ROUTER_AP_SSID, ESP_GATEWAY_WIFI_ROUTER_AP_PASSWORD, NULL);
 
+            /* Get Channel */
+            uint8_t ap_channel = 0, second_channel = 0;
+            ESP_ERROR_CHECK(esp_wifi_get_channel(&ap_channel, (wifi_second_chan_t*)&second_channel));
+            ESP_LOGI(TAG, "SoftAP channel: %d, Second channel: %d", ap_channel, second_channel);
+
+#if SET_VENDOR_IE && CONFIG_IDF_TARGET_ESP32C3
+            blink_period = (*esp_gateway_vendor_ie).payload[LEVEL];
+#endif // CONFIG_IDF_TARGET_ESP32C3
+
+            /* Enable napt */
             esp_gateway_wifi_napt_enable();
+            esp_wifi_get_mac(ESP_IF_WIFI_AP, (uint8_t*)router_mac);
+            ESP_LOGI(TAG, "SoftAP MAC "MACSTR"", MAC2STR(router_mac));
             break;
 
         case FEAT_TYPE_MODEM: {
@@ -164,7 +219,7 @@ void app_main(void)
             ESP_ERROR_CHECK(esp_netif_get_dns_info(ppp_netif, ESP_NETIF_DNS_MAIN, &dns));
             ESP_ERROR_CHECK(esp_gateway_wifi_set_dhcps(ap_netif, dns.ip.u_addr.ip4.addr));
 
-            esp_gateway_wifi_set(WIFI_MODE_AP, ESP_GATEWAY_4G_ROUTER_AP_SSID, ESP_GATEWAY_4G_ROUTER_AP_PASSWORD);
+            esp_gateway_wifi_set(WIFI_MODE_AP, ESP_GATEWAY_4G_ROUTER_AP_SSID, ESP_GATEWAY_4G_ROUTER_AP_PASSWORD, NULL);
             vTaskDelay(pdMS_TO_TICKS(100));
 
             esp_gateway_wifi_napt_enable();
@@ -182,7 +237,7 @@ void app_main(void)
                 esp_gateway_wifi_ap_init();
             } else {
                 esp_gateway_wifi_init(WIFI_MODE_STA);
-                esp_gateway_wifi_set(WIFI_MODE_STA, ESP_GATEWAY_ETH_STA_SSID, ESP_GATEWAY_ETH_STA_PASSWORD);
+                esp_gateway_wifi_set(WIFI_MODE_STA, ESP_GATEWAY_ETH_STA_SSID, ESP_GATEWAY_ETH_STA_PASSWORD, NULL);
             }
 
             esp_gateway_eth_init();
@@ -194,4 +249,19 @@ void app_main(void)
         default:
             break;
     }
+#if CONFIG_IDF_TARGET_ESP32C3
+    while (1) {
+        for (int num = 0; num < blink_period; num ++) {
+            /* Toggle the LED state */
+            s_led_state = !s_led_state;
+            blink_led();
+            vTaskDelay(150 / portTICK_PERIOD_MS);
+            /* Toggle the LED state */
+            s_led_state = !s_led_state;
+            blink_led();
+            vTaskDelay(200 / portTICK_PERIOD_MS);
+        }
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+#endif // CONFIG_IDF_TARGET_ESP32C3
 }

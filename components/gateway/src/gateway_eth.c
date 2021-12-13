@@ -66,7 +66,7 @@ static esp_err_t pkt_wifi2eth(void *buffer, uint16_t len, void *eb)
                 esp_netif_receive(virtual_netif, data, len, NULL);
         }
     }
-    
+
     if (s_ethernet_is_connected) {
         if (esp_eth_transmit(s_eth_handle, buffer, len) != ESP_OK) {
             ESP_LOGE(TAG, "Ethernet send packet failed");

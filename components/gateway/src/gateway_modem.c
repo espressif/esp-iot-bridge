@@ -91,6 +91,7 @@ esp_netif_t *esp_gateway_modem_init(void)
     esp_modem_dte_config_t dte_config = ESP_MODEM_DTE_DEFAULT_CONFIG();
     dte_config.tx_io_num = GPIO_NUM_32;
     dte_config.rx_io_num = GPIO_NUM_33;
+    dte_config.baud_rate = 115200;
     dte_config.event_task_stack_size = 4096;
     dte_config.rx_buffer_size = 16384;
     dte_config.tx_buffer_size = 16384;

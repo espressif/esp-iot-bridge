@@ -27,9 +27,12 @@ extern "C"
 {
 #endif
 
+#define MAC2STR(a)                  (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
+#define MACSTR                      "%02x:%02x:%02x:%02x:%02x:%02x"
+
 esp_err_t esp_gateway_wifi_ap_init(void);
 esp_netif_t *esp_gateway_wifi_init(wifi_mode_t mode);
-esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *password);
+esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *password, const char *bssid);
 esp_err_t esp_gateway_wifi_napt_enable();
 bool esp_gateway_wifi_is_connected();
 esp_err_t esp_gateway_wifi_sta_connected(uint32_t wait_ms);
