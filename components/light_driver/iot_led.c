@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "errno.h"
+#include "esp_idf_version.h"
 
 #include "math.h"
 #include "soc/ledc_reg.h"
@@ -63,7 +64,11 @@ static DRAM_ATTR timg_dev_t *TG[2] = {&TIMERG0, &TIMERG1};
 
 static IRAM_ATTR esp_err_t _timer_pause(timer_group_t group_num, timer_idx_t timer_num)
 {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    TG[group_num]->hw_timer[timer_num].config.tx_en = 0;
+#else
     TG[group_num]->hw_timer[timer_num].config.enable = 0;
+#endif //ESP_IDF_VERSION
     return ESP_OK;
 }
 
@@ -261,6 +266,35 @@ static IRAM_ATTR void fade_timercb(void *para)
     int timer_idx = (int) para;
     int idle_channel_num = 0;
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    if (HW_TIMER_GROUP == TIMER_GROUP_0) {
+        /* Retrieve the interrupt status */
+        uint32_t intr_status = TIMERG0.int_st_timers.val;
+        TIMERG0.hw_timer[timer_idx].update.val = 1;
+
+        /* Clear the interrupt */
+        if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_0) {
+            TIMERG0.int_clr_timers.t0_int_clr = 1;
+        } else if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_1) {
+            TIMERG0.int_clr_timers.t1_int_clr = 1;
+        }
+
+        /* After the alarm has been triggered
+          we need enable it again, so it is triggered the next time */
+        TIMERG0.hw_timer[timer_idx].config.tx_alarm_en = TIMER_ALARM_EN;
+    } else if (HW_TIMER_GROUP == TIMER_GROUP_1) {
+        uint32_t intr_status = TIMERG1.int_st_timers.val;
+        TIMERG1.hw_timer[timer_idx].update.val = 1;
+
+        if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_0) {
+            TIMERG1.int_clr_timers.t0_int_clr = 1;
+        } else if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_1) {
+            TIMERG1.int_clr_timers.t1_int_clr = 1;
+        }
+
+        TIMERG1.hw_timer[timer_idx].config.tx_alarm_en = TIMER_ALARM_EN;
+    }
+#else
     if (HW_TIMER_GROUP == TIMER_GROUP_0) {
         /* Retrieve the interrupt status */
         uint32_t intr_status = TIMERG0.int_st_timers.val;
@@ -288,6 +322,7 @@ static IRAM_ATTR void fade_timercb(void *para)
 
         TIMERG1.hw_timer[timer_idx].config.alarm_en = TIMER_ALARM_EN;
     }
+#endif //ESP_IDF_VERSION
 
     for (int channel = 0; channel < LEDC_CHANNEL_MAX; channel++) {
         ledc_fade_data_t *fade_data = g_light_config->fade_data + channel;

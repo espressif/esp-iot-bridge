@@ -89,8 +89,8 @@ $ ./components/esptool_py/esptool/esptool.py --help
 ## <span id = "4">4.SDK 准备</span>
 
 - 获取 Espressif SDK [ESP-IDF](https://github.com/espressif/esp-idf)
-- 为确保成功获取了完整的 ESP-IDF，请在终端中输入 `idf.py --version`，如果输出结果类似于 `ESP-IDF v4.2-dev-2084-g98d5b5dfd`，则代表安装成功。详细的安装和配置说明请参考[快速入门文档](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32s2/get-started/index.html)。
-- 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v4.3`  分支。
+- 为确保成功获取了完整的 ESP-IDF，请在终端中输入 `idf.py --version`，如果输出结果类似于 `ESP-IDF v4.4-dev-3675-g35b20cadce`，则代表安装成功。详细的安装和配置说明请参考[快速入门文档](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32s2/get-started/index.html)。
+- 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v4.4`  分支。
 
 
 ## <span id = "5">5.配置项介绍</span>

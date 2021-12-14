@@ -28,7 +28,7 @@
 
 static const char *TAG = "esp_utils";
 
-static void show_system_info_timercb(void *timer)
+static void show_system_info_timercb(TimerHandle_t timer)
 {
     uint8_t sta_mac[6]        = {0};
     uint8_t primary           = 0;

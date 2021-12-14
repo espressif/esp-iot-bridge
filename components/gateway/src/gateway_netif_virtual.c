@@ -20,8 +20,8 @@
 #include "lwip/debug.h"
 #include "lwip/tcp.h"
 
-uint8_t virtual_mac[16];
-esp_netif_t* virtual_netif;
+uint8_t virtual_mac[6] = {0};
+esp_netif_t* virtual_netif = NULL;
 
 //
 // Internal functions declaration referenced in io object
@@ -131,7 +131,6 @@ void esp_gateway_netif_virtual_init(void)
     esp_netif_t* netif = esp_netif_new(&config);
     assert(netif);
     virtual_netif = netif;
-    esp_eth_set_default_handlers(netif);
     esp_netif_attach(netif, netsuite_io_new());
 
     // Start the netif in a manual way, no need for events

@@ -742,7 +742,7 @@ static void light_fade_timer_stop(void)
     g_fade_timer = NULL;
 }
 
-static void light_fade_timer_cb(void *timer)
+static void light_fade_timer_cb(TimerHandle_t timer)
 {
     uint8_t red   = 0;
     uint8_t green = 0;
