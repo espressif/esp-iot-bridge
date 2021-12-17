@@ -1,4 +1,4 @@
-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2020-2021 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
 
 static const char *TAG = "esp_utils";
 
-static void show_system_info_timercb(void *timer)
+static void show_system_info_timercb(TimerHandle_t timer)
 {
     uint8_t sta_mac[6]        = {0};
     uint8_t primary           = 0;

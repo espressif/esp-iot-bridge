@@ -185,7 +185,7 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
                               int32_t event_id, void *event_data)
 {
     switch (event_id) {
-        case ETHERNET_EVENT_CONNECTED: {
+        case ETHERNET_EVENT_CONNECTED:
             ESP_LOGI(TAG, "Ethernet Link Up");
             s_ethernet_is_connected = true;
 
@@ -196,10 +196,11 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
                 ESP_LOGI(TAG, "eth_mac: " MACSTR, MAC2STR(eth_mac));
                 ESP_ERROR_CHECK(esp_wifi_start());
             }
-            esp_netif_action_start(virtual_netif, NULL, 0, NULL);
-            esp_netif_dhcpc_start(virtual_netif);
+            if (virtual_netif != NULL) {
+                esp_netif_action_start(virtual_netif, NULL, 0, NULL);
+                esp_netif_dhcpc_start(virtual_netif);
+            }
             break;
-        }
 
         case ETHERNET_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "Ethernet Link Down");
@@ -322,7 +323,11 @@ esp_err_t esp_gateway_eth_init(void)
 #elif CONFIG_EXAMPLE_ETH_PHY_RTL8201
     esp_eth_phy_t *phy = esp_eth_phy_new_rtl8201(&phy_config);
 #elif CONFIG_EXAMPLE_ETH_PHY_LAN8720
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+    esp_eth_phy_t *phy = esp_eth_phy_new_lan87xx(&phy_config);
+#else
     esp_eth_phy_t *phy = esp_eth_phy_new_lan8720(&phy_config);
+#endif //ESP_IDF_VERSION
 #elif CONFIG_EXAMPLE_ETH_PHY_DP83848
     esp_eth_phy_t *phy = esp_eth_phy_new_dp83848(&phy_config);
 #endif
@@ -356,9 +361,9 @@ esp_err_t esp_gateway_eth_init(void)
     memcpy(virtual_mac, mac, 6);
     config.stack_input = pkt_eth2wifi;
     ESP_ERROR_CHECK(esp_eth_driver_install(&config, &s_eth_handle));
-    esp_eth_ioctl(s_eth_handle, ETH_CMD_S_PROMISCUOUS, (void *)true);
+    bool eth_promiscuous = true;
+    esp_eth_ioctl(s_eth_handle, ETH_CMD_S_PROMISCUOUS, &eth_promiscuous);
     esp_eth_start(s_eth_handle);
-
 
     return ESP_OK;
 }
