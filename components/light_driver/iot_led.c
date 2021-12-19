@@ -64,7 +64,7 @@ static DRAM_ATTR timg_dev_t *TG[2] = {&TIMERG0, &TIMERG1};
 
 static IRAM_ATTR esp_err_t _timer_pause(timer_group_t group_num, timer_idx_t timer_num)
 {
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) || CONFIG_IDF_TARGET_ESP32C3
     TG[group_num]->hw_timer[timer_num].config.tx_en = 0;
 #else
     TG[group_num]->hw_timer[timer_num].config.enable = 0;
@@ -112,18 +112,27 @@ static IRAM_ATTR esp_err_t iot_ledc_duty_config(ledc_mode_t speed_mode, ledc_cha
         uint32_t duty_direction, uint32_t duty_num, uint32_t duty_cycle, uint32_t duty_scale)
 {
     if (hpoint_val >= 0) {
+#if CONFIG_IDF_TARGET_ESP32C3
+        LEDC.channel_group[speed_mode].channel[channel].hpoint.hpoint = hpoint_val & LEDC_HPOINT_LSCH1_V;
+#else
         LEDC.channel_group[speed_mode].channel[channel].hpoint.hpoint = hpoint_val & LEDC_HPOINT_HSCH1_V;
+#endif
     }
 
     if (duty_val >= 0) {
         LEDC.channel_group[speed_mode].channel[channel].duty.duty = duty_val;
     }
-
+#if CONFIG_IDF_TARGET_ESP32C3
+    LEDC.channel_group[speed_mode].channel[channel].conf1.val = ((duty_direction & LEDC_DUTY_INC_LSCH0_V) << LEDC_DUTY_INC_LSCH0_S) |
+            ((duty_num & LEDC_DUTY_NUM_LSCH0_V) << LEDC_DUTY_NUM_LSCH0_S) |
+            ((duty_cycle & LEDC_DUTY_CYCLE_LSCH0_V) << LEDC_DUTY_CYCLE_LSCH0_S) |
+            ((duty_scale & LEDC_DUTY_SCALE_LSCH0_V) << LEDC_DUTY_SCALE_LSCH0_S);
+#else
     LEDC.channel_group[speed_mode].channel[channel].conf1.val = ((duty_direction & LEDC_DUTY_INC_HSCH0_V) << LEDC_DUTY_INC_HSCH0_S) |
             ((duty_num & LEDC_DUTY_NUM_HSCH0_V) << LEDC_DUTY_NUM_HSCH0_S) |
             ((duty_cycle & LEDC_DUTY_CYCLE_HSCH0_V) << LEDC_DUTY_CYCLE_HSCH0_S) |
             ((duty_scale & LEDC_DUTY_SCALE_HSCH0_V) << LEDC_DUTY_SCALE_HSCH0_S);
-
+#endif
     LEDC.channel_group[speed_mode].channel[channel].conf0.sig_out_en = 1;
     LEDC.channel_group[speed_mode].channel[channel].conf1.duty_start = 1;
 
@@ -194,17 +203,27 @@ static IRAM_ATTR esp_err_t _iot_set_fade_with_time(ledc_mode_t speed_mode, ledc_
     if (total_cycles > duty_delta) {
         scale = 1;
         cycle_num = total_cycles / duty_delta;
-
+#if CONFIG_IDF_TARGET_ESP32C3
+        if (cycle_num > LEDC_DUTY_NUM_LSCH0_V) {
+            cycle_num = LEDC_DUTY_NUM_LSCH0_V;
+        }
+#else
         if (cycle_num > LEDC_DUTY_NUM_HSCH0_V) {
             cycle_num = LEDC_DUTY_NUM_HSCH0_V;
         }
+#endif
     } else {
         cycle_num = 1;
         scale = duty_delta / total_cycles;
-
+#if CONFIG_IDF_TARGET_ESP32C3
+        if (scale > LEDC_DUTY_SCALE_LSCH0_V) {
+            scale = LEDC_DUTY_SCALE_LSCH0_V;
+        }
+#else
         if (scale > LEDC_DUTY_SCALE_HSCH0_V) {
             scale = LEDC_DUTY_SCALE_HSCH0_V;
         }
+#endif
     }
 
     return _iot_set_fade_with_step(speed_mode, channel, target_duty, scale, cycle_num);
@@ -266,7 +285,7 @@ static IRAM_ATTR void fade_timercb(void *para)
     int timer_idx = (int) para;
     int idle_channel_num = 0;
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) || CONFIG_IDF_TARGET_ESP32C3
     if (HW_TIMER_GROUP == TIMER_GROUP_0) {
         /* Retrieve the interrupt status */
         uint32_t intr_status = TIMERG0.int_st_timers.val;
@@ -275,10 +294,12 @@ static IRAM_ATTR void fade_timercb(void *para)
         /* Clear the interrupt */
         if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_0) {
             TIMERG0.int_clr_timers.t0_int_clr = 1;
-        } else if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_1) {
+        }
+#if !CONFIG_IDF_TARGET_ESP32C3
+        else if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_1) {
             TIMERG0.int_clr_timers.t1_int_clr = 1;
         }
-
+#endif
         /* After the alarm has been triggered
           we need enable it again, so it is triggered the next time */
         TIMERG0.hw_timer[timer_idx].config.tx_alarm_en = TIMER_ALARM_EN;
@@ -288,10 +309,12 @@ static IRAM_ATTR void fade_timercb(void *para)
 
         if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_0) {
             TIMERG1.int_clr_timers.t0_int_clr = 1;
-        } else if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_1) {
+        } 
+#if !CONFIG_IDF_TARGET_ESP32C3
+        else if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_1) {
             TIMERG1.int_clr_timers.t1_int_clr = 1;
         }
-
+#endif
         TIMERG1.hw_timer[timer_idx].config.tx_alarm_en = TIMER_ALARM_EN;
     }
 #else
@@ -322,7 +345,7 @@ static IRAM_ATTR void fade_timercb(void *para)
 
         TIMERG1.hw_timer[timer_idx].config.alarm_en = TIMER_ALARM_EN;
     }
-#endif //ESP_IDF_VERSION
+#endif //ESP_IDF_VERSION >=5.0.0 || CONFIG_IDF_TARGET_ESP32C3
 
     for (int channel = 0; channel < LEDC_CHANNEL_MAX; channel++) {
         ledc_fade_data_t *fade_data = g_light_config->fade_data + channel;

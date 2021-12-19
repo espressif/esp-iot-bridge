@@ -30,7 +30,6 @@
 #include "esp_netif.h"
 
 #include "esp_eth.h"
-#include "esp_bt.h"
 
 #include "esp_storage.h"
 #include "esp_gateway_wifi.h"
@@ -41,12 +40,11 @@
 #include "led_gpio.h"
 #include "button.h"
 
-#define GPIO_LED_BLE   GPIO_NUM_15
-#define GPIO_LED_WIFI  GPIO_NUM_2
-#define GPIO_LED_MODEM GPIO_NUM_4
-#define GPIO_LED_ETH   GPIO_NUM_16
+#define GPIO_LED_WIFI  CONFIG_GPIO_LED_WIFI
+#define GPIO_LED_MODEM CONFIG_GPIO_LED_MODEM
+#define GPIO_LED_ETH   CONFIG_GPIO_LED_ETH
 
-#define GPIO_BUTTON_SW1 GPIO_NUM_34
+#define GPIO_BUTTON_SW1 CONFIG_GPIO_BUTTON_SW1
 
 #define MODEM_IS_OPEN CONFIG_MODEM_IS_OPEN
 
@@ -100,7 +98,7 @@ void app_main(void)
 
     led_gpio_state_write(g_led_handle_list[g_feat_type], LED_GPIO_ON);
 
-    button_handle_t button_handle = button_create(GPIO_BUTTON_SW1, BUTTON_ACTIVE_LOW);
+    button_handle_t button_handle = button_create((gpio_num_t)GPIO_BUTTON_SW1, BUTTON_ACTIVE_LOW);
 
     button_add_tap_cb(button_handle, BUTTON_CB_TAP, button_tap_cb, NULL);
     button_add_press_cb(button_handle, 3, button_press_3sec_cb, NULL);
@@ -110,7 +108,6 @@ void app_main(void)
             ESP_LOGI(TAG, "============================");
             ESP_LOGI(TAG, "Wi-Fi Repeater");
             ESP_LOGI(TAG, "============================");
-            esp_bt_mem_release(ESP_BT_MODE_BTDM);
 
             /* Create STA netif */
             esp_netif_t *sta_wifi_netif = esp_gateway_wifi_init(WIFI_MODE_STA);
@@ -136,7 +133,6 @@ void app_main(void)
             ESP_LOGI(TAG, "============================");
             ESP_LOGI(TAG, "4G Router");
             ESP_LOGI(TAG, "============================");
-            esp_bt_mem_release(ESP_BT_MODE_BTDM);
 
             esp_netif_t *ppp_netif = esp_gateway_modem_init();
             esp_netif_t *ap_netif  = esp_gateway_wifi_init(WIFI_MODE_AP);
@@ -154,12 +150,12 @@ void app_main(void)
         }
 
         case FEAT_TYPE_ETH:
+#if CONFIG_IDF_TARGET_ESP32
             ESP_LOGI(TAG, "============================");
             ESP_LOGI(TAG, "ETH Router");
             ESP_LOGI(TAG, "============================");
-            esp_bt_mem_release(ESP_BT_MODE_BTDM);
 
-            if (gpio_get_level(GPIO_BUTTON_SW1)) {
+            if (gpio_get_level((gpio_num_t)GPIO_BUTTON_SW1)) {
                 esp_gateway_wifi_ap_init();
             } else {
                 esp_gateway_wifi_init(WIFI_MODE_STA);
@@ -169,7 +165,7 @@ void app_main(void)
             esp_gateway_eth_init();
 
             esp_gateway_netif_virtual_init();
-
+#endif
             break;
 
         default:
