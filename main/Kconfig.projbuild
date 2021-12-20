@@ -45,6 +45,34 @@ menu "APP Configuration"
             default "esp-guest"
             help
                 Set the password of Wi-Fi STA interface.
+
+        config AP_CUSTOM_IP
+            bool "Custom IP Addr for WiFi Router"
+            default n
+            help
+                "Custom IP Addr for WiFi Router. ip_addr gw_addr netmask_addr"
+
+        if AP_CUSTOM_IP
+            menu "custom ip addr"
+                config AP_STATIC_IP_ADDR
+                    string "Static IP address"
+                    default "192.168.4.1"
+                    help
+                        Set static IP address.
+
+                config AP_STATIC_GW_ADDR
+                    string "Static gateway address"
+                    default "192.168.4.1"
+                    help
+                        Set static gateway address.
+
+                config AP_STATIC_NETMASK_ADDR
+                    string "Static netmask address"
+                    default "255.255.255.0"
+                    help
+                        Set static netmask address.
+            endmenu
+        endif
     endmenu
 
     menu "Ethernet Router"
@@ -75,13 +103,13 @@ menu "APP Configuration"
     endmenu
 
     menu "Ethernet wireless network adapter"
-        config WIFI_STA_SSID
+        config ETH_STA_SSID
             string "Wi-Fi SSID"
             default "esp-guest"
             help
                 Set the SSID of Wi-Fi sta interface.
 
-        config WIFI_STA_PASSWORD
+        config ETH_STA_PASSWORD
             string "Wi-Fi Password"
             default "esp-guest"
             help

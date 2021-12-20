@@ -48,6 +48,20 @@
 
 #define MODEM_IS_OPEN CONFIG_MODEM_IS_OPEN
 
+#define ESP_GATEWAY_WIFI_ROUTER_STA_SSID     CONFIG_WIFI_ROUTER_STA_SSID
+#define ESP_GATEWAY_WIFI_ROUTER_STA_PASSWORD CONFIG_WIFI_ROUTER_STA_PASSWORD
+#define ESP_GATEWAY_WIFI_ROUTER_AP_SSID      CONFIG_WIFI_ROUTER_AP_SSID
+#define ESP_GATEWAY_WIFI_ROUTER_AP_PASSWORD  CONFIG_WIFI_ROUTER_AP_PASSWORD
+#define ESP_GATEWAY_4G_ROUTER_AP_SSID        CONFIG_4G_ROUTER_AP_SSID
+#define ESP_GATEWAY_4G_ROUTER_AP_PASSWORD    CONFIG_4G_ROUTER_AP_PASSWORD
+#define ESP_GATEWAY_ETH_STA_SSID             CONFIG_ETH_STA_SSID
+#define ESP_GATEWAY_ETH_STA_PASSWORD         CONFIG_ETH_STA_PASSWORD
+
+#define ESP_GATEWAY_AP_CUSTOM_IP             CONFIG_AP_CUSTOM_IP
+#define ESP_GATEWAY_AP_STATIC_IP_ADDR        CONFIG_AP_STATIC_IP_ADDR
+#define ESP_GATEWAY_AP_STATIC_GW_ADDR        CONFIG_AP_STATIC_GW_ADDR
+#define ESP_GATEWAY_AP_STATIC_NETMASK_ADDR   CONFIG_AP_STATIC_NETMASK_ADDR
+
 typedef enum {
     FEAT_TYPE_WIFI,
     FEAT_TYPE_MODEM,
@@ -67,7 +81,6 @@ void button_tap_cb(void *arg)
     ESP_LOGI(TAG, "button tap, g_feat_type: %d", g_feat_type);
     led_gpio_state_write(g_led_handle_list[g_feat_type], LED_GPIO_ON);
 }
-
 
 static void button_press_3sec_cb(void *arg)
 {
@@ -111,11 +124,15 @@ void app_main(void)
 
             /* Create STA netif */
             esp_netif_t *sta_wifi_netif = esp_gateway_wifi_init(WIFI_MODE_STA);
-            esp_gateway_wifi_set(WIFI_MODE_STA, CONFIG_WIFI_ROUTER_STA_SSID, CONFIG_WIFI_ROUTER_STA_PASSWORD);
+            esp_gateway_wifi_set(WIFI_MODE_STA, ESP_GATEWAY_WIFI_ROUTER_STA_SSID, ESP_GATEWAY_WIFI_ROUTER_STA_PASSWORD);
             esp_gateway_wifi_sta_connected(portMAX_DELAY);
 
             /* Create AP netif  */
             esp_netif_t *ap_wifi_netif = esp_netif_create_default_wifi_ap();
+
+#if ESP_GATEWAY_AP_CUSTOM_IP
+            esp_gateway_set_custom_ip_network_segment(ap_wifi_netif, ESP_GATEWAY_AP_STATIC_IP_ADDR, ESP_GATEWAY_AP_STATIC_GW_ADDR, ESP_GATEWAY_AP_STATIC_NETMASK_ADDR);
+#endif
 
             /* Config dns info for AP */
             esp_netif_dns_info_t dns;
@@ -124,7 +141,9 @@ void app_main(void)
             ESP_ERROR_CHECK(esp_gateway_wifi_set_dhcps(ap_wifi_netif, dns.ip.u_addr.ip4.addr));
 
             ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
-            esp_gateway_wifi_set(WIFI_MODE_AP, CONFIG_WIFI_ROUTER_AP_SSID, CONFIG_WIFI_ROUTER_AP_PASSWORD);
+            esp_gateway_wifi_set(WIFI_MODE_AP, ESP_GATEWAY_WIFI_ROUTER_AP_SSID, ESP_GATEWAY_WIFI_ROUTER_AP_PASSWORD);
+            vTaskDelay(pdMS_TO_TICKS(100));
+
             esp_gateway_wifi_napt_enable();
             break;
 
@@ -137,11 +156,15 @@ void app_main(void)
             esp_netif_t *ppp_netif = esp_gateway_modem_init();
             esp_netif_t *ap_netif  = esp_gateway_wifi_init(WIFI_MODE_AP);
 
+#if ESP_GATEWAY_AP_CUSTOM_IP
+            esp_gateway_set_custom_ip_network_segment(ap_wifi_netif, ESP_GATEWAY_AP_STATIC_IP_ADDR, ESP_GATEWAY_AP_STATIC_GW_ADDR, ESP_GATEWAY_AP_STATIC_NETMASK_ADDR);
+#endif
+
             esp_netif_dns_info_t dns;
             ESP_ERROR_CHECK(esp_netif_get_dns_info(ppp_netif, ESP_NETIF_DNS_MAIN, &dns));
             ESP_ERROR_CHECK(esp_gateway_wifi_set_dhcps(ap_netif, dns.ip.u_addr.ip4.addr));
 
-            esp_gateway_wifi_set(WIFI_MODE_AP, CONFIG_4G_ROUTER_AP_SSID, CONFIG_4G_ROUTER_AP_PASSWORD);
+            esp_gateway_wifi_set(WIFI_MODE_AP, ESP_GATEWAY_4G_ROUTER_AP_SSID, ESP_GATEWAY_4G_ROUTER_AP_PASSWORD);
             vTaskDelay(pdMS_TO_TICKS(100));
 
             esp_gateway_wifi_napt_enable();
@@ -159,7 +182,7 @@ void app_main(void)
                 esp_gateway_wifi_ap_init();
             } else {
                 esp_gateway_wifi_init(WIFI_MODE_STA);
-                esp_gateway_wifi_set(WIFI_MODE_STA, CONFIG_WIFI_STA_SSID, CONFIG_WIFI_STA_PASSWORD);
+                esp_gateway_wifi_set(WIFI_MODE_STA, ESP_GATEWAY_ETH_STA_SSID, ESP_GATEWAY_ETH_STA_PASSWORD);
             }
 
             esp_gateway_eth_init();
