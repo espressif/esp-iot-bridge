@@ -71,6 +71,7 @@ dkms.conf
 **/sdkconfig.old
 **/build
 **/*.bin
+dependencies.lock
 
 # node_modules
 docs/docusaurus/website/node_modules

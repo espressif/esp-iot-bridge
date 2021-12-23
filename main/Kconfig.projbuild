@@ -88,4 +88,30 @@ menu "APP Configuration"
                 Set the password of Wi-Fi sta interface.
     endmenu
 
+    menu "GPIO Configuration(LED & Button)"
+        config GPIO_LED_WIFI
+            default "2"
+            int "GPIO LED of Wi-Fi mode"
+            help
+                Set the GPIO LED of Wi-Fi mode.
+
+        config GPIO_LED_MODEM
+            default "4"
+            int "GPIO LED of Modem mode"
+            help
+                Set the GPIO LED of Modem mode.
+
+        config GPIO_LED_ETH
+            default "16"
+            int "GPIO LED of ETH mode"
+            help
+                Set the GPIO LED of ETH mode.
+
+        config GPIO_BUTTON_SW1
+            default "34"
+            int "GPIO button of switch"
+            help
+                Set the GPIO button of switch.
+    endmenu
+
 endmenu
