@@ -150,12 +150,18 @@ esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *p
 
 esp_err_t esp_gateway_wifi_napt_enable()
 {
+#ifdef CONFIG_AP_CUSTOM_IP
+    esp_netif_ip_info_t info_t;
+    memset(&info_t, 0, sizeof(esp_netif_ip_info_t));
+    ip4addr_aton((const char *)(CONFIG_AP_STATIC_IP_ADDR), (ip4_addr_t*)&info_t.ip);
+    ip_napt_enable(info_t.ip.addr, 1);
+#else
     ip_napt_enable(_g_esp_netif_soft_ap_ip.ip.addr, 1);
+#endif
     ESP_LOGI(TAG, "NAT is enabled");
 
     return ESP_OK;
 }
-
 
 esp_err_t esp_gateway_wifi_set_dhcps(esp_netif_t *netif, uint32_t addr)
 {
@@ -168,6 +174,24 @@ esp_err_t esp_gateway_wifi_set_dhcps(esp_netif_t *netif, uint32_t addr)
     return ESP_OK;
 }
 
+esp_err_t esp_gateway_set_custom_ip_network_segment(esp_netif_t *netif, char *ip, char *gateway, char *netmask)
+{
+    ESP_PARAM_CHECK(netif);
+
+    esp_netif_ip_info_t info_t;
+    memset(&info_t, 0, sizeof(esp_netif_ip_info_t));
+
+    ESP_ERROR_CHECK(esp_netif_dhcps_stop(netif));
+
+    ip4addr_aton((const char *)ip, (ip4_addr_t*)&info_t.ip);
+    ip4addr_aton((const char *)netmask, (ip4_addr_t*)&info_t.netmask);
+    ip4addr_aton((const char *)gateway, (ip4_addr_t*)&info_t.gw);
+    ESP_ERROR_CHECK(esp_netif_set_ip_info(netif, &info_t));
+
+    ESP_ERROR_CHECK(esp_netif_dhcps_start(netif));
+
+    return ESP_OK;
+}
 
 esp_err_t esp_gateway_wifi_sta_connected(uint32_t wait_ms)
 {

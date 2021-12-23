@@ -1,4 +1,4 @@
-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2020-2021 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
 #include "lwip/sys.h"
 #include "lwip/lwip_napt.h"
 
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -34,7 +33,7 @@ esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *p
 esp_err_t esp_gateway_wifi_napt_enable();
 bool esp_gateway_wifi_is_connected();
 esp_err_t esp_gateway_wifi_sta_connected(uint32_t wait_ms);
-
+esp_err_t esp_gateway_set_custom_ip_network_segment(esp_netif_t *netif, char *ip, char *gateway, char *netmask);
 esp_err_t esp_gateway_wifi_set_dhcps(esp_netif_t *netif, uint32_t addr);
 
 #ifdef __cplusplus
