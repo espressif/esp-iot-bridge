@@ -20,21 +20,12 @@
 // #include "iot_button.h"
 #include "light_driver.h"
 
-#include "genie_event.h"
-
 #define BUTTON_ON_OFF          0   /* on/off button */
 #define BUTTON_ACTIVE_LEVEL    0
 
 static const char *TAG  = "board";
 
 static uint32_t dev_on_btn_num = BUTTON_ON_OFF;
-
-extern void user_genie_event_handle(genie_event_t event, void *p_arg);
-
-static void button_tap_cb(void* arg)
-{
-    user_genie_event_handle(GENIE_EVT_BUTTON_TAP, NULL);
-}
 
 static void board_led_init(void)
 {

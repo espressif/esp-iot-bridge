@@ -157,7 +157,7 @@ void app_main(void)
             esp_netif_t *ap_netif  = esp_gateway_wifi_init(WIFI_MODE_AP);
 
 #if ESP_GATEWAY_AP_CUSTOM_IP
-            esp_gateway_set_custom_ip_network_segment(ap_wifi_netif, ESP_GATEWAY_AP_STATIC_IP_ADDR, ESP_GATEWAY_AP_STATIC_GW_ADDR, ESP_GATEWAY_AP_STATIC_NETMASK_ADDR);
+            esp_gateway_set_custom_ip_network_segment(ap_netif, ESP_GATEWAY_AP_STATIC_IP_ADDR, ESP_GATEWAY_AP_STATIC_GW_ADDR, ESP_GATEWAY_AP_STATIC_NETMASK_ADDR);
 #endif
 
             esp_netif_dns_info_t dns;
