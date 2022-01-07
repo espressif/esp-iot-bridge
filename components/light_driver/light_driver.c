@@ -26,7 +26,6 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_system.h"
-#include "esp_partition.h"
 
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
@@ -39,7 +38,7 @@
 #include "driver/gpio.h"
 
 #include "light_driver.h"
-#include "ble_mesh_example_nvs.h"
+#include "light_nvs.h"
 
 /**
  * @brief The state of the five-color light
@@ -83,7 +82,7 @@ esp_err_t light_driver_init(light_driver_config_t *config)
     LIGHT_PARAM_CHECK(config);
     bool exist = false;
 
-    if (ble_mesh_nvs_restore(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t), &exist) != ESP_OK) {
+    if (light_nvs_restore(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t), &exist) != ESP_OK) {
         memset(&g_light_status, 0, sizeof(light_status_t));
         g_light_status.mode              = MODE_HSV;
         g_light_status.on                = 1;
@@ -94,7 +93,7 @@ esp_err_t light_driver_init(light_driver_config_t *config)
         g_light_status.color_temperature = 0;
         g_light_status.brightness        = 30;
     }
-#if CONFIG_IDF_TARGET_ESP32C3
+#if !CONFIG_IDF_TARGET_ESP32
     iot_led_init(LEDC_TIMER_0, LEDC_LOW_SPEED_MODE, 1000);
 #else
     iot_led_init(LEDC_TIMER_0, LEDC_HIGH_SPEED_MODE, 1000);
@@ -344,8 +343,8 @@ esp_err_t light_driver_set_hsv(uint16_t hue, uint8_t saturation, uint8_t value)
     g_light_status.value      = value;
     g_light_status.saturation = saturation;
 
-    ret = ble_mesh_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
-    LIGHT_ERROR_CHECK(ret < 0, ret, "ble_mesh_nvs_store, ret: %d", ret);
+    ret = light_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
+    LIGHT_ERROR_CHECK(ret < 0, ret, "light_nvs_store, ret: %d", ret);
 
     return ESP_OK;
 }
@@ -445,8 +444,8 @@ esp_err_t light_driver_set_ctb(uint8_t color_temperature, uint8_t brightness)
     g_light_status.brightness        = brightness;
     g_light_status.color_temperature = color_temperature;
 
-    ret = ble_mesh_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
-    LIGHT_ERROR_CHECK(ret < 0, ret, "ble_mesh_nvs_store, ret: %d", ret);
+    ret = light_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
+    LIGHT_ERROR_CHECK(ret < 0, ret, "light_nvs_store, ret: %d", ret);
 
     return ESP_OK;
 }
@@ -521,8 +520,8 @@ esp_err_t light_driver_set_hsl(uint16_t hue, uint8_t saturation, uint8_t lightne
     g_light_status.saturation = saturation;
     g_light_status.lightness  = lightness;
 
-    ret = ble_mesh_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
-    LIGHT_ERROR_CHECK(ret < 0, ret, "ble_mesh_nvs_store, ret: %d", ret);
+    ret = light_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
+    LIGHT_ERROR_CHECK(ret < 0, ret, "light_nvs_store, ret: %d", ret);
 
     return ESP_OK;
 }
@@ -597,8 +596,8 @@ esp_err_t light_driver_set_switch(bool on)
         }
     }
 
-    ret = ble_mesh_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
-    LIGHT_ERROR_CHECK(ret < 0, ESP_FAIL, "ble_mesh_nvs_store, ret: %d", ret);
+    ret = light_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
+    LIGHT_ERROR_CHECK(ret < 0, ESP_FAIL, "light_nvs_store, ret: %d", ret);
 
     return ESP_OK;
 }
@@ -721,8 +720,8 @@ esp_err_t light_driver_fade_brightness(uint8_t brightness)
         g_light_status.brightness = brightness;
     }
 
-    ret = ble_mesh_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
-    LIGHT_ERROR_CHECK(ret < 0, ret, "ble_mesh_nvs_store, ret: %d", ret);
+    ret = light_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
+    LIGHT_ERROR_CHECK(ret < 0, ret, "light_nvs_store, ret: %d", ret);
 
     return ESP_OK;
 }
@@ -822,8 +821,8 @@ esp_err_t light_driver_fade_warm(uint8_t color_temperature)
 
     g_light_status.mode              = MODE_CTB;
     g_light_status.color_temperature = color_temperature;
-    ret = ble_mesh_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
-    LIGHT_ERROR_CHECK(ret < 0, ret, "ble_mesh_nvs_store, ret: %d", ret);
+    ret = light_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
+    LIGHT_ERROR_CHECK(ret < 0, ret, "light_nvs_store, ret: %d", ret);
 
     return ESP_OK;
 }
@@ -889,8 +888,8 @@ esp_err_t light_driver_fade_stop(void)
         g_light_status.color_temperature = (g_fade_mode == MODE_CTB) ? color_temperature : g_light_status.color_temperature;
     }
 
-    ret = ble_mesh_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
-    LIGHT_ERROR_CHECK(ret < 0, ret, "ble_mesh_nvs_store, ret: %d", ret);
+    ret = light_nvs_store(NVS_HANDLE, LIGHT_STATUS_STORE_KEY, &g_light_status, sizeof(light_status_t));
+    LIGHT_ERROR_CHECK(ret < 0, ret, "light_nvs_store, ret: %d", ret);
 
     g_fade_mode = MODE_NONE;
     return ESP_OK;

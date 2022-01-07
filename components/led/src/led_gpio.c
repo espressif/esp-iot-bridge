@@ -19,6 +19,22 @@
 #include "esp_log.h"
 #include "led_gpio.h"
 
+#if CONFIG_IDF_TARGET_ESP32
+#include "esp32/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32C3
+#include "esp32c3/rom/gpio.h"
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32C3
+#define SIG_GPIO_OUT_IDX 128
+#else
+#define SIG_GPIO_OUT_IDX 256
+#endif
+
 #define QUICK_BLINK_FREQ            CONFIG_STATUS_LED_QUICK_BLINK_FREQ     /*!< default 5 */
 #define SLOW_BLINK_FREQ             CONFIG_STATUS_LED_SLOW_BLINK_FREQ      /*!< default 1 */
 #define LED_SPEED_MODE              CONFIG_STATUS_LED_SPEED_MODE           /*!< default LEDC_HIGH_SPEED_MODE */

@@ -61,7 +61,9 @@ static DRAM_ATTR timg_dev_t *TG[2] = {&TIMERG0, &TIMERG1};
 
 static IRAM_ATTR esp_err_t _timer_pause(timer_group_t group_num, timer_idx_t timer_num)
 {
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) || CONFIG_IDF_TARGET_ESP32C3
+#if CONFIG_IDF_TARGET_ESP32S3
+    TG[group_num]->hw_timer[timer_num].config.tn_en = 0;
+#elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) || !CONFIG_IDF_TARGET_ESP32
     TG[group_num]->hw_timer[timer_num].config.tx_en = 0;
 #else
     TG[group_num]->hw_timer[timer_num].config.enable = 0;
@@ -274,7 +276,7 @@ static IRAM_ATTR void fade_timercb(void *para)
     int timer_idx = (int) para;
     int idle_channel_num = 0;
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) || CONFIG_IDF_TARGET_ESP32C3
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) || !CONFIG_IDF_TARGET_ESP32
     if (HW_TIMER_GROUP == TIMER_GROUP_0) {
         /* Retrieve the interrupt status */
         uint32_t intr_status = TIMERG0.int_st_timers.val;
@@ -292,7 +294,11 @@ static IRAM_ATTR void fade_timercb(void *para)
 
         /* After the alarm has been triggered
           we need enable it again, so it is triggered the next time */
+#if CONFIG_IDF_TARGET_ESP32S3
+        TIMERG0.hw_timer[timer_idx].config.tn_alarm_en = TIMER_ALARM_EN;
+#else
         TIMERG0.hw_timer[timer_idx].config.tx_alarm_en = TIMER_ALARM_EN;
+#endif
     } else if (HW_TIMER_GROUP == TIMER_GROUP_1) {
         uint32_t intr_status = TIMERG1.int_st_timers.val;
         TIMERG1.hw_timer[timer_idx].update.val = 1;
@@ -305,8 +311,11 @@ static IRAM_ATTR void fade_timercb(void *para)
             TIMERG1.int_clr_timers.t1_int_clr = 1;
         }
 #endif
-
+#if CONFIG_IDF_TARGET_ESP32S3
+        TIMERG1.hw_timer[timer_idx].config.tn_alarm_en = TIMER_ALARM_EN;
+#else
         TIMERG1.hw_timer[timer_idx].config.tx_alarm_en = TIMER_ALARM_EN;
+#endif
     }
 #else
     if (HW_TIMER_GROUP == TIMER_GROUP_0) {
