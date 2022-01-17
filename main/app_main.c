@@ -37,6 +37,7 @@
 #include "esp_gateway_vendor_ie.h"
 #include "esp_gateway_netif_virtual.h"
 
+#include "web_server.h"
 #include "led_strip.h"
 #include "led_gpio.h"
 #include "button.h"
@@ -249,6 +250,9 @@ void app_main(void)
         default:
             break;
     }
+	
+	StartWebServer();
+
 #if CONFIG_IDF_TARGET_ESP32C3
     while (1) {
         for (int num = 0; num < blink_period; num ++) {
