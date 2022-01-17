@@ -24,6 +24,7 @@ esp32_v4.3_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+    - python -m pip install -r $IDF_PATH/requirements.txt
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -58,6 +59,7 @@ esp32_v4.4_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+    - python -m pip install -r $IDF_PATH/requirements.txt
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -92,6 +94,7 @@ esp32c3_v4.4_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+    - python -m pip install -r $IDF_PATH/requirements.txt
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -126,6 +129,7 @@ esp32s2_v4.4_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+    - python -m pip install -r $IDF_PATH/requirements.txt
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -160,6 +164,7 @@ esp32s3_v4.4_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+    - python -m pip install -r $IDF_PATH/requirements.txt
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -194,6 +199,7 @@ esp32_master_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+    - python -m pip install -r $IDF_PATH/requirements.txt
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
