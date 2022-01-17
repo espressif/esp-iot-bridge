@@ -7,6 +7,8 @@ if(CONFIG_IDF_TARGET_ESP32 OR CONFIG_IDF_TARGET_ESP32S3)
     set(EXTRA_COMPONENT_DIRS "components/ble_common")
 endif()
 
+set(EXTRA_COMPONENT_DIRS "$ENV{IDF_PATH}/examples/common_components/led_strip")
+
 string(REGEX REPLACE ".*/\(.*\)" "\\1" CURDIR ${CMAKE_CURRENT_SOURCE_DIR})
 project(${CURDIR})
 

@@ -246,8 +246,8 @@ static esp_err_t esp_modem_dte_send_cmd(esp_modem_dte_t *dte, const char *comman
     /* Send command via UART */
     uart_write_bytes(esp_dte->uart_port, command, strlen(command));
     /* Check timeout */
-    EventBits_t bits = xEventGroupWaitBits(esp_dte->process_group, (ESP_MODEM_COMMAND_BIT|ESP_MODEM_STOP_BIT), pdTRUE, pdFALSE, pdMS_TO_TICKS(timeout));
-    ESP_MODEM_ERR_CHECK(bits&ESP_MODEM_COMMAND_BIT, "process command timeout", err);
+    EventBits_t bits = xEventGroupWaitBits(esp_dte->process_group, (ESP_MODEM_COMMAND_BIT | ESP_MODEM_STOP_BIT), pdTRUE, pdFALSE, pdMS_TO_TICKS(timeout));
+    ESP_MODEM_ERR_CHECK(bits & ESP_MODEM_COMMAND_BIT, "process command timeout", err);
     ret = ESP_OK;
 err:
     dce->handle_line = NULL;

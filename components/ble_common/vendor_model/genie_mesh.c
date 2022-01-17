@@ -196,7 +196,7 @@ void genie_pbadv_start_silent_adv(void)
     /* disable gatt adv */
     esp_ble_mesh_node_prov_disable(ESP_BLE_MESH_PROV_ADV | ESP_BLE_MESH_PROV_GATT);
     esp_ble_mesh_node_prov_enable(ESP_BLE_MESH_PROV_ADV);
-    // todo: modify beacon interbal
+    // todo: modify beacon interval
 }
 
 static void genie_prov_timer_cb(void *p_timer)
