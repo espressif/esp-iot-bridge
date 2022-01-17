@@ -67,6 +67,6 @@
 
 >该原理图不涉及以太网底层通讯流程，APP 层以太网收到 Wi-Fi 数据也要通过 PHY 底层才可以传输数据至以太网网口
 
-<img src="./_static/eth2ap+vd.png" style="zoom:77%;" />
+<img src="./_static/eth2ap+vd_1.png" style="zoom:77%;" />
 
-<img src="./_static/eth2ap+VD.png" style="zoom:77%;" />
+<img src="./_static/eth2ap+vd_2.png" style="zoom:77%;" />
