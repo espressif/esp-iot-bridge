@@ -24,7 +24,7 @@ esp32_v4.3_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - python -m pip install -r $IDF_PATH/requirements.txt
+    - $IDF_PATH/tools/idf_tools.py install-python-env
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -59,7 +59,7 @@ esp32_v4.4_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - python -m pip install -r $IDF_PATH/requirements.txt
+    - $IDF_PATH/tools/idf_tools.py install-python-env
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -94,7 +94,7 @@ esp32c3_v4.4_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - python -m pip install -r $IDF_PATH/requirements.txt
+    - $IDF_PATH/tools/idf_tools.py install-python-env
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -129,7 +129,7 @@ esp32s2_v4.4_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - python -m pip install -r $IDF_PATH/requirements.txt
+    - $IDF_PATH/tools/idf_tools.py install-python-env
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -164,7 +164,7 @@ esp32s3_v4.4_build:
     - export IDF_PATH=$(pwd)/esp-idf
     - source $IDF_PATH/tools/ci/configure_ci_environment.sh
     - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - python -m pip install -r $IDF_PATH/requirements.txt
+    - $IDF_PATH/tools/idf_tools.py install-python-env
     - cd $IDF_PATH
     - git submodule update --init --recursive
     - cd ..
@@ -175,41 +175,6 @@ esp32s3_v4.4_build:
     - rm -rf build sdkconfig
     - idf.py set-target esp32s3
     - echo -e "CONFIG_SET_VENDOR_IE=y\nCONFIG_AP_CUSTOM_IP=y" >> sdkconfig.defaults.esp32s3
-    - idf.py build
-
-esp32_master_build:
-  stage: build
-  image: $CI_DOCKER_REGISTRY/esp-env:v4.4-1
-  tags:
-    - build
-
-  variables:
-    GIT_STRATEGY: clone
-
-  before_script:
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
-    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-
-  script:
-    - git clone -b master ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
-    - export IDF_PATH=$(pwd)/esp-idf
-    - source $IDF_PATH/tools/ci/configure_ci_environment.sh
-    - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - python -m pip install -r $IDF_PATH/requirements.txt
-    - cd $IDF_PATH
-    - git submodule update --init --recursive
-    - cd ..
-
-    - idf.py set-target esp32
-    - idf.py build
-
-    - rm -rf build sdkconfig
-    - idf.py set-target esp32
-    - echo -e "CONFIG_SET_VENDOR_IE=y\nCONFIG_AP_CUSTOM_IP=y" >> sdkconfig.defaults.esp32
     - idf.py build
 
 push_master_to_github:
