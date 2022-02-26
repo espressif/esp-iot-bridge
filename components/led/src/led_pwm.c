@@ -454,7 +454,7 @@ esp_err_t led_pwm_regist_channel(ledc_channel_t channel, gpio_num_t gpio_num)
     // ESP_ERROR_RETURN(g_light_config == NULL, ESP_ERR_INVALID_STATE, "led_pwm_init() must be called first");
 #ifdef CONFIG_SPIRAM_SUPPORT
     // ESP_ERROR_RETURN(gpio_num != GPIO_NUM_16 || gpio_num != GPIO_NUM_17, ESP_ERR_INVALID_ARG,
-    //                     "gpio_num must not conflict to PSRAM(IO16 && IO17)");
+    // "gpio_num must not conflict to PSRAM(IO16 && IO17)");
 #endif
     const ledc_channel_config_t ledc_ch_config = {
         .gpio_num   = gpio_num,

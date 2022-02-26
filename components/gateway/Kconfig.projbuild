@@ -1,257 +1,54 @@
-menu "Example Configuration"
-    choice EXAMPLE_USE_ETHERNET
-        prompt "Ethernet Type"
-        default EXAMPLE_USE_INTERNAL_ETHERNET if IDF_TARGET_ESP32
-        default EXAMPLE_USE_DM9051 if !IDF_TARGET_ESP32
-        help
-            Select which kind of Ethernet will be used in the example.
-
-        config EXAMPLE_USE_INTERNAL_ETHERNET
-            depends on IDF_TARGET_ESP32
-            select ETH_USE_ESP32_EMAC
-            bool "Internal EMAC"
-            help
-                Select internal Ethernet MAC controller.
-
-        config EXAMPLE_USE_DM9051
-            bool "DM9051 Module"
-            select ETH_USE_SPI_ETHERNET
-            select ETH_SPI_ETHERNET_DM9051
-            help
-                Select external SPI-Ethernet module.
-    endchoice
-
-    if EXAMPLE_USE_INTERNAL_ETHERNET
-        choice EXAMPLE_ETH_PHY_MODEL
-            prompt "Ethernet PHY Device"
-            default EXAMPLE_ETH_PHY_IP101
-            help
-                Select the Ethernet PHY device to use in the example.
-
-            config EXAMPLE_ETH_PHY_IP101
-                bool "IP101"
-                help
-                    IP101 is a single port 10/100 MII/RMII/TP/Fiber Fast Ethernet Transceiver.
-                    Goto http://www.icplus.com.tw/pp-IP101G.html for more information about it.
-
-            config EXAMPLE_ETH_PHY_RTL8201
-                bool "RTL8201/SR8201"
-                help
-                    RTL8201F/SR8201F is a single port 10/100Mb Ethernet Transceiver with auto MDIX.
-                    Goto http://www.corechip-sz.com/productsview.asp?id=22 for more information about it.
-
-            config EXAMPLE_ETH_PHY_LAN8720
-                bool "LAN8720"
-                help
-                    LAN8720A is a small footprint RMII 10/100 Ethernet Transceiver with HP Auto-MDIX Support.
-                    Goto https://www.microchip.com/LAN8720A for more information about it.
-
-            config EXAMPLE_ETH_PHY_DP83848
-                bool "DP83848"
-                help
-                    DP83848 is a single port 10/100Mb/s Ethernet Physical Layer Transceiver.
-                    Goto http://www.ti.com/product/DP83848J for more information about it.
-        endchoice
-
-        config EXAMPLE_ETH_MDC_GPIO
-            int "SMI MDC GPIO number"
-            default 23
-            help
-                Set the GPIO number used by SMI MDC.
-
-        config EXAMPLE_ETH_MDIO_GPIO
-            int "SMI MDIO GPIO number"
-            default 18
-            help
-                Set the GPIO number used by SMI MDIO.
-    endif
-
-    if EXAMPLE_USE_DM9051
-        config EXAMPLE_DM9051_SPI_HOST
-            int "SPI Host Number"
-            range 0 2
-            default 1
-            help
-                Set the SPI host used to communicate with DM9051.
-
-        config EXAMPLE_DM9051_SCLK_GPIO
-            int "SPI SCLK GPIO number"
-            range 0 33
-            default 19
-            help
-                Set the GPIO number used by SPI SCLK.
-
-        config EXAMPLE_DM9051_MOSI_GPIO
-            int "SPI MOSI GPIO number"
-            range 0 33
-            default 23
-            help
-                Set the GPIO number used by SPI MOSI.
-
-        config EXAMPLE_DM9051_MISO_GPIO
-            int "SPI MISO GPIO number"
-            range 0 33
-            default 25
-            help
-                Set the GPIO number used by SPI MISO.
-
-        config EXAMPLE_DM9051_CS_GPIO
-            int "SPI CS GPIO number"
-            range 0 33
-            default 22
-            help
-                Set the GPIO number used by SPI CS.
-
-        config EXAMPLE_DM9051_SPI_CLOCK_MHZ
-            int "SPI clock speed (MHz)"
-            range 20 80
-            default 20
-            help
-                Set the clock speed (MHz) of SPI interface.
-
-        config EXAMPLE_DM9051_INT_GPIO
-            int "Interrupt GPIO number"
-            default 4
-            help
-                Set the GPIO number used by DM9051 interrupt.
-    endif
-
-    config EXAMPLE_ETH_PHY_RST_GPIO
-        int "PHY Reset GPIO number"
-        default 5
-        help
-            Set the GPIO number used to reset PHY chip.
-            Set to -1 to disable PHY chip hardware reset.
-
-    config EXAMPLE_ETH_PHY_ADDR
-        int "PHY Address"
-        range 0 31 if EXAMPLE_USE_INTERNAL_ETHERNET
-        range 1 1 if !EXAMPLE_USE_INTERNAL_ETHERNET
-        default 1
-        help
-            Set PHY address according your board schematic.
-
-    config EXAMPLE_USE_GLOBAL_DNS_IP
-        bool "Use global DNS IP"
-        default n
-        help
-            Use fixed DNS server IP address. If enabled, soft AP
-            advertises the specified DNS address in DHCP packets.
-            By default it uses DNS record received from the PPP server.
-
-    config EXAMPLE_GLOBAL_DNS_IP
-        hex "Global DNS"
-        depends on EXAMPLE_USE_GLOBAL_DNS_IP
-        default 0x08080808
-        help
-            The IP address of global DNS server that is used
-            for the soft AP which forwards packets to and from
-            PPP netif if EXAMPLE_USE_GLOBAL_DNS_IP is enabled.
-            Note: The IP address is in platform (not network)
-            format.
-
-    config EXAMPLE_MODEM_PPP_APN
-        string "Set MODEM APN"
-        default "internet"
-        help
-            Set APN (Access Point Name), a logical name to choose data network
-
-    config EXAMPLE_MODEM_CUSTOM_BOARD
-        bool "Use extended DCE object"
+menu "Gateway Configuration"
+    config GATEWAY_ENABLE
+        bool "Gateway Enable"
         default y
-        help
-            This settings extends the default DCE object provided by esp-modem
-            to implement board specific features, using GPIO's to reset/restart
-            the modem and retry/resend strategy if certain AT command fails        
 
+    menu "The interface used to connect to the external network"
+        config GATEWAY_EXTERNAL_NETIF_STATION
+            bool "Use Wi-Fi station interface to connect to the external network"
+            default y
+        
+    endmenu
 
-    menu "AliGenie Example Configuration"
+    menu "The interface used to provide network data forwarding for other devices"
+        config GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
+            bool "Use Wi-Fi SoftAP interface to provide network data forwarding for other devices"
+            default y
 
-        menu "AliGenie Triples Configuration"
-
-            config TRIPLES_PRODUCT_ID
-                int "Product ID"
-                default 0
-
-            config TRIPLES_DEVICE_NAME
-                string "Device Name"
-                default "Device Name"
+            config SET_VENDOR_IE
+                bool "Set Vendor ie info"
+                default n
+                depends on GATEWAY_EXTERNAL_NETIF_STATION && GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
                 help
-                    Please use lower case
+                    "Set Vendor ie information for Wi-Fi router SoftAP"
 
-            config TRIPLES_DEVICE_SECRET
-                string "Device Secret"
-                default "Device Secret"
-                help
-                    Please use lower case
+            menu "custom vendor ie"
+                depends on SET_VENDOR_IE
+                config VENDOR_OUI_0
+                    int "VENDOR_OUI_0"
+                    default "122"
 
-        endmenu
+                config VENDOR_OUI_1
+                    int "VENDOR_OUI_1"
+                    default "123"
 
-        menu "light driver config"
-            config LIGHT_GPIO_RED
-                int "Light red pin GPIO number"
-                range -1 33
-                default 25
-                help
-                    There are more enumerations like that
-                    up to GPIO39, excluding GPIO20, GPIO24 and GPIO28..31.
-                    They are not shown here to reduce redundant information.
-                    @note GPIO34..39 are input mode only.
-
-            config LIGHT_GPIO_GREEN
-                int "Light green pin GPIO number"
-                range -1 33
-                default 26
-                help
-                    There are more enumerations like that
-                    up to GPIO39, excluding GPIO20, GPIO24 and GPIO28..31.
-                    They are not shown here to reduce redundant information.
-                    @note GPIO34..39 are input mode only.
-
-            config LIGHT_GPIO_BLUE
-                int "Light blue pin GPIO number"
-                range -1 33
-                default 27
-                help
-                    There are more enumerations like that
-                    up to GPIO39, excluding GPIO20, GPIO24 and GPIO28..31.
-                    They are not shown here to reduce redundant information.
-                    @note GPIO34..39 are input mode only.
-
-            config LIGHT_GPIO_COLD
-                int "Light cold colors pin GPIO number"
-                range -1 33
-                default -1
-                help
-                    There are more enumerations like that
-                    up to GPIO39, excluding GPIO20, GPIO24 and GPIO28..31.
-                    They are not shown here to reduce redundant information.
-                    @note GPIO34..39 are input mode only.
-
-            config LIGHT_GPIO_WARM
-                int "Light warm color pin GPIO number"
-                range -1 33
-                default -1
-                help
-                    There are more enumerations like that
-                    up to GPIO39, excluding GPIO20, GPIO24 and GPIO28..31.
-                    They are not shown here to reduce redundant information.
-                    @note GPIO34..39 are input mode only.
-
-            config LIGHT_FADE_PERIOD_MS
-                int "The time from the current color to the next color"
-                default 500
-                help
-                    The time from the current color to the next color.
-
-            config LIGHT_BLINK_PERIOD_MS
-                int "Period of blinking lights"
-                default 2000
-                help
-                    Period of blinking lights.
-
-        endmenu
+                config VENDOR_OUI_2
+                    int "VENDOR_OUI_2"
+                    default "234"
+            endmenu
 
     endmenu
 
+    config GATEWAY_GPIO_RANGE_MIN
+        int
+        default 0
+
+    config GATEWAY_GPIO_RANGE_MAX
+        int
+        default 33 if IDF_TARGET_ESP32
+        default 46 if IDF_TARGET_ESP32S2
+        default 19 if IDF_TARGET_ESP32C3
+        default 48 if IDF_TARGET_ESP32S3
+
+    
 endmenu

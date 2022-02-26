@@ -33,8 +33,7 @@ esp32_v4.3_build:
     - idf.py build
 
     - rm -rf build sdkconfig
-    - idf.py set-target esp32
-    - echo -e "CONFIG_MODEM_IS_OPEN=y\nCONFIG_SET_VENDOR_IE=y\nCONFIG_AP_CUSTOM_IP=y" >> sdkconfig.defaults.esp32
+    - echo -e "\nCONFIG_SET_VENDOR_IE=y\n" >> sdkconfig.defaults.esp32
     - idf.py build
 
 esp32_v4.4_build:
@@ -68,8 +67,8 @@ esp32_v4.4_build:
     - idf.py build
 
     - rm -rf build sdkconfig
+    - echo -e "\nCONFIG_SET_VENDOR_IE=y\n" >> sdkconfig.defaults.esp32
     - idf.py set-target esp32
-    - echo -e "CONFIG_MODEM_IS_OPEN=y\nCONFIG_SET_VENDOR_IE=y\nCONFIG_AP_CUSTOM_IP=y" >> sdkconfig.defaults.esp32
     - idf.py build
 
 esp32c3_v4.4_build:
@@ -103,8 +102,7 @@ esp32c3_v4.4_build:
     - idf.py build
 
     - rm -rf build sdkconfig
-    - idf.py set-target esp32c3
-    - echo -e "CONFIG_SET_VENDOR_IE=y\nCONFIG_AP_CUSTOM_IP=y" >> sdkconfig.defaults.esp32c3
+    - echo -e "\nCONFIG_SET_VENDOR_IE=y\n" >> sdkconfig.defaults.esp32
     - idf.py build
 
 esp32s2_v4.4_build:
@@ -138,8 +136,7 @@ esp32s2_v4.4_build:
     - idf.py build
 
     - rm -rf build sdkconfig
-    - idf.py set-target esp32s2
-    - echo -e "CONFIG_SET_VENDOR_IE=y\nCONFIG_AP_CUSTOM_IP=y" >> sdkconfig.defaults.esp32s2
+    - echo -e "\nCONFIG_SET_VENDOR_IE=y\n" >> sdkconfig.defaults.esp32
     - idf.py build
 
 esp32s3_v4.4_build:
@@ -173,15 +170,13 @@ esp32s3_v4.4_build:
     - idf.py build
 
     - rm -rf build sdkconfig
-    - idf.py set-target esp32s3
-    - echo -e "CONFIG_SET_VENDOR_IE=y\nCONFIG_AP_CUSTOM_IP=y" >> sdkconfig.defaults.esp32s3
+    - echo -e "\nCONFIG_SET_VENDOR_IE=y\n" >> sdkconfig.defaults.esp32
     - idf.py build
 
 push_master_to_github:
   stage: deploy
   only:
     - master
-    - /^release\/v/
 #  when: on_success
   image: $CI_DOCKER_REGISTRY/esp32-ci-env
   variables:
