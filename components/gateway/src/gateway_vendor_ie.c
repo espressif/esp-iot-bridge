@@ -19,8 +19,6 @@
 
 #include "esp_gateway_vendor_ie.h"
 
-#if SET_VENDOR_IE
-
 static const char *TAG = "vendor_ie";
 
 bool esp_gateway_vendor_status = false;
@@ -45,13 +43,10 @@ void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, const uint8
         vendor_ie_data_t *vendor_ie;
         vendor_ie = vnd_ie;
         if (vendor_ie->vendor_oui[0] == VENDOR_OUI_0 && vendor_ie->vendor_oui[1] == VENDOR_OUI_1 && vendor_ie->vendor_oui[2] == VENDOR_OUI_2) {
-            // memcpy(ap_router->router_mac, (char*)sa, MAC_LEN);
-            // ESP_LOGI(TAG, "MAC "MACSTR"", MAC2STR(ap_router->router_mac));
-            // esp_gateway_vendor_ie_info(vendor_ie);
             if (vendor_ie->payload[MAX_CONNECT_NUMBER] > vendor_ie->payload[STATION_NUMBER]) {
                 if (vendor_ie->payload[CONNECT_ROUTER_STATUS] == 1) {
                     if (first_vendor_ie_tag == true || vendor_ie->payload[LEVEL] < ap_router->level) {
-                        memcpy(ap_router->router_mac, (char*)sa, MAC_LEN);
+                        memcpy(ap_router->router_mac, (char*)sa, ESP_GATEWAY_MAC_MAX_LEN);
                         ap_router->level = vendor_ie->payload[LEVEL];
                         ap_router->rssi  = (~((rssi & 0x7f) - 1)) & 0x7f;
                         ESP_LOGI(TAG, "router_level: %d rssi: -%d SoftAP MAC "MACSTR"", ap_router->level, ap_router->rssi, MAC2STR(ap_router->router_mac));
@@ -223,4 +218,3 @@ uint8_t esp_gateway_vendor_ie_get_connect_status(void)
     return esp_gateway_vendor_ie->payload[CONNECT_ROUTER_STATUS];
 }
 
-#endif // SET_VENDOR_IE

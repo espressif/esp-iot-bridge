@@ -204,8 +204,9 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
         memcpy(sta.bssid, bssid, sizeof(sta.bssid));
     }
     esp_wifi_disconnect();
-
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH));
     ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*) &sta);
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "wifi set config fail");
         return ret;

@@ -21,9 +21,6 @@
 #include <sys/unistd.h>
 #include <sys/select.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_system.h"

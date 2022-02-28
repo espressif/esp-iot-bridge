@@ -22,9 +22,7 @@ extern "C"
 #include "esp_wifi_types.h"
 #include "esp_gateway_config.h"
 
-#define MAC_LEN 6
-
-#if SET_VENDOR_IE
+#if CONFIG_SET_VENDOR_IE
 #define VENDOR_OUI_0 CONFIG_VENDOR_OUI_0
 #define VENDOR_OUI_1 CONFIG_VENDOR_OUI_1
 #define VENDOR_OUI_2 CONFIG_VENDOR_OUI_2
@@ -54,7 +52,7 @@ typedef enum {
 typedef struct {
     uint8_t level;
     uint8_t rssi;
-    char router_mac[MAC_LEN];
+    char router_mac[ESP_GATEWAY_MAC_MAX_LEN];
 } ap_router_t;
 
 void esp_gateway_vendor_ie_scan(void);
@@ -150,7 +148,7 @@ uint8_t esp_gateway_vendor_ie_get_level(void);
   *   - uint8_t connect_status: connect status
   */
 uint8_t esp_gateway_vendor_ie_get_connect_status(void);
-#endif // SET_VENDOR_IE
+#endif // CONFIG_SET_VENDOR_IE
 
 #ifdef __cplusplus
 }
