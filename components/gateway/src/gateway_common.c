@@ -211,6 +211,9 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
 
 void esp_gateway_create_all_netif(void)
 {
+#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
+    esp_gateway_create_modem_netif(NULL, NULL, false, false);
+#endif
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
     esp_gateway_create_softap_netif(NULL, NULL, true, true);
