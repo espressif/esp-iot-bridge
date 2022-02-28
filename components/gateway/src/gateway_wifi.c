@@ -164,7 +164,7 @@ static esp_err_t esp_gateway_wifi_init(void)
 #endif // CONFIG_GATEWAY_EXTERNAL_NETIF_STATION || CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
-esp_netif_t *esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
+esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     bool flag = true;
     esp_netif_t *wifi_netif = NULL;
@@ -221,7 +221,7 @@ esp_netif_t *esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 #endif // CONFIG_GATEWAY_EXTERNAL_NETIF_STATION
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
-esp_netif_t *esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
+esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     char softap_ssid[ESP_GATEWAY_SSID_MAX_LEN];
     esp_netif_t *wifi_netif = NULL;

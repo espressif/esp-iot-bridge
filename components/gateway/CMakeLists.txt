@@ -25,6 +25,10 @@ if (CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
     list(APPEND srcs "priv_src/gateway_usb.c")
 endif()
 
+if (CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET OR CONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET)
+    list(APPEND srcs "priv_src/gateway_eth.c")
+endif()
+
 if (CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
     list(APPEND srcs "priv_src/gateway_sdio.c")
 endif()
