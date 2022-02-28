@@ -11,6 +11,15 @@ if (CONFIG_SET_VENDOR_IE)
     list(APPEND srcs "src/gateway_vendor_ie.c")
 endif()
 
+if (CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
+    list(APPEND srcs "priv_src/gateway_sdio.c")
+endif()
+
+if (CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
+    list(APPEND srcs "priv_src/gateway_spi.c")
+endif()
+
+list(APPEND requires "network_adapter")
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "${include_dirs}"
                        PRIV_INCLUDE_DIRS "${priv_includes}"

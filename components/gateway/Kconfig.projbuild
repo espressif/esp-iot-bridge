@@ -37,6 +37,14 @@ menu "Gateway Configuration"
                     default "234"
             endmenu
 
+        config GATEWAY_DATA_FORWARDING_NETIF_SPI
+            bool "Use SPI interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            default n
+
+        config GATEWAY_DATA_FORWARDING_NETIF_SDIO
+            bool "Use SDIO interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            default n
+            depends on IDF_TARGET_ESP32
     endmenu
 
     config GATEWAY_GPIO_RANGE_MIN
