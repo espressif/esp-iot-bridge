@@ -220,6 +220,10 @@ void esp_gateway_create_all_netif(void)
     esp_gateway_create_station_netif(NULL, NULL, false, false);
 #endif
 
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
+    esp_gateway_create_usb_netif(NULL, NULL, true, true);
+#endif
+
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
     esp_gateway_create_sdio_netif(NULL, NULL, true, true);
 #endif

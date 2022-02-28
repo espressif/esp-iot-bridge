@@ -62,6 +62,12 @@ menu "Gateway Configuration"
                     default "234"
             endmenu
 
+        config GATEWAY_DATA_FORWARDING_NETIF_USB
+            bool "Use USB interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            default n
+            depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            select TINYUSB
+
         config GATEWAY_DATA_FORWARDING_NETIF_SPI
             bool "Use SPI interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
             default n

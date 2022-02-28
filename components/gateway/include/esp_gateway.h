@@ -26,6 +26,10 @@ esp_netif_t *esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
 esp_netif_t* esp_gateway_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
+esp_netif_t* esp_gateway_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+#endif
+
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
 esp_netif_t* esp_gateway_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif

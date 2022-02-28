@@ -261,11 +261,13 @@ esp_netif_t *esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_AP;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
-    strncpy(softap_ssid, ESP_GATEWAY_SOFTAP_SSID, sizeof(softap_ssid));
+
 #if CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
     uint8_t softap_mac[ESP_GATEWAY_MAC_MAX_LEN];
     esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
     snprintf(softap_ssid, sizeof(softap_ssid), "%s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
+#else
+    snprintf(softap_ssid, sizeof(softap_ssid), "%s", ESP_GATEWAY_SOFTAP_SSID);
 #endif
     esp_gateway_wifi_set(WIFI_MODE_AP, softap_ssid, ESP_GATEWAY_SOFTAP_PASSWORD, NULL);
     ip_napt_enable(netif_ip.ip.addr, 1);
