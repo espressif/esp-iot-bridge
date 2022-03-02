@@ -31,10 +31,10 @@ esp_err_t esp_netif_up(esp_netif_t *esp_netif);
 
 esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool enable_dhcps);
 
-esp_err_t esp_geteway_netif_list_add(esp_netif_t* netif);
-esp_err_t esp_geteway_netif_list_remove(esp_netif_t* netif);
-esp_err_t esp_geteway_netif_request_ip(esp_netif_ip_info_t* ip_info);
-esp_err_t esp_geteway_netif_request_mac(uint8_t* mac);
+esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif);
+esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif);
+esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info);
+esp_err_t esp_gateway_netif_request_mac(uint8_t* mac);
 #ifdef __cplusplus
 }
 #endif
