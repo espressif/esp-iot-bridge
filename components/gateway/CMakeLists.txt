@@ -21,6 +21,13 @@ if (CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
     endif()
 endif()
 
+if (CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
+    list(APPEND srcs "priv_src/gateway_usb.c")
+endif()
+
+if (CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET OR CONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET)
+    list(APPEND srcs "priv_src/gateway_eth.c")
+endif()
 
 if (CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
     list(APPEND srcs "priv_src/gateway_sdio.c")
@@ -30,7 +37,7 @@ if (CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
     list(APPEND srcs "priv_src/gateway_spi.c")
 endif()
 
-list(APPEND requires "network_adapter" "esp_modem" "led")
+list(APPEND requires "network_adapter" "esp_modem" "tinyusb" "led")
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "${include_dirs}"
                        PRIV_INCLUDE_DIRS "${priv_includes}"

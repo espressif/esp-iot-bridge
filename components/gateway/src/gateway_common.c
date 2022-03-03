@@ -36,7 +36,7 @@ typedef struct gateway_netif {
 static const char* TAG = "gateway_common";
 static gateway_netif_t* gateway_link = NULL;
 
-esp_err_t esp_geteway_netif_list_add(esp_netif_t* netif)
+esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif)
 {
     gateway_netif_t* new = gateway_link;
     gateway_netif_t* tail = NULL;
@@ -67,7 +67,7 @@ esp_err_t esp_geteway_netif_list_add(esp_netif_t* netif)
     return ESP_FAIL;
 }
 
-esp_err_t esp_geteway_netif_list_remove(esp_netif_t* netif)
+esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif)
 {
     gateway_netif_t* current = gateway_link;
     gateway_netif_t* prev = NULL;
@@ -89,7 +89,7 @@ esp_err_t esp_geteway_netif_list_remove(esp_netif_t* netif)
     return ESP_OK;
 }
 
-static bool esp_geteway_netif_network_segment_is_used(uint32_t ip)
+static bool esp_gateway_netif_network_segment_is_used(uint32_t ip)
 {
     gateway_netif_t* p = gateway_link;
     esp_netif_ip_info_t netif_ip = { 0 };
@@ -105,12 +105,12 @@ static bool esp_geteway_netif_network_segment_is_used(uint32_t ip)
     return false;
 }
 
-esp_err_t esp_geteway_netif_request_ip(esp_netif_ip_info_t* ip_info)
+esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info)
 {
     uint8_t gateway_ip = 4;
 
     for (gateway_ip = 4; gateway_ip < 255; gateway_ip++) {
-        if(!esp_geteway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1))) {
+        if(!esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1))) {
             ip_info->ip.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 1);
             ip_info->gw.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 1);
             ip_info->netmask.addr = ESP_IP4TOADDR(255, 255, 255, 0);
@@ -126,7 +126,7 @@ esp_err_t esp_geteway_netif_request_ip(esp_netif_ip_info_t* ip_info)
     return ESP_FAIL;
 }
 
-static bool esp_geteway_netif_mac_is_used(uint8_t mac[6])
+static bool esp_gateway_netif_mac_is_used(uint8_t mac[6])
 {
     gateway_netif_t* p = gateway_link;
     uint8_t netif_mac[6] = { 0 };
@@ -143,14 +143,13 @@ static bool esp_geteway_netif_mac_is_used(uint8_t mac[6])
     return false;
 }
 
-esp_err_t esp_geteway_netif_request_mac(uint8_t* mac)
+esp_err_t esp_gateway_netif_request_mac(uint8_t* mac)
 {
     uint8_t netif_mac[6] = { 0 };
-    // esp_read_mac(netif_mac, ESP_MAC_ETH);
     esp_base_mac_addr_get(netif_mac);
 
     while (1) {
-        if (!esp_geteway_netif_mac_is_used(netif_mac)){
+        if (!esp_gateway_netif_mac_is_used(netif_mac)){
             break;
         }
 
@@ -179,15 +178,19 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
     if (custom_ip_info) { // Custom IP
         esp_netif_set_ip_info(netif, custom_ip_info);
     } else {
-        esp_geteway_netif_request_ip(&allocate_ip_info);
-        esp_netif_set_ip_info(netif, &allocate_ip_info);
+        if (enable_dhcps) {
+            esp_gateway_netif_request_ip(&allocate_ip_info);
+            esp_netif_set_ip_info(netif, &allocate_ip_info);
+        }
     }
 
     if (custom_mac) { // Custom MAC
         ESP_ERROR_CHECK(esp_netif_set_mac(netif, custom_mac));
     } else {
-        esp_geteway_netif_request_mac(allocate_mac);
-        esp_netif_set_mac(netif, allocate_mac);
+        if (enable_dhcps) {
+            esp_gateway_netif_request_mac(allocate_mac);
+            esp_netif_set_mac(netif, allocate_mac);
+        }
     }
     // Start the netif in a manual way, no need for events
     esp_netif_action_start(netif, NULL, 0, NULL);
@@ -218,6 +221,16 @@ void esp_gateway_create_all_netif(void)
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
     esp_gateway_create_station_netif(NULL, NULL, false, false);
+#endif
+
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
+    esp_gateway_create_usb_netif(NULL, NULL, true, true);
+#endif
+
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET)
+    esp_gateway_create_eth_netif(NULL, NULL, true, true);
+#elif defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET)
+    esp_gateway_create_eth_netif(NULL, NULL, false, false);
 #endif
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)

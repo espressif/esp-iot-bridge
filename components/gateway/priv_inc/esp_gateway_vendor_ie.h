@@ -38,7 +38,7 @@ typedef enum {
     WIFI_ROUTER_LEVEL_4,
     WIFI_ROUTER_LEVEL_5,
     WIFI_ROUTER_LEVEL_6,
-} esp_geteway_wifi_router_level_t;
+} esp_gateway_wifi_router_level_t;
 
 typedef enum {
     MAX_CONNECT_NUMBER = 0,
