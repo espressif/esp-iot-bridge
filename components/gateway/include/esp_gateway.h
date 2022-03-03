@@ -15,31 +15,119 @@
 #pragma once
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
+/**
+* @brief Create modem netif for gateway.
+*
+* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+* @param[in] data_forwarding: whether to use as data forwarding netif
+* @param[in] enable_dhcps: whether to enable DHCP server
+*
+* @return
+*      - instance: the netif instance created successfully
+*      - NULL: failed because some error occurred
+*/
 esp_netif_t* esp_gateway_create_modem_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
+/**
+* @brief Create station netif for gateway.
+*
+* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+* @param[in] data_forwarding: whether to use as data forwarding netif
+* @param[in] enable_dhcps: whether to enable DHCP server
+*
+* @return
+*      - instance: the netif instance created successfully
+*      - NULL: failed because some error occurred
+*/
 esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET)
+/**
+* @brief Create eth netif for gateway.
+*
+* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+* @param[in] data_forwarding: whether to use as data forwarding netif
+* @param[in] enable_dhcps: whether to enable DHCP server
+*
+* @return
+*      - instance: the netif instance created successfully
+*      - NULL: failed because some error occurred
+*/
 esp_netif_t* esp_gateway_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
+/**
+* @brief Create softap netif for gateway.
+*
+* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+* @param[in] data_forwarding: whether to use as data forwarding netif
+* @param[in] enable_dhcps: whether to enable DHCP server
+*
+* @return
+*      - instance: the netif instance created successfully
+*      - NULL: failed because some error occurred
+*/
 esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
+/**
+* @brief Create usb netif for gateway.
+*
+* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+* @param[in] data_forwarding: whether to use as data forwarding netif
+* @param[in] enable_dhcps: whether to enable DHCP server
+*
+* @return
+*      - instance: the netif instance created successfully
+*      - NULL: failed because some error occurred
+*/
 esp_netif_t* esp_gateway_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
+/**
+* @brief Create sdio netif for gateway.
+*
+* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+* @param[in] data_forwarding: whether to use as data forwarding netif
+* @param[in] enable_dhcps: whether to enable DHCP server
+*
+* @return
+*      - instance: the netif instance created successfully
+*      - NULL: failed because some error occurred
+*/
 esp_netif_t* esp_gateway_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
+/**
+* @brief Create spi netif for gateway.
+*
+* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+* @param[in] data_forwarding: whether to use as data forwarding netif
+* @param[in] enable_dhcps: whether to enable DHCP server
+*
+* @return
+*      - instance: the netif instance created successfully
+*      - NULL: failed because some error occurred
+*/
 esp_netif_t* esp_gateway_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
+/**
+* @brief @brief Create all netif which are enabled in menuconfig, for example, station, modem, ethernet.
+*
+*/
 void esp_gateway_create_all_netif(void);

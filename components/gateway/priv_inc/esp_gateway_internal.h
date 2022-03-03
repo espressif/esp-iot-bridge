@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2022 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,13 +27,77 @@ extern "C"
 {
 #endif
 
+/* Definitions for error constants. */
+#define ESP_ERR_DUPLICATE_ADDITION    0x110   /*!< Netif was added repeatedly */
+
+/**
+ * @brief  Cause the TCP/IP stack to bring up an interface
+ * This function is called automatically by default called from event handlers/actions
+ *
+ * @note This function is not normally used with Wi-Fi AP interface. If the AP interface is started, it is up.
+ *
+ * @param[in]  esp_netif Handle to esp-netif instance
+ *
+ * @return
+ *         - ESP_OK
+ *         - ESP_ERR_ESP_NETIF_IF_NOT_READY
+ */
 esp_err_t esp_netif_up(esp_netif_t *esp_netif);
 
+/**
+ * @brief  Create a netif interface and configure it.
+ *
+ * @param[in]  config netif configuration
+ * @param[in]  ip_info custom ip address, if you choose to use the system to automatically assign, set NULL.
+ * @param[in]  mac custom mac address, if you choose to use the system to automatically assign, set NULL.
+ * @param[in]  enable_dhcps whether to enable DHCP server
+ *
+ * @return
+ *      - instance: create netif instance successfully
+ *      - NULL: create modem netif instance failed because some error occurred
+ */
 esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool enable_dhcps);
 
+/**
+ * @brief  Add netif instance to the list.
+ *
+ * @param[in]  netif netif instance
+ *
+ * @return
+ *      - ESP_OK: Add netif instance successfully
+ *      - others: other failure occurred include netif duplicate addition or Out of memory
+ */
 esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif);
+
+/**
+ * @brief  Remove netif instance to the list.
+ *
+ * @param[in]  netif netif instance
+ *
+ * @return
+ *      - ESP_OK: Remove netif instance successfully
+ */
 esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif);
+
+/**
+ * @brief  Request to allocate an ip information that does not conflict with the existing netif ip network segment.
+ *
+ * @param[out]  ip_info ip information
+ *
+ * @return
+ *      - ESP_OK: request ip successfully
+ *      - ESP_FAIL: request ip failure
+ */
 esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info);
+
+/**
+ * @brief  Request to allocate an mac that does not conflict with the existing netif ip network segment.
+ *
+ * @param[out]  mac netif mac
+ *
+ * @return
+ *      - ESP_OK: request mac successfully
+ */
 esp_err_t esp_gateway_netif_request_mac(uint8_t* mac);
 #ifdef __cplusplus
 }

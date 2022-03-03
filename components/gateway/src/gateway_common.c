@@ -1,4 +1,4 @@
-// Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2022 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif)
 
     while (new) {
         if (new->netif == netif) {
-            return ESP_OK;
+            return ESP_ERR_DUPLICATE_ADDITION;
         }
         tail = new;
         new = new->next;
@@ -53,6 +53,7 @@ esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif)
     new = (gateway_netif_t*)malloc(sizeof(gateway_netif_t));
     if (new == NULL) {
         ESP_LOGE(TAG, "add fail");
+        return ESP_ERR_NO_MEM;
     }
     new->netif = netif;
     new->next = NULL;
@@ -64,7 +65,7 @@ esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif)
     }
     ESP_LOGI(TAG, "add success");
 
-    return ESP_FAIL;
+    return ESP_OK;
 }
 
 esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif)
