@@ -1,4 +1,4 @@
-// Copyright 2021 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2022 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -55,8 +55,14 @@ typedef struct {
     char router_mac[ESP_GATEWAY_MAC_MAX_LEN];
 } ap_router_t;
 
+/**
+* @brief WiFi Scan, record the scan to the optimal node information and record.
+*/
 void esp_gateway_vendor_ie_scan(void);
 
+/**
+* @brief Initialization Vendor IE.
+*/
 void esp_gateway_vendor_ie_init(void);
 
 /**

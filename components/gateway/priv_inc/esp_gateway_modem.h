@@ -1,4 +1,4 @@
-// Copyright 2021 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2022 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,22 @@
 #include "esp_log.h"
 #include "esp_netif.h"
 
-#define ESP_MODEM_CHECK(a, str, goto_tag, ...)                                \
+#define ESP_MODEM_CHECK(a, str, goto_tag, ...)                                        \
     do                                                                                \
     {                                                                                 \
         if (!(a))                                                                     \
         {                                                                             \
-            ESP_LOGE(TAG, "%s(%d): " str, __FUNCTION__, __LINE__, ##__VA_ARGS__); \
+            ESP_LOGE(TAG, "%s(%d): " str, __FUNCTION__, __LINE__, ##__VA_ARGS__);     \
             goto goto_tag;                                                            \
         }                                                                             \
     } while (0)
 
-#define MODEM_POWER_GPIO_INACTIVE_LEVEL     1
-#define MODEM_POWER_GPIO_ACTIVE_MS          500
-#define MODEM_POWER_GPIO_INACTIVE_MS        8000
-#define MODEM_RESET_GPIO_INACTIVE_LEVEL     1
-#define MODEM_RESET_GPIO_ACTIVE_MS          200
-#define MODEM_RESET_GPIO_INACTIVE_MS        5000
+#define MODEM_POWER_GPIO_INACTIVE_LEVEL     (1)
+#define MODEM_POWER_GPIO_ACTIVE_MS          (500)
+#define MODEM_POWER_GPIO_INACTIVE_MS        (8000)
+#define MODEM_RESET_GPIO_INACTIVE_LEVEL     (1)
+#define MODEM_RESET_GPIO_ACTIVE_MS          (200)
+#define MODEM_RESET_GPIO_INACTIVE_MS        (5000)
 
 #define LED_RED_SYSTEM_GPIO                 CONFIG_LED_RED_SYSTEM_GPIO
 #define LED_BLUE_WIFI_GPIO                  CONFIG_LED_BLUE_WIFI_GPIO
@@ -39,13 +39,13 @@
 #define MODEM_POWER_GPIO                    CONFIG_MODEM_POWER_GPIO
 #define MODEM_RESET_GPIO                    CONFIG_MODEM_RESET_GPIO
 
-#define MODEM_DEFAULT_CONFIG()\
-    {                                \
-        .rx_buffer_size = 1024*15,   \
-        .tx_buffer_size = 1024*15,   \
-        .line_buffer_size = 1600,    \
+#define MODEM_DEFAULT_CONFIG()                                   \
+    {                                                            \
+        .rx_buffer_size = 1024*15,                               \
+        .tx_buffer_size = 1024*15,                               \
+        .line_buffer_size = 1600,                                \
         .event_task_priority = CONFIG_USB_TASK_BASE_PRIORITY + 3,\
-        .event_task_stack_size = 3072\
+        .event_task_stack_size = 3072                            \
     }
 
 typedef struct {
@@ -56,6 +56,21 @@ typedef struct {
     int event_task_stack_size;      /*!< USB Event/Data Handler Task Stack Size*/
 } modem_config_t;
 
+/**
+* @brief Initialize esp-modem units, DTE, DCE, ppp-netif and start ppp.
+*
+* @param[in] config: modem configuration
+*
+* @return
+*      - instance: create modem netif instance successfully
+*      - NULL: create modem netif instance failed because some error occurred
+*/
 esp_netif_t *esp_gateway_modem_init(modem_config_t *config);
 
+/**
+* @brief Force reset 4g module and development board.
+*
+* @return
+ *     - ESP_OK: request mac successfully
+*/
 esp_err_t esp_modem_board_force_reset(void);

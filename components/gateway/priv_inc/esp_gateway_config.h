@@ -1,4 +1,4 @@
-// Copyright 2021 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2022 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,12 +14,25 @@
 
 #pragma once
 
-#define ESP_GATEWAY_MAC_MAX_LEN     6
-#define ESP_GATEWAY_SSID_MAX_LEN    32
+/**
+ * @brief Maximum MAC size
+ *
+ */
+#define ESP_GATEWAY_MAC_MAX_LEN     (6)
+
+/**
+ * @brief Maximum SSID size
+ *
+ */
+#define ESP_GATEWAY_SSID_MAX_LEN    (32)
 
 #define ESP_GATEWAY_SOFTAP_SSID     CONFIG_ESP_GATEWAY_SOFTAP_SSID
 #define ESP_GATEWAY_SOFTAP_PASSWORD CONFIG_ESP_GATEWAY_SOFTAP_PASSWORD
 
+/**
+* @brief Netif Interface for ESP-Gateway
+*
+*/
 typedef enum {
     ESP_GATEWAY_SOFTAP,
     ESP_GATEWAY_STATION,
