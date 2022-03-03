@@ -165,6 +165,7 @@ esp_netif_t *esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 
     esp_gateway_wifi_init();
     wifi_netif = esp_netif_create_default_wifi_sta();
+    esp_geteway_netif_list_add(wifi_netif);
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, wifi_event_sta_disconnected_handler, NULL, NULL));

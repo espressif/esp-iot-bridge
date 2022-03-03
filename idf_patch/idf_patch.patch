@@ -1,0 +1,42 @@
+diff --git a/components/hal/sdio_slave_hal.c b/components/hal/sdio_slave_hal.c
+index aa7568ee39..0500df0017 100644
+--- a/components/hal/sdio_slave_hal.c
++++ b/components/hal/sdio_slave_hal.c
+@@ -170,7 +170,7 @@ void sdio_slave_hal_init(sdio_slave_context_t *hal)
+ void sdio_slave_hal_hw_init(sdio_slave_context_t *hal)
+ {
+     sdio_slave_ll_init(hal->slc);
+-    sdio_slave_ll_enable_hs(hal->hinf, true);
++    // sdio_slave_ll_enable_hs(hal->hinf, true);
+     sdio_slave_ll_set_timing(hal->host, hal->timing);
+     sdio_slave_ll_slvint_t intr_ena = 0xff;
+     sdio_slave_ll_slvint_set_ena(hal->slc, &intr_ena);
+diff --git a/components/lwip/port/esp32/netif/wlanif.c b/components/lwip/port/esp32/netif/wlanif.c
+index a11fc6323e..22d85db99f 100644
+--- a/components/lwip/port/esp32/netif/wlanif.c
++++ b/components/lwip/port/esp32/netif/wlanif.c
+@@ -187,16 +187,22 @@ wlanif_input(void *h, void *buffer, size_t len, void* eb)
+ #if (ESP_L2_TO_L3_COPY == 1)
+   p = pbuf_alloc(PBUF_RAW, len, PBUF_RAM);
+   if (p == NULL) {
++    if (eb) {
+       esp_netif_free_rx_buffer(esp_netif, eb);
++    }
+     return;
+   }
+   p->l2_owner = NULL;
+   memcpy(p->payload, buffer, len);
+-  esp_netif_free_rx_buffer(esp_netif, eb);
++  if (eb) {
++    esp_netif_free_rx_buffer(esp_netif, eb);
++  }
+ #else
+   p = pbuf_alloc(PBUF_RAW, len, PBUF_REF);
+   if (p == NULL){
+-    esp_netif_free_rx_buffer(esp_netif, eb);
++    if (eb) {
++      esp_netif_free_rx_buffer(esp_netif, eb);
++    }
+     return;
+   }
+   p->payload = buffer;

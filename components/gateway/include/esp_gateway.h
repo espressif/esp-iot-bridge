@@ -31,4 +31,8 @@ esp_netif_t* esp_gateway_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t
 esp_netif_t* esp_gateway_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
+#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
+esp_netif_t* esp_gateway_create_modem_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+#endif
+
 void esp_gateway_create_all_netif(void);

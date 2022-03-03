@@ -8,6 +8,10 @@ menu "Gateway Configuration"
             bool "Use Wi-Fi station interface to connect to the external network"
             default y
         
+        config GATEWAY_EXTERNAL_NETIF_MODEM
+            bool "Use 4G modem interface to connect to the external network"
+            default n
+
     endmenu
 
     menu "The interface used to provide network data forwarding for other devices"
@@ -37,6 +41,14 @@ menu "Gateway Configuration"
                     default "234"
             endmenu
 
+        config GATEWAY_DATA_FORWARDING_NETIF_SPI
+            bool "Use SPI interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            default n
+
+        config GATEWAY_DATA_FORWARDING_NETIF_SDIO
+            bool "Use SDIO interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            default n
+            depends on IDF_TARGET_ESP32
     endmenu
 
     config GATEWAY_GPIO_RANGE_MIN
@@ -51,4 +63,78 @@ menu "Gateway Configuration"
         default 48 if IDF_TARGET_ESP32S3
 
     
+    menu "Modem Configuration"
+        depends on GATEWAY_EXTERNAL_NETIF_MODEM
+
+        config GATEWAY_MODEM_UART
+            default y if !IDF_TARGET_ESP32S2 && !IDF_TARGET_ESP32S3
+            depends on !GATEWAY_MODEM_USB
+            bool "UART"
+
+        config GATEWAY_MODEM_USB
+            default y
+            depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            bool "USB"
+
+        if GATEWAY_MODEM_UART
+            config ESP_GATEWAY_MODEM_TX_GPIO
+                int "UART Tx GPIO number of Modem"
+                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                default 32 if IDF_TARGET_ESP32
+                default 4 if IDF_TARGET_ESP32C3
+                help
+                    Set the GPIO number used by uart Tx
+
+            config ESP_GATEWAY_MODEM_RX_GPIO
+                int "UART Rx GPIO number of Modem"
+                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                default 33 if IDF_TARGET_ESP32
+                default 5 if IDF_TARGET_ESP32C3
+                help
+                    Set the GPIO number used by uart Rx
+
+            config ESP_GATEWAY_MODEM_BAUD_RATE
+                int "UART baud rate of Modem"
+                default 115200
+                help
+                    Set the baud rate of uart
+
+            config GATEWAY_MODEM_CUSTOM_BOARD
+                bool "Use extended DCE object"
+                default n
+                help
+                    This settings extends the default DCE object provided by esp-modem
+                    to implement board specific features, using GPIO's to reset/restart
+                    the modem and retry/resend strategy if certain AT command fails    
+        endif    
+
+        config LED_RED_SYSTEM_GPIO
+            int "System status led (red) gpio, set 0 if not use"
+            default 15
+        config LED_BLUE_WIFI_GPIO
+            int "Wi-Fi status led (blue) gpio, set 0 if not use"
+            default 17
+        config LED_GREEN_4GMODEM_GPIO
+            int "Modem status led (green) gpio, set 0 if not use"
+            default 16
+        config MODEM_POWER_GPIO
+            int "Modem power control gpio, set 0 if not use"
+            default 12
+        config MODEM_RESET_GPIO
+            int "Modem reset control gpio, set 0 if not use"
+            default 13
+
+        config MODEM_DIAL_RERTY_TIMES
+            int "Retry times during dial"
+            default 5
+            help
+                Set retry times waitting for modem link with carrier base station
+
+        config GATEWAY_MODEM_PPP_APN
+            string "Set MODEM APN"
+            default "internet"
+            help
+                Set APN (Access Point Name), a logical name to choose data network
+
+    endmenu
 endmenu

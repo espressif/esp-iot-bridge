@@ -149,7 +149,8 @@ static bool esp_geteway_netif_mac_is_used(uint8_t mac[6])
 esp_err_t esp_geteway_netif_request_mac(uint8_t* mac)
 {
     uint8_t netif_mac[6] = { 0 };
-    esp_read_mac(netif_mac, ESP_MAC_ETH);
+    // esp_read_mac(netif_mac, ESP_MAC_ETH);
+    esp_base_mac_addr_get(netif_mac);
 
     while (1) {
         if (!esp_geteway_netif_mac_is_used(netif_mac)){
@@ -165,6 +166,7 @@ esp_err_t esp_geteway_netif_request_mac(uint8_t* mac)
         netif_mac[5] += 1;
     }
 
+    memcpy(mac, netif_mac, sizeof(netif_mac));
     ESP_LOGI("mac select", "MAC "MACSTR"", MAC2STR(mac));
     return ESP_OK;
 }
@@ -209,6 +211,9 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
 
 void esp_gateway_create_all_netif(void)
 {
+#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
+    esp_gateway_create_modem_netif(NULL, NULL, false, false);
+#endif
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
     esp_gateway_create_softap_netif(NULL, NULL, true, true);
@@ -218,4 +223,11 @@ void esp_gateway_create_all_netif(void)
     esp_gateway_create_station_netif(NULL, NULL, false, false);
 #endif
 
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
+    esp_gateway_create_sdio_netif(NULL, NULL, true, true);
+#endif
+
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
+    esp_gateway_create_spi_netif(NULL, NULL, true, true);
+#endif
 }
