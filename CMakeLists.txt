@@ -1,13 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
-add_compile_options(-fdiagnostics-color=always)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-if(CONFIG_IDF_TARGET_ESP32 OR CONFIG_IDF_TARGET_ESP32S3)
-    set(EXTRA_COMPONENT_DIRS "components/ble_common")
+if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
+    set(EXTRA_COMPONENT_DIRS "components/usb/tinyusb")
 endif()
-
-set(EXTRA_COMPONENT_DIRS "$ENV{IDF_PATH}/examples/common_components/led_strip")
 
 string(REGEX REPLACE ".*/\(.*\)" "\\1" CURDIR ${CMAKE_CURRENT_SOURCE_DIR})
 project(${CURDIR})

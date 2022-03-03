@@ -1,167 +1,18 @@
-menu "APP Configuration"
-    config MODEM_IS_OPEN
-        bool "Enable the Modem function"
-        default n
-        help
-            "Turn on the portable Wi-Fi function,it can convert the 4G network into a wifi signal"
+menu "Gateway Misc Configuration"
+    depends on GATEWAY_ENABLE
 
-    if MODEM_IS_OPEN
-        menu "4G Router"
-            config 4G_ROUTER_AP_SSID
-                string "SSID as AP"
-                default "4g_router"
-                help
-                    Set the SSID of 4G AP interface.
-
-            config 4G_ROUTER_AP_PASSWORD
-                string "Password as AP"
-                default "espressif"
-                help
-                    Set the password of 4G AP interface.
-        endmenu
-    endif
-
-    menu "WiFi Router"
-        config WIFI_ROUTER_AP_SSID
-            string "SSID as AP"
-            default "wifi_router"
-            help
-                Set the SSID of Wi-Fi AP interface.
-
-        config WIFI_ROUTER_AP_PASSWORD
-            string "Password as AP"
-            default "12345678"
-            help
-                Set the password of Wi-Fi AP interface.
-
-        config WIFI_ROUTER_STA_SSID
-            string "SSID as STA"
-            default "esp-guest"
-            help
-                Set the SSID of Wi-Fi STA interface.
-
-        config WIFI_ROUTER_STA_PASSWORD
-            string "Password as STA"
-            default "esp-guest"
-            help
-                Set the password of Wi-Fi STA interface.
-
-        config SET_VENDOR_IE
-            bool "Set Vendor_ie info"
-            default n
-            help
-                "Set Vendor ie information for Wi-Fi router SoftAP"
-
-        if SET_VENDOR_IE
-            menu "custom vendor ie"
-                config VENDOR_OUI_0
-                    int "VENDOR_OUI_0"
-                    default "012"
-
-                config VENDOR_OUI_1
-                    int "VENDOR_OUI_1"
-                    default "123"
-
-                config VENDOR_OUI_2
-                    int "VENDOR_OUI_2"
-                    default "234"
-            endmenu
-        endif
-
-        config AP_CUSTOM_IP
-            bool "Custom IP Addr for WiFi Router"
-            default n
-            help
-                "Custom IP Addr for WiFi Router. ip_addr gw_addr netmask_addr"
-
-        if AP_CUSTOM_IP
-            menu "custom ip addr"
-                config AP_STATIC_IP_ADDR
-                    string "Static IP address"
-                    default "192.168.4.1"
-                    help
-                        Set static IP address.
-
-                config AP_STATIC_GW_ADDR
-                    string "Static gateway address"
-                    default "192.168.4.1"
-                    help
-                        Set static gateway address.
-
-                config AP_STATIC_NETMASK_ADDR
-                    string "Static netmask address"
-                    default "255.255.255.0"
-                    help
-                        Set static netmask address.
-            endmenu
-        endif
-    endmenu
-
-    menu "Ethernet Router"
-        config ETH_ROUTER_WIFI_SSID
-            string "Wi-Fi SSID"
-            default "eth2ap"
-            help
-                Set the SSID of Wi-Fi ap interface.
-
-        config ETH_ROUTER_WIFI_PASSWORD
-            string "Wi-Fi Password"
-            default "12345678"
-            help
-                Set the password of Wi-Fi ap interface.
-
-        config ETH_ROUTER_WIFI_CHANNEL
-            int "WiFi channel"
-            range 1 13
-            default 1
-            help
-                Set the channel of Wi-Fi ap.
-
-        config ETH_ROUTER_MAX_STA_CONN
-            int "Maximum STA connections"
-            default 4
-            help
-                Maximum number of the station that allowed to connect to current Wi-Fi hotspot.
-    endmenu
-
-    menu "Ethernet wireless network adapter"
-        config ETH_STA_SSID
-            string "Wi-Fi SSID"
-            default "esp-guest"
-            help
-                Set the SSID of Wi-Fi sta interface.
-
-        config ETH_STA_PASSWORD
-            string "Wi-Fi Password"
-            default "esp-guest"
-            help
-                Set the password of Wi-Fi sta interface.
-    endmenu
-
-    menu "GPIO Configuration(LED & Button)"
-        config GPIO_LED_WIFI
-            default "2"
-            int "GPIO LED of Wi-Fi mode"
-            help
-                Set the GPIO LED of Wi-Fi mode.
-
-        config GPIO_LED_MODEM
-            default "4"
-            int "GPIO LED of Modem mode"
-            help
-                Set the GPIO LED of Modem mode.
-
-        config GPIO_LED_ETH
-            default "16"
-            int "GPIO LED of ETH mode"
-            help
-                Set the GPIO LED of ETH mode.
-
+    menu "Button Configuration"
         config GPIO_BUTTON_SW1
+            default 5 if IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32C3
             default "34"
             int "GPIO button of switch"
             help
                 Set the GPIO button of switch.
+
+        config IO_GLITCH_FILTER_TIME_MS
+            int "IO glitch filter timer ms (10~100)"
+            range 10 100
+            default 50
     endmenu
 
     menu "LED_Strip Configuration"
@@ -187,5 +38,4 @@ menu "APP Configuration"
                 GPIO number (IOxx) to blink on and off or the RMT signal for the addressable LED.
                 Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
     endmenu
-
 endmenu

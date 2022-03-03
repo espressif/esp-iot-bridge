@@ -1182,7 +1182,7 @@ static esp_err_t config_wifi_post_handler(httpd_req_t *req)
     wifi_sta_connection_info_t *connection_info = esp_web_get_sta_connection_info();
     memset(buf, '\0', ESP_GATEWAY_WEB_SCRATCH_BUFSIZE * sizeof(char));
     esp_wifi_get_mode(&current_wifi_mode);
-    if (current_wifi_mode != WIFI_MODE_APSTA) {
+    if ((current_wifi_mode != WIFI_MODE_APSTA) && (current_wifi_mode != WIFI_MODE_STA)) {
         printf("Error, wifi mode is not correct\r\n");
         goto error_handle;
     }
