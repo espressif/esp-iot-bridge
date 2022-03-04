@@ -24,8 +24,7 @@
 #include "esp_event.h"
 
 #include "esp_gateway.h"
-
-#include "button.h"
+#include "esp_button.h"
 #include "web_server.h"
 #include "wifi_prov_mgr.h"
 

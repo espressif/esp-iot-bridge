@@ -1,0 +1,19 @@
+menu "RainMaker Led_Light Example"
+
+    config MESH_USE
+        bool "Use Mesh for create group"
+        default n
+        help
+            Use fixed DNS server IP address. If enabled, root node
+            advertises the specified DNS address in DHCP packets.
+            By default it uses DNS record received from the router.
+
+    config EXAMPLE_BOARD_BUTTON_GPIO
+        int "Boot Button GPIO"
+        default 0 if !IDF_TARGET_ESP32C3
+        default 9 if IDF_TARGET_ESP32C3
+        help
+            GPIO number on which the "Boot" button is connected. This is generally used
+            by the application for custom operations like toggling states, resetting to defaults, etc.
+
+endmenu

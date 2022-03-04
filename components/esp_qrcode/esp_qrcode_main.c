@@ -119,3 +119,11 @@ esp_err_t esp_qrcode_generate(esp_qrcode_config_t *cfg, const char *text)
     free(tempbuf);
     return err;
 }
+
+esp_err_t qrcode_display(const char *text)
+{
+#define MAX_QRCODE_VERSION 5
+    esp_qrcode_config_t cfg = ESP_QRCODE_CONFIG_DEFAULT();
+    cfg.max_qrcode_version = MAX_QRCODE_VERSION;
+    return esp_qrcode_generate(&cfg, text);
+}

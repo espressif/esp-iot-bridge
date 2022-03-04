@@ -34,7 +34,7 @@
 #endif /* CONFIG_ESP_GATEWAY_PROV_TRANSPORT_SOFTAP */
 #include "qrcode.h"
 
-static const char *TAG = "app";
+static const char *TAG = "wifi_prov_mgr";
 
 static bool wifi_prov_status = false;
 static esp_timer_handle_t deinit_wifi_prov_mgr_timer = NULL;
@@ -134,9 +134,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
-    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        ESP_LOGI(TAG, "Disconnected. Connecting to the AP again...");
-        esp_wifi_connect();
     }
 }
 
