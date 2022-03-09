@@ -210,7 +210,7 @@ menu "Gateway Configuration"
             config GATEWAY_ETH_SPI_HOST
                 int "SPI Host Number"
                 range 0 2
-                default 1
+                default 2
                 help
                     Set the SPI host used to communicate with the SPI Ethernet Controller.
 
@@ -218,7 +218,7 @@ menu "Gateway Configuration"
                 int "SPI SCLK GPIO number"
                 range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
                 default 14 if IDF_TARGET_ESP32
-                default 12 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                default 17 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
                 default 6 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI SCLK.
@@ -227,7 +227,7 @@ menu "Gateway Configuration"
                 int "SPI MOSI GPIO number"
                 range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
                 default 13 if IDF_TARGET_ESP32
-                default 11 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                default 16 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
                 default 7 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI MOSI.
@@ -236,7 +236,7 @@ menu "Gateway Configuration"
                 int "SPI MISO GPIO number"
                 range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
                 default 12 if IDF_TARGET_ESP32
-                default 13 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                default 18 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
                 default 2 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI MISO.
@@ -245,15 +245,14 @@ menu "Gateway Configuration"
                 int "SPI clock speed (MHz)"
                 range 5 80
                 default 12 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32C3
-                default 18 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                default 23 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
                 help
                     Set the clock speed (MHz) of SPI interface.
 
             config GATEWAY_ETH_SPI_CS0_GPIO
                 int "SPI CS0 GPIO number for SPI Ethernet module #1"
                 range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
-                default 15 if IDF_TARGET_ESP32
-                default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
+                default 15
                 help
                     Set the GPIO number used by SPI CS0, i.e. Chip Select associated with the first SPI Eth module).
 

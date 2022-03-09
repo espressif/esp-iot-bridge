@@ -147,8 +147,7 @@ static bool esp_gateway_netif_mac_is_used(uint8_t mac[6])
 esp_err_t esp_gateway_netif_request_mac(uint8_t* mac)
 {
     uint8_t netif_mac[6] = { 0 };
-    esp_base_mac_addr_get(netif_mac);
-
+    esp_read_mac(netif_mac, ESP_MAC_WIFI_STA);
     while (1) {
         if (!esp_gateway_netif_mac_is_used(netif_mac)){
             break;
