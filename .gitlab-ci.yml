@@ -2,9 +2,6 @@ stages:
   - build
   - deploy
 
-.check_target_master_branch: &check_target_master_branch
-  - if [[ ($CI_COMMIT_BRANCH != "master") && ($CI_COMMIT_BRANCH != "sync_master"*) ]]; then TARGET_IS_MASTER_BRANCH=1; fi
-
 esp32_v4.3_build:
   stage: build
   image: $CI_DOCKER_REGISTRY/esp32-ci-env
@@ -36,9 +33,9 @@ esp32_v4.3_build:
     - idf.py build
 
     - rm -rf build sdkconfig
+    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
     - echo -e "\nCONFIG_SET_VENDOR_IE=y\n" >> sdkconfig.defaults.esp32
-    - *check_target_master_branch
-    - if [ $TARGET_IS_MASTER_BRANCH == 1 ]; then echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32; fi
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32
     - idf.py set-target esp32
     - idf.py build
 
@@ -73,9 +70,9 @@ esp32_v4.4_build:
     - idf.py build
 
     - rm -rf build sdkconfig
+    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
     - echo -e "\nCONFIG_SET_VENDOR_IE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32
-    - *check_target_master_branch
-    - if [ $TARGET_IS_MASTER_BRANCH == 1 ]; then echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32; fi
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32
     - idf.py set-target esp32
     - idf.py build
 
@@ -110,9 +107,9 @@ esp32c3_v4.4_build:
     - idf.py build
 
     - rm -rf build sdkconfig
+    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
     - echo -e "\nCONFIG_SET_VENDOR_IE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32c3
-    - *check_target_master_branch
-    - if [ $TARGET_IS_MASTER_BRANCH == 1 ]; then echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32c3; fi
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32c3
     - idf.py set-target esp32c3
     - idf.py build
 
@@ -147,10 +144,10 @@ esp32s2_v4.4_build:
     - idf.py build
 
     - rm -rf build sdkconfig
+    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
     - echo -e "\nCONFIG_SET_VENDOR_IE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32s2
-    - *check_target_master_branch
-    - if [ $TARGET_IS_MASTER_BRANCH == 1 ]; then echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32s2; fi
-    - if [ $TARGET_IS_MASTER_BRANCH == 1 ]; then echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s2; fi
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32s2
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s2
     - idf.py set-target esp32s2
     - idf.py build
 
@@ -185,10 +182,10 @@ esp32s3_v4.4_build:
     - idf.py build
 
     - rm -rf build sdkconfig
+    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
     - echo -e "\nCONFIG_SET_VENDOR_IE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32s3
-    - *check_target_master_branch
-    - if [ $TARGET_IS_MASTER_BRANCH == 1 ]; then echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32s3; fi
-    - if [ $TARGET_IS_MASTER_BRANCH == 1 ]; then echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s3; fi
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32s3
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s3
     - idf.py set-target esp32s3
     - idf.py build
 
@@ -214,22 +211,3 @@ push_master_to_github:
     - git remote add github git@github.com:espressif/esp-gateway.git
     - eval $(git for-each-ref --shell bash --format 'if [ $CI_BUILD_REF == %(objectname) ]; then git checkout -B %(refname:strip=3); git push --follow-tags github %(refname:strip=3); fi;' $GITHUB_PUSH_REFS)
 
-push_to_mirror_repositories:
-  stage: deploy
-  image: $CI_DOCKER_REGISTRY/esp32-ci-env
-  variables:
-    GIT_STRATEGY: clone
-  rules:
-    - if: $CI_COMMIT_BRANCH == $MIRROR_BRANCH
-      when: on_success
-  before_script:
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
-    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host glab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-
-  script:
-    - git remote set-url origin --push $MIRROR_REPOSITORIES
-    - git checkout $CI_COMMIT_REF_NAME && git push -f origin $CI_COMMIT_REF_NAME:refs/heads/master
