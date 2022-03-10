@@ -7,8 +7,8 @@ if (CONFIG_GATEWAY_EXTERNAL_NETIF_STATION OR CONFIG_GATEWAY_DATA_FORWARDING_NETI
     list(APPEND srcs "src/gateway_wifi.c")
 endif()
 
-if (CONFIG_SET_VENDOR_IE)
-    list(APPEND srcs "src/gateway_vendor_ie.c")
+if (CONFIG_LITEMESH_ENABLE)
+    list(APPEND srcs "src/gateway_litemesh.c")
 endif()
 
 if (CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)

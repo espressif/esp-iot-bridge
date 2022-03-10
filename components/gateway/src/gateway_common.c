@@ -25,8 +25,12 @@
 #include "esp_netif.h"
 #include "esp_system.h"
 
-#include "esp_gateway_internal.h"
 #include "esp_gateway.h"
+#include "esp_gateway_internal.h"
+#include "esp_gateway_litemesh.h"
+
+// DHCP_Server has to be enabled for this netif
+#define DHCPS_NETIF_ID(netif) (ESP_NETIF_DHCP_SERVER & esp_netif_get_flags(netif))
 
 typedef struct gateway_netif {
     esp_netif_t* netif;
@@ -91,6 +95,26 @@ esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif)
     return ESP_OK;
 }
 
+esp_err_t esp_gateway_get_external_netif_network_segment(uint8_t* net_segment, uint32_t* max_num)
+{
+    gateway_netif_t* p = gateway_link;
+    esp_netif_ip_info_t netif_ip;
+    uint32_t count = 0;
+    while (p && (count < *max_num)) {
+        if (!DHCPS_NETIF_ID(p->netif)) {
+            esp_netif_get_ip_info(p->netif, &netif_ip);
+            if ((esp_ip4_addr1_16(&netif_ip.ip) == 192)
+                && (esp_ip4_addr2_16(&netif_ip.ip) == 168)) {
+                net_segment[count++] = esp_ip4_addr3_16(&netif_ip.ip);
+            }
+        }
+        p = p->next;
+    }
+
+    *max_num = count;
+    return ESP_OK;
+}
+
 static bool esp_gateway_netif_network_segment_is_used(uint32_t ip)
 {
     gateway_netif_t* p = gateway_link;
@@ -100,7 +124,7 @@ static bool esp_gateway_netif_network_segment_is_used(uint32_t ip)
         if (esp_ip4_addr3_16((esp_ip4_addr_t*)&ip) == esp_ip4_addr3_16(&netif_ip.ip)) {
             return true;
         }
-        
+
         p = p->next;
     }
 
@@ -109,7 +133,7 @@ static bool esp_gateway_netif_network_segment_is_used(uint32_t ip)
 
 esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info)
 {
-    uint8_t gateway_ip = 4;
+    uint8_t gateway_ip;
 
     for (gateway_ip = 4; gateway_ip < 255; gateway_ip++) {
         if(!esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1))) {
@@ -165,6 +189,51 @@ esp_err_t esp_gateway_netif_request_mac(uint8_t* mac)
 
     memcpy(mac, netif_mac, sizeof(netif_mac));
     ESP_LOGI("mac select", "MAC "MACSTR"", MAC2STR(mac));
+    return ESP_OK;
+}
+
+esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_netif)
+{
+    gateway_netif_t* p = gateway_link;
+    esp_netif_ip_info_t netif_ip;
+    esp_netif_ip_info_t allocate_ip_info;
+    uint32_t allocate_ip4_addr3 = 4;
+
+    while (p) {
+        if ((esp_netif != p->netif) && DHCPS_NETIF_ID(p->netif)) { // DHCP_Server has to be enabled for this netif
+            esp_netif_get_ip_info(p->netif, &netif_ip);
+
+            for (; allocate_ip4_addr3 < 256; allocate_ip4_addr3++) {
+#if CONFIG_LITEMESH_ENABLE
+                if(!esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1))) {
+#else
+                if(!esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1))) {
+#endif
+                    allocate_ip_info.ip.addr = ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1);
+                    allocate_ip_info.gw.addr = ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1);
+                    allocate_ip_info.netmask.addr = ESP_IP4TOADDR(255, 255, 255, 0);
+                    ESP_LOGI("ip reallocate", "IP Address:" IPSTR, IP2STR(&allocate_ip_info.ip));
+                    ESP_LOGI("ip reallocate", "GW Address:" IPSTR, IP2STR(&allocate_ip_info.gw));
+                    ESP_LOGI("ip reallocate", "NM Address:" IPSTR, IP2STR(&allocate_ip_info.netmask));
+
+                    break;
+                }
+            }
+
+            ESP_ERROR_CHECK(esp_netif_dhcps_stop(p->netif));
+            esp_netif_set_ip_info(p->netif, &allocate_ip_info);
+            ESP_LOGI(TAG, "ip reallocate new:" IPSTR, IP2STR(&allocate_ip_info.ip));
+
+            esp_netif_dhcps_start(p->netif);
+            esp_netif_dns_info_t dns;
+            dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
+            dns.ip.type = IPADDR_TYPE_V4;
+            dhcps_offer_t dhcps_dns_value = OFFER_DNS;
+            esp_netif_dhcps_option(p->netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value));
+            esp_netif_set_dns_info(p->netif, ESP_NETIF_DNS_MAIN, &dns);
+        }
+        p = p->next;
+    }
     return ESP_OK;
 }
 

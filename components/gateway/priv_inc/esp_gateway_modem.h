@@ -62,8 +62,8 @@ typedef struct {
 * @param[in] config: modem configuration
 *
 * @return
-*      - instance: create modem netif instance successfully
-*      - NULL: create modem netif instance failed because some error occurred
+*     - instance: create modem netif instance successfully
+*     - NULL: create modem netif instance failed because some error occurred
 */
 esp_netif_t *esp_gateway_modem_init(modem_config_t *config);
 
@@ -71,6 +71,6 @@ esp_netif_t *esp_gateway_modem_init(modem_config_t *config);
 * @brief Force reset 4g module and development board.
 *
 * @return
- *     - ESP_OK: request mac successfully
+ *    - ESP_OK: request mac successfully
 */
 esp_err_t esp_modem_board_force_reset(void);

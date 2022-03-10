@@ -34,7 +34,7 @@ esp32_v4.3_build:
 
     - rm -rf build sdkconfig
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_SET_VENDOR_IE=y\n" >> sdkconfig.defaults.esp32
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\n" >> sdkconfig.defaults.esp32
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32
     - idf.py set-target esp32
     - idf.py build
@@ -71,7 +71,7 @@ esp32_v4.4_build:
 
     - rm -rf build sdkconfig
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_SET_VENDOR_IE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32
     - idf.py set-target esp32
     - idf.py build
@@ -108,7 +108,7 @@ esp32c3_v4.4_build:
 
     - rm -rf build sdkconfig
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_SET_VENDOR_IE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32c3
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32c3
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32c3
     - idf.py set-target esp32c3
     - idf.py build
@@ -145,7 +145,7 @@ esp32s2_v4.4_build:
 
     - rm -rf build sdkconfig
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_SET_VENDOR_IE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32s2
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32s2
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32s2
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s2
     - idf.py set-target esp32s2
@@ -183,7 +183,7 @@ esp32s3_v4.4_build:
 
     - rm -rf build sdkconfig
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_SET_VENDOR_IE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32s3
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32s3
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32s3
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s3
     - idf.py set-target esp32s3
