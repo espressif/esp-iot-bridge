@@ -80,6 +80,7 @@ esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif)
             } else {
                 prev->next = current->next;
             }
+            free(current);
             break;
         }
 
