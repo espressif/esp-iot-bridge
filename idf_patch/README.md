@@ -10,8 +10,5 @@ you can apply the patch by entering the following command on the command line / 
 cd $IDF_PATH
 cp /path/to/esp-gateway/idf_patch/idf_patch.patch .
 git apply idf_patch.patch
-
-cd $IDF_PATH/components/lwip/lwip
-git apply lwip_patch.patch
 ```
 
