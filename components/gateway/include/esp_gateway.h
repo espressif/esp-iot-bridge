@@ -127,7 +127,7 @@ esp_netif_t* esp_gateway_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t 
 #endif
 
 /**
-* @brief @brief Create all netif which are enabled in menuconfig, for example, station, modem, ethernet.
+* @brief Create all netif which are enabled in menuconfig, for example, station, modem, ethernet.
 *
 */
 void esp_gateway_create_all_netif(void);

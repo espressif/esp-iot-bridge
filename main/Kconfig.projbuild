@@ -3,8 +3,7 @@ menu "Gateway Misc Configuration"
 
     menu "Button Configuration"
         config GPIO_BUTTON_SW1
-            default 5 if IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32C3
-            default "34"
+            default 0
             int "GPIO button of switch"
             help
                 Set the GPIO button of switch.
