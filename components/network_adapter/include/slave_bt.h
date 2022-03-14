@@ -16,7 +16,7 @@
 #ifndef __SLAVE_BT_H__
 #define __SLAVE_BT_H__
 
-#ifdef CONFIG_BT_ENABLED
+#ifdef CONFIG_ESP_GATEWAY_BT_ENABLED
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
   #if (CONFIG_BT_CTRL_MODE_EFF == 1)
@@ -73,6 +73,6 @@ void deinitialize_bluetooth(void);
 esp_err_t initialise_bluetooth(void);
 uint8_t get_bluetooth_capabilities(void);
 
-#endif /* CONFIG_BT_ENABLED */
+#endif /* CONFIG_ESP_GATEWAY_BT_ENABLED */
 
 #endif /* __SLAVE_BT_H__ */
