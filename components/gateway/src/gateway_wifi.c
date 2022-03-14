@@ -152,7 +152,7 @@ static esp_err_t esp_gateway_wifi_init(void)
 
     return ESP_OK;
 }
-#endif // CONFIG_GATEWAY_EXTERNAL_NETIF_STATION || CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
+#endif /* CONFIG_GATEWAY_EXTERNAL_NETIF_STATION || CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP */
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
 esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
@@ -184,7 +184,7 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
         ESP_LOGI(TAG, "Found password %s", (const char*) router_config.password);
         esp_wifi_connect();
     }
-#endif // CONFIG_LITEMESH_ENABLE
+#endif /* CONFIG_LITEMESH_ENABLE */
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, wifi_event_sta_disconnected_handler, NULL, NULL));
@@ -192,7 +192,7 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 
     return wifi_netif;
 }
-#endif // CONFIG_GATEWAY_EXTERNAL_NETIF_STATION
+#endif /* CONFIG_GATEWAY_EXTERNAL_NETIF_STATION */
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
 esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)

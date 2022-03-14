@@ -57,7 +57,7 @@ menu "Gateway Configuration"
                     bool "SoftAP SSID ends with the MAC"
                     default n
                     help
-                        "Add Mac to the end of SSID"
+                        Add Mac to the end of SSID
             endmenu
 
             config LITEMESH_ENABLE
@@ -65,7 +65,7 @@ menu "Gateway Configuration"
                 default n
                 depends on GATEWAY_EXTERNAL_NETIF_STATION && GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
                 help
-                    "Enable Lite Mesh"
+                    Enable Lite Mesh
 
             menu "Lite Mesh info configuration"
                 depends on LITEMESH_ENABLE
@@ -95,6 +95,13 @@ menu "Gateway Configuration"
                     int "Maximum number of external netif router trace number"
                     default 10
                     range 1 16
+
+                config JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO
+                    bool "Join Mesh without configured with information"
+                    default y
+                    help
+                        Join the mesh network directly when starting up, regardless of whether Wi-Fi information is configured or not.
+                        If disabled, it will only join the mesh network after configuring Wi-Fi information.
             endmenu
 
         config GATEWAY_DATA_FORWARDING_NETIF_USB
