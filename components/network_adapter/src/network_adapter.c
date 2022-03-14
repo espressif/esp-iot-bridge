@@ -20,7 +20,6 @@
 #include "esp32/rom/lldesc.h"
 #include "sys/queue.h"
 #include "soc/soc.h"
-#include "nvs_flash.h"
 #include "sdkconfig.h"
 #include <unistd.h>
 #ifndef CONFIG_IDF_TARGET_ARCH_RISCV
@@ -32,7 +31,7 @@
 
 #include "freertos/task.h"
 #include "freertos/queue.h"
-#ifdef CONFIG_BT_ENABLED
+#ifdef CONFIG_ESP_GATEWAY_BT_ENABLED
 #include "esp_bt.h"
 #ifdef CONFIG_BT_HCI_UART_NO
 #include "driver/uart.h"
@@ -40,7 +39,7 @@
 #endif
 #include "endian.h"
 
-#ifdef CONFIG_BT_ENABLED
+#ifdef CONFIG_ESP_GATEWAY_BT_ENABLED
 #include "slave_bt.h"
 #endif
 
@@ -113,7 +112,7 @@ static uint8_t get_capabilities()
 	ESP_LOGI(TAG, "- WLAN over SDIO");
 	cap |= ESP_WLAN_SDIO_SUPPORT;
 #endif
-#ifdef CONFIG_BT_ENABLED
+#ifdef CONFIG_ESP_GATEWAY_BT_ENABLED
 	cap |= get_bluetooth_capabilities();
 #endif
 
@@ -231,7 +230,7 @@ void process_rx_pkt(interface_buffer_handle_t *buf_handle)
 		/* Forward data to wlan driver */
 		esp_wifi_internal_tx(ESP_IF_WIFI_AP, payload, payload_len);
     }
-#if defined(CONFIG_BT_ENABLED) && BLUETOOTH_HCI
+#if defined(CONFIG_ESP_GATEWAY_BT_ENABLED) && BLUETOOTH_HCI
     else if (buf_handle->if_type == ESP_HCI_IF) {
         process_hci_rx_pkt(payload, payload_len);
     }
@@ -410,7 +409,7 @@ void network_adapter_driver_init(void)
 
 	capa = get_capabilities();
 
-#ifdef CONFIG_BT_ENABLED
+#ifdef CONFIG_ESP_GATEWAY_BT_ENABLED
 	initialise_bluetooth();
 
 	ret = esp_read_mac(mac, ESP_MAC_BT);

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-#ifdef CONFIG_BT_ENABLED
+#ifdef CONFIG_ESP_GATEWAY_BT_ENABLED
 #include <string.h>
 #include "driver/periph_ctrl.h"
 #include "driver/gpio.h"
@@ -22,6 +22,7 @@
 #include "esp_bt.h"
 #include "esp_log.h"
 #include "slave_bt.h"
+#include "wifi_dongle_adapter.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 #include "esp_private/gdma.h"

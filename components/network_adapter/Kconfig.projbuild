@@ -23,26 +23,26 @@ menu "Gateway Driver Configuration"
     menu "SPI Configuration"
         depends on ESP_SPI_HOST_INTERFACE
 
-    config ESP_SPI_CONTROLLER
-        int "SPI controller to use"
-        depends on IDF_TARGET_ESP32 && ESP_SPI_HOST_INTERFACE
-        default 2
-	range 2 3
-        help
-            SPI controller to be used. HSPI->2, VSPI->3
+        config ESP_SPI_CONTROLLER
+            int "SPI controller to use"
+            depends on IDF_TARGET_ESP32 && ESP_SPI_HOST_INTERFACE
+            default 2
+            range 2 3
+            help
+                SPI controller to be used. HSPI->2, VSPI->3
 
-    config ESP_SPI_GPIO_HANDSHAKE
-        int "GPIO pin for handshake"
-        default 3 if IDF_TARGET_ESP32C3
-        default 2
-        help
-            GPIO pin to use for handshake with other spi controller
+        config ESP_SPI_GPIO_HANDSHAKE
+            int "GPIO pin for handshake"
+            default 3 if IDF_TARGET_ESP32C3
+            default 2
+            help
+                GPIO pin to use for handshake with other spi controller
 
-    config ESP_SPI_GPIO_DATA_READY
-        int "GPIO pin for data ready interrupt"
-        default 6
-        help
-            GPIO pin for indicating host that SPI slave has data to be read by host
+        config ESP_SPI_GPIO_DATA_READY
+            int "GPIO pin for data ready interrupt"
+            default 6
+            help
+                GPIO pin for indicating host that SPI slave has data to be read by host
 	endmenu
 
     config ESP_SERIAL_DEBUG
@@ -57,7 +57,14 @@ menu "Gateway Driver Configuration"
         help
             Enable/disable debug prints in wlan driver data path
 
+    config ESP_GATEWAY_BT_ENABLED
+        bool "Enable Bluetooth driver"
+        default 0
+        help
+            Enable/disable debug prints in Bluetooth driver data path
+
     config ESP_BT_DEBUG
+        depends on ESP_GATEWAY_BT_ENABLED
         bool "Debug Bluetooth driver data path"
         default 0
         help
