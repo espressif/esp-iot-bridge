@@ -8,6 +8,23 @@ menu "Gateway Configuration"
             bool "Use Wi-Fi station interface to connect to the external network"
             default y
 
+        menu "Network Distribution"
+            depends on GATEWAY_EXTERNAL_NETIF_STATION
+
+            config GATEWAY_USE_WEB_SERVER
+                bool "Wi-Fi Provisioning over Web Server"
+                default y
+                help
+                    Use Wi-Fi Provisioning over Web Server.
+
+            config GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE
+                bool "Wi-Fi Provisioning over Bluetooth Low Energy."
+                depends on !IDF_TARGET_ESP32S2
+                default n
+                help
+                    Use Wi-Fi Provisioning over Bluetooth Low Energy.
+        endmenu
+
         config GATEWAY_EXTERNAL_NETIF_MODEM
             bool "Use 4G modem interface to connect to the external network"
             default n
@@ -109,7 +126,6 @@ menu "Gateway Configuration"
 
             config GATEWAY_USE_INTERNAL_ETHERNET
                 depends on IDF_TARGET_ESP32
-                default y if IDF_TARGET_ESP32
                 select ETH_USE_ESP32_EMAC
                 bool "Internal EMAC"
                 help
@@ -117,8 +133,6 @@ menu "Gateway Configuration"
 
             config GATEWAY_USE_SPI_ETHERNET
                 bool "SPI Ethernet"
-                default n if IDF_TARGET_ESP32
-                default y if !IDF_TARGET_ESP32
                 select ETH_USE_SPI_ETHERNET
                 help
                     Use external SPI-Ethernet module(s).

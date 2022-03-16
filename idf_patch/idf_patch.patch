@@ -11,32 +11,92 @@ index aa7568ee39..0500df0017 100644
      sdio_slave_ll_set_timing(hal->host, hal->timing);
      sdio_slave_ll_slvint_t intr_ena = 0xff;
      sdio_slave_ll_slvint_set_ena(hal->slc, &intr_ena);
-diff --git a/components/lwip/port/esp32/netif/wlanif.c b/components/lwip/port/esp32/netif/wlanif.c
-index a11fc6323e..22d85db99f 100644
---- a/components/lwip/port/esp32/netif/wlanif.c
-+++ b/components/lwip/port/esp32/netif/wlanif.c
-@@ -187,16 +187,22 @@ wlanif_input(void *h, void *buffer, size_t len, void* eb)
- #if (ESP_L2_TO_L3_COPY == 1)
-   p = pbuf_alloc(PBUF_RAW, len, PBUF_RAM);
-   if (p == NULL) {
-+    if (eb) {
-       esp_netif_free_rx_buffer(esp_netif, eb);
-+    }
-     return;
-   }
-   p->l2_owner = NULL;
-   memcpy(p->payload, buffer, len);
--  esp_netif_free_rx_buffer(esp_netif, eb);
-+  if (eb) {
-+    esp_netif_free_rx_buffer(esp_netif, eb);
-+  }
- #else
-   p = pbuf_alloc(PBUF_RAW, len, PBUF_REF);
-   if (p == NULL){
--    esp_netif_free_rx_buffer(esp_netif, eb);
-+    if (eb) {
-+      esp_netif_free_rx_buffer(esp_netif, eb);
-+    }
-     return;
-   }
-   p->payload = buffer;
+diff --git a/components/wifi_provisioning/src/manager.c b/components/wifi_provisioning/src/manager.c
+index 945b911508..5eae2d0ef0 100644
+--- a/components/wifi_provisioning/src/manager.c
++++ b/components/wifi_provisioning/src/manager.c
+@@ -494,7 +494,7 @@ static void prov_stop_task(void *arg)
+ 
+     /* Switch device to Wi-Fi STA mode irrespective of
+      * whether provisioning was completed or not */
+-    esp_wifi_set_mode(WIFI_MODE_STA);
++    // esp_wifi_set_mode(WIFI_MODE_STA);
+     ESP_LOGI(TAG, "Provisioning stopped");
+ 
+     if (is_this_a_task) {
+@@ -1121,8 +1121,12 @@ esp_err_t wifi_prov_mgr_is_provisioned(bool *provisioned)
+ 
+ static void wifi_connect_timer_cb(void *arg)
+ {
+-    if (esp_wifi_connect() != ESP_OK) {
+-        ESP_LOGE(TAG, "Failed to connect Wi-Fi");
++    if (esp_wifi_disconnect() == ESP_OK) {
++        if (esp_wifi_connect() != ESP_OK) {
++            ESP_LOGE(TAG, "Failed to connect Wi-Fi");
++        }
++    } else {
++        ESP_LOGE(TAG, "Failed to disconnect");
+     }
+ }
+ 
+@@ -1147,10 +1151,12 @@ esp_err_t wifi_prov_mgr_configure_sta(wifi_config_t *wifi_cfg)
+     debug_print_wifi_credentials(wifi_cfg->sta, "Received");
+ 
+     /* Configure Wi-Fi as both AP and/or Station */
+-    if (esp_wifi_set_mode(prov_ctx->mgr_config.scheme.wifi_mode) != ESP_OK) {
+-        ESP_LOGE(TAG, "Failed to set Wi-Fi mode");
+-        RELEASE_LOCK(prov_ctx_lock);
+-        return ESP_FAIL;
++    if (!(prov_ctx->mgr_config.scheme.wifi_mode | WIFI_MODE_STA)) {
++        if (esp_wifi_set_mode(prov_ctx->mgr_config.scheme.wifi_mode) != ESP_OK) {
++            ESP_LOGE(TAG, "Failed to set Wi-Fi mode");
++            RELEASE_LOCK(prov_ctx_lock);
++            return ESP_FAIL;
++        }
+     }
+ 
+     /* Don't release mutex yet as it is possible that right after
+@@ -1420,16 +1426,16 @@ esp_err_t wifi_prov_mgr_start_provisioning(wifi_prov_security_t security, const
+ 
+     /* Start Wi-Fi in Station Mode.
+      * This is necessary for scanning to work */
+-    ret = esp_wifi_set_mode(WIFI_MODE_STA);
+-    if (ret != ESP_OK) {
+-        ESP_LOGE(TAG, "Failed to set Wi-Fi mode to STA");
+-        goto err;
+-    }
+-    ret = esp_wifi_start();
+-    if (ret != ESP_OK) {
+-        ESP_LOGE(TAG, "Failed to start Wi-Fi");
+-        goto err;
+-    }
++    // ret = esp_wifi_set_mode(WIFI_MODE_STA);
++    // if (ret != ESP_OK) {
++    //     ESP_LOGE(TAG, "Failed to set Wi-Fi mode to STA");
++    //     goto err;
++    // }
++    // ret = esp_wifi_start();
++    // if (ret != ESP_OK) {
++    //     ESP_LOGE(TAG, "Failed to start Wi-Fi");
++    //     goto err;
++    // }
+ 
+     /* Change Wi-Fi storage to RAM temporarily and erase any old
+      * credentials in RAM(i.e. without erasing the copy on NVS). Also
+@@ -1457,11 +1463,11 @@ esp_err_t wifi_prov_mgr_start_provisioning(wifi_prov_security_t security, const
+     /* WiFi settings needs to be restored if provisioning error before exiting this API */
+     restore_wifi_flag |= WIFI_PROV_SETTING_BIT;
+ 
+-    ret = esp_wifi_disconnect();
+-    if (ret != ESP_OK) {
+-        ESP_LOGE(TAG, "Failed to disconnect");
+-        goto err;
+-    }
++    // ret = esp_wifi_disconnect();
++    // if (ret != ESP_OK) {
++    //     ESP_LOGE(TAG, "Failed to disconnect");
++    //     goto err;
++    // }
+ 
+     /* Initialize app data */
+     if (security == WIFI_PROV_SECURITY_0) {
