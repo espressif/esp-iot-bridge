@@ -2,6 +2,98 @@ stages:
   - build
   - deploy
 
+.before_script_preparation: &before_script_preparation
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
+  - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+  - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+
+.setup_tools: &setup_tools
+  - git submodule update --init --recursive
+  - export IDF_PATH=$(pwd)/esp-idf
+  - source $IDF_PATH/tools/ci/configure_ci_environment.sh
+  - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+  - $IDF_PATH/tools/idf_tools.py install-python-env
+
+.build_esp32: &build_esp32
+  - idf.py set-target esp32
+  - idf.py build
+
+  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
+
+  - rm -rf build sdkconfig
+  - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
+  - idf.py set-target esp32
+  - idf.py build
+
+  - rm -rf build sdkconfig
+  - sed -i '$d' sdkconfig.defaults.esp32
+  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32
+  - idf.py set-target esp32
+  - idf.py build
+
+  - cd examples/rainmaker/led_light
+  - idf.py set-target esp32
+  - idf.py build
+
+.build_esp32c3: &build_esp32c3
+  - idf.py set-target esp32c3
+  - idf.py build
+
+  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
+
+  - rm -rf build sdkconfig
+  - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32c3
+  - idf.py set-target esp32c3
+  - idf.py build
+
+  - rm -rf build sdkconfig
+  - sed -i '$d' sdkconfig.defaults.esp32c3
+  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32c3
+  - idf.py set-target esp32c3
+  - idf.py build
+
+  - cd examples/rainmaker/led_light
+  - idf.py set-target esp32c3
+  - idf.py build
+
+.build_esp32s2: &build_esp32s2
+  - idf.py set-target esp32s2
+  - idf.py build
+
+  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
+
+  - rm -rf build sdkconfig
+  - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.esp32s2
+  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32s2
+  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s2
+  - idf.py set-target esp32s2
+  - idf.py build
+
+.build_esp32s3: &build_esp32s3
+  - idf.py set-target esp32s3
+  - idf.py build
+
+  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
+
+  - rm -rf build sdkconfig
+  - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32s3
+  - idf.py set-target esp32s3
+  - idf.py build
+
+  - rm -rf build sdkconfig
+  - sed -i '$d' sdkconfig.defaults.esp32s3
+  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32s3
+  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s3
+  - idf.py set-target esp32s3
+  - idf.py build
+
+  - cd examples/rainmaker/led_light
+  - idf.py set-target esp32s3
+  - idf.py build
+
 esp32_v4.3_build:
   stage: build
   image: $CI_DOCKER_REGISTRY/esp32-ci-env
@@ -12,43 +104,12 @@ esp32_v4.3_build:
     GIT_STRATEGY: clone
 
   before_script:
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
-    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+    - *before_script_preparation
 
   script:
-    - git clone -b release/v4.3 ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
-    - export IDF_PATH=$(pwd)/esp-idf
-    - source $IDF_PATH/tools/ci/configure_ci_environment.sh
-    - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - $IDF_PATH/tools/idf_tools.py install-python-env
-    - cd $IDF_PATH
-    - git submodule update --init --recursive
-    - cd ..
-
-    - idf.py set-target esp32
-    - idf.py build
-
-    - git submodule update --init --recursive
-    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-
-    - rm -rf build sdkconfig
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
-    - idf.py set-target esp32
-    - idf.py build
-
-    - rm -rf build sdkconfig
-    - sed -i '$d' sdkconfig.defaults.esp32
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32
-    - idf.py set-target esp32
-    - idf.py build
-
-    - cd examples/rainmaker/led_light
-    - idf.py set-target esp32
-    - idf.py build
+    - git clone -b release/v4.3 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *build_esp32
 
 esp32_v4.4_build:
   stage: build
@@ -60,43 +121,12 @@ esp32_v4.4_build:
     GIT_STRATEGY: clone
 
   before_script:
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
-    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+    - *before_script_preparation
 
   script:
-    - git clone -b release/v4.4 ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
-    - export IDF_PATH=$(pwd)/esp-idf
-    - source $IDF_PATH/tools/ci/configure_ci_environment.sh
-    - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - $IDF_PATH/tools/idf_tools.py install-python-env
-    - cd $IDF_PATH
-    - git submodule update --init --recursive
-    - cd ..
-
-    - idf.py set-target esp32
-    - idf.py build
-
-    - git submodule update --init --recursive
-    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-
-    - rm -rf build sdkconfig
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
-    - idf.py set-target esp32
-    - idf.py build
-
-    - rm -rf build sdkconfig
-    - sed -i '$d' sdkconfig.defaults.esp32
-    - echo -e "\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32
-    - idf.py set-target esp32
-    - idf.py build
-
-    - cd examples/rainmaker/led_light
-    - idf.py set-target esp32
-    - idf.py build
+    - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *build_esp32
 
 esp32c3_v4.4_build:
   stage: build
@@ -108,43 +138,12 @@ esp32c3_v4.4_build:
     GIT_STRATEGY: clone
 
   before_script:
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
-    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+    - *before_script_preparation
 
   script:
-    - git clone -b release/v4.4 ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
-    - export IDF_PATH=$(pwd)/esp-idf
-    - source $IDF_PATH/tools/ci/configure_ci_environment.sh
-    - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - $IDF_PATH/tools/idf_tools.py install-python-env
-    - cd $IDF_PATH
-    - git submodule update --init --recursive
-    - cd ..
-
-    - idf.py set-target esp32c3
-    - idf.py build
-
-    - git submodule update --init --recursive
-    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-
-    - rm -rf build sdkconfig
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32c3
-    - idf.py set-target esp32c3
-    - idf.py build
-
-    - rm -rf build sdkconfig
-    - sed -i '$d' sdkconfig.defaults.esp32c3
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32c3
-    - idf.py set-target esp32c3
-    - idf.py build
-
-    - cd examples/rainmaker/led_light
-    - idf.py set-target esp32c3
-    - idf.py build
+    - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *build_esp32c3
 
 esp32s2_v4.4_build:
   stage: build
@@ -156,35 +155,12 @@ esp32s2_v4.4_build:
     GIT_STRATEGY: clone
 
   before_script:
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
-    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+    - *before_script_preparation
 
   script:
-    - git clone -b release/v4.4 ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
-    - export IDF_PATH=$(pwd)/esp-idf
-    - source $IDF_PATH/tools/ci/configure_ci_environment.sh
-    - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - $IDF_PATH/tools/idf_tools.py install-python-env
-    - cd $IDF_PATH
-    - git submodule update --init --recursive
-    - cd ..
-
-    - idf.py set-target esp32s2
-    - idf.py build
-
-    - git submodule update --init --recursive
-    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-
-    - rm -rf build sdkconfig
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.esp32s2
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32s2
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s2
-    - idf.py set-target esp32s2
-    - idf.py build
+    - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *build_esp32s2
 
 esp32s3_v4.4_build:
   stage: build
@@ -196,44 +172,12 @@ esp32s3_v4.4_build:
     GIT_STRATEGY: clone
 
   before_script:
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
-    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+    - *before_script_preparation
 
   script:
-    - git clone -b release/v4.4 ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
-    - export IDF_PATH=$(pwd)/esp-idf
-    - source $IDF_PATH/tools/ci/configure_ci_environment.sh
-    - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-    - $IDF_PATH/tools/idf_tools.py install-python-env
-    - cd $IDF_PATH
-    - git submodule update --init --recursive
-    - cd ..
-
-    - idf.py set-target esp32s3
-    - idf.py build
-
-    - git submodule update --init --recursive
-    - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-
-    - rm -rf build sdkconfig
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32s3
-    - idf.py set-target esp32s3
-    - idf.py build
-
-    - rm -rf build sdkconfig
-    - sed -i '$d' sdkconfig.defaults.esp32s3
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32s3
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s3
-    - idf.py set-target esp32s3
-    - idf.py build
-
-    - cd examples/rainmaker/led_light
-    - idf.py set-target esp32s3
-    - idf.py build
+    - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *build_esp32s3
 
 push_master_to_github:
   stage: deploy
@@ -256,4 +200,3 @@ push_master_to_github:
     - if [ -d "components/gateway/priv_src" ]; then exit 1; fi
     - git remote add github git@github.com:espressif/esp-gateway.git
     - eval $(git for-each-ref --shell bash --format 'if [ $CI_BUILD_REF == %(objectname) ]; then git checkout -B %(refname:strip=3); git push --follow-tags github %(refname:strip=3); fi;' $GITHUB_PUSH_REFS)
-
