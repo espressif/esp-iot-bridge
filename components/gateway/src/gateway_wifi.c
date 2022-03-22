@@ -36,10 +36,8 @@
 static EventGroupHandle_t s_wifi_event_group = NULL;
 static const char *TAG = "gateway_wifi";
 
-#if CONFIG_SET_VENDOR_IE
-#include "esp_gateway_vendor_ie.h"
-extern ap_router_t *ap_router;
-extern bool first_vendor_ie_tag;
+#if CONFIG_LITEMESH_ENABLE
+#include "esp_gateway_litemesh.h"
 #endif
 
 static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *password, const char *bssid)
@@ -82,65 +80,32 @@ static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t even
                           int event_id, void *event_data)
 {
     ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
-#if CONFIG_SET_VENDOR_IE
-    char softap_ssid[ESP_GATEWAY_SSID_MAX_LEN];
-    strncpy(softap_ssid, ESP_GATEWAY_SOFTAP_SSID, sizeof(softap_ssid));
-
-    if (esp_gateway_vendor_ie_get_level() != 1) {
-        first_vendor_ie_tag = true;
-        esp_gateway_vendor_ie_scan();
-
-        if (ap_router->level != WIFI_ROUTER_LEVEL_0) {
-            ESP_LOGI(TAG, "wifi_router_level: %d", ap_router->level);
-#if CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
-            snprintf(softap_ssid, sizeof(softap_ssid), "%s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, ap_router->router_mac[3], ap_router->router_mac[4], ap_router->router_mac[5]);
-#endif
-            esp_gateway_wifi_set(WIFI_MODE_STA, softap_ssid, ESP_GATEWAY_SOFTAP_PASSWORD, ap_router->router_mac);
-        } else {
-            ESP_LOGI(TAG, "wifi_router_level: %d", ap_router->level);
-            /* TODO */
-        }
-        esp_gateway_vendor_ie_set_rssi(ap_router->rssi, false);
-        esp_gateway_vendor_ie_set_level(ap_router->level + 1, false);
-        esp_gateway_vendor_ie_set_connect_status(0, true);
-        ap_router->level = 0;
-    } else {
-        esp_gateway_vendor_ie_set_connect_status(0, true);
-    }
-#endif
+#if !CONFIG_LITEMESH_ENABLE
     esp_wifi_connect();
+#endif
     xEventGroupClearBits(s_wifi_event_group, GATEWAY_EVENT_STA_CONNECTED);
 }
 
 static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
                           int event_id, void *event_data)
 {
-    if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
-        ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
-#if CONFIG_SET_VENDOR_IE
-        esp_gateway_vendor_ie_set_connect_status(1, true);
-#endif
-        xEventGroupSetBits(s_wifi_event_group, GATEWAY_EVENT_STA_CONNECTED);
-    }
+    ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
+    ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
+
+    esp_gateway_netif_network_segment_conflict_update(event->esp_netif);
+    xEventGroupSetBits(s_wifi_event_group, GATEWAY_EVENT_STA_CONNECTED);
 }
 
 static void wifi_event_ap_staconnected_handler(void *arg, esp_event_base_t event_base,
                           int event_id, void *event_data)
 {
     ESP_LOGI(TAG, "STA Connecting to the AP again...");
-#if CONFIG_SET_VENDOR_IE
-    esp_gateway_vendor_ie_set_station_number(esp_gateway_vendor_ie_get_station_number() + 1, true);
-#endif
 }
 
 static void wifi_event_ap_stadisconnected_handler(void *arg, esp_event_base_t event_base,
                           int event_id, void *event_data)
 {
     ESP_LOGE(TAG, "STA Disconnect to the AP");
-#if CONFIG_SET_VENDOR_IE
-    esp_gateway_vendor_ie_set_station_number(esp_gateway_vendor_ie_get_station_number() - 1, true);
-#endif
 }
 
 static esp_err_t esp_gateway_wifi_init(void)
@@ -166,7 +131,6 @@ static esp_err_t esp_gateway_wifi_init(void)
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
 esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
-    bool flag = true;
     esp_netif_t *wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
 
@@ -178,43 +142,27 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
     wifi_netif = esp_netif_create_default_wifi_sta();
     esp_gateway_netif_list_add(wifi_netif);
 
-    /* Register our event handler for Wi-Fi, IP and Provisioning related events */
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, wifi_event_sta_disconnected_handler, NULL, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, ip_event_sta_got_ip_handler, NULL, NULL));
-
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_STA;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
-#if CONFIG_SET_VENDOR_IE
-    char softap_ssid[ESP_GATEWAY_SSID_MAX_LEN];
-    strncpy(softap_ssid, ESP_GATEWAY_SOFTAP_SSID, sizeof(softap_ssid));
-    esp_gateway_vendor_ie_init();
-
-    ESP_LOGI(TAG, "wifi_router_level: %d", ap_router->level);
-    if (ap_router->level != WIFI_ROUTER_LEVEL_0) {
-#if CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
-        snprintf(softap_ssid, sizeof(softap_ssid), "%s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, ap_router->router_mac[3], ap_router->router_mac[4], ap_router->router_mac[5]);
-#endif
-        esp_gateway_wifi_set(WIFI_MODE_STA, softap_ssid, ESP_GATEWAY_SOFTAP_PASSWORD, ap_router->router_mac);
-        ap_router->level = 0;
-    } else
-#endif // CONFIG_SET_VENDOR_IE
-    {
-        /* Get WiFi Station configuration */
-        static wifi_config_t wifi_cfg = { 0 };
-        esp_err_t ret = esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg);
-        /* Get sta config success & sta ssid not zero & sta ssid not ESP_GATEWAY_SOFTAP_SSID*/
-        if (ret == ESP_OK && strlen((const char*)wifi_cfg.sta.ssid)) {
-            ESP_LOGI(TAG, "Found ssid %s",     (const char*) wifi_cfg.sta.ssid);
-            ESP_LOGI(TAG, "Found password %s", (const char*) wifi_cfg.sta.password);
-        } else {
-            flag = false;
-        }
-    }
-    if (flag) {
+#if CONFIG_LITEMESH_ENABLE
+    esp_litemesh_init();
+#else
+    /* Get WiFi Station configuration */
+    static wifi_config_t wifi_cfg = { 0 };
+    esp_err_t ret = esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg);
+    /* Get sta config success & sta ssid not zero*/
+    if (ret == ESP_OK && strlen((const char*)wifi_cfg.sta.ssid)) {
+        ESP_LOGI(TAG, "Found ssid %s",     (const char*) wifi_cfg.sta.ssid);
+        ESP_LOGI(TAG, "Found password %s", (const char*) wifi_cfg.sta.password);
         esp_wifi_connect();
     }
+#endif // CONFIG_LITEMESH_ENABLE
+
+    /* Register our event handler for Wi-Fi, IP and Provisioning related events */
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, wifi_event_sta_disconnected_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, ip_event_sta_got_ip_handler, NULL, NULL));
 
     return wifi_netif;
 }
@@ -223,10 +171,11 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
 esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
+    esp_netif_ip_info_t netif_ip;
+    esp_netif_ip_info_t allocate_ip_info;
     char softap_ssid[ESP_GATEWAY_SSID_MAX_LEN];
     esp_netif_t *wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
-    esp_netif_ip_info_t netif_ip;
 
     if (!data_forwarding) {
         return wifi_netif;
@@ -239,6 +188,11 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     ESP_ERROR_CHECK(esp_netif_dhcps_stop(wifi_netif));
     if (ip_info) {
         ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, ip_info));
+    } else {
+        if (enable_dhcps) {
+            esp_gateway_netif_request_ip(&allocate_ip_info);
+            esp_netif_set_ip_info(wifi_netif, &allocate_ip_info);
+        }
     }
     esp_netif_get_ip_info(wifi_netif, &netif_ip);
     ESP_LOGI(TAG, "IP Address:" IPSTR, IP2STR(&netif_ip.ip));

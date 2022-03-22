@@ -60,26 +60,41 @@ menu "Gateway Configuration"
                         "Add Mac to the end of SSID"
             endmenu
 
-            config SET_VENDOR_IE
-                bool "Set Vendor ie info"
+            config LITEMESH_ENABLE
+                bool "Enable Lite Mesh"
                 default n
                 depends on GATEWAY_EXTERNAL_NETIF_STATION && GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
                 help
-                    "Set Vendor ie information for Wi-Fi router SoftAP"
+                    "Enable Lite Mesh"
 
-            menu "custom vendor ie"
-                depends on SET_VENDOR_IE
+            menu "Lite Mesh info configuration"
+                depends on LITEMESH_ENABLE
                 config VENDOR_OUI_0
-                    int "VENDOR_OUI_0"
-                    default "122"
+                    int "VENDOR_OUI_0 for Lite Mesh"
+                    default 71
 
                 config VENDOR_OUI_1
-                    int "VENDOR_OUI_1"
-                    default "123"
+                    int "VENDOR_OUI_1 for Lite Mesh"
+                    default 87
 
                 config VENDOR_OUI_2
-                    int "VENDOR_OUI_2"
-                    default "234"
+                    int "VENDOR_OUI_2 for Lite Mesh"
+                    default 77
+
+                config LITEMESH_MAX_CONNECT_NUMBER
+                    int "Maximum number of connections per node"
+                    default 8
+                    range 1 10
+
+                config LITEMESH_MAX_ROUTER_NUMBER
+                    int "Maximum number of trace router number"
+                    default 3
+                    range 1 5
+
+                config LITEMESH_MAX_INHERITED_NETIF_NUMBER
+                    int "Maximum number of external netif router trace number"
+                    default 10
+                    range 1 16
             endmenu
 
         config GATEWAY_DATA_FORWARDING_NETIF_USB
