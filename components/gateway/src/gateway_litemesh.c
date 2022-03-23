@@ -104,6 +104,8 @@ static ap_info_t best_ap_info;
 static bool connected_ap = false;
 static volatile bool litemesh_scan_status = false;
 
+extern wifi_sta_config_t router_config;
+
 static bool esp_litemesh_info_inherit(vendor_ie_data_t *vendor_ie, esp_gateway_litemesh_info_t* out)
 {
     uint8_t offset = LITEMESH_ROUTER_SSID_OFFSET;
@@ -294,12 +296,10 @@ static void esp_litemesh_event_sta_disconnected_handler(void *arg, esp_event_bas
     esp_litemesh_set_connect_status(0);
     esp_litemesh_info_update(broadcast_info);
 
-    if (broadcast_info->level == WIFI_ROUTER_LEVEL_1) {
-        esp_wifi_connect();
-    } else {
-        esp_wifi_scan_start(NULL, false);
-        litemesh_scan_status = true;
-    }
+    esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &router_config);
+
+    litemesh_scan_status = true;
+    esp_wifi_scan_start(NULL, false);
 }
 
 static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t event_base,
@@ -331,6 +331,7 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
     free(ap_list);
 
     if (scan_times < SINGLE_CHANNEL_SCAN_TIMES) {
+        esp_wifi_disconnect();
         if (ap_channel) {
             wifi_scan_config_t scanconf = {
                 .channel = ap_channel,
@@ -360,7 +361,7 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
             wifi_cfg.sta.bssid_set = 1;
             best_ap_info.rssi = -127;
             best_ap_info.level = LITEMESH_MAX_LEVEL;
-            esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_cfg);
+            esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &wifi_cfg);
         }
         best_ap_info.valid = false;
         esp_wifi_connect();
@@ -371,16 +372,12 @@ static void esp_litemesh_event_sta_got_ip_handler(void *arg, esp_event_base_t ev
                           int event_id, void *event_data)
 {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
-    wifi_config_t wifi_cfg = { 0 };
 
     connected_ap = true;
-    esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg);
 
     if (broadcast_info->level == WIFI_ROUTER_LEVEL_0) {
         broadcast_info->router_net_segment[broadcast_info->router_number++] = esp_ip4_addr3_16(&event->ip_info.ip);
         broadcast_info->level = WIFI_ROUTER_LEVEL_1;
-        broadcast_info->router_ssid_len = strlen((const char*)wifi_cfg.sta.ssid);
-        memcpy(broadcast_info->router_ssid, wifi_cfg.sta.ssid, strlen((const char*)wifi_cfg.sta.ssid));
     } else {
         uint32_t max_num = sizeof(broadcast_info->self_net_segment)/sizeof(broadcast_info->self_net_segment[0]);
         esp_gateway_get_external_netif_network_segment(broadcast_info->self_net_segment, &max_num);
@@ -417,6 +414,13 @@ esp_err_t esp_litemesh_init(void)
     memset(broadcast_info, 0, sizeof(*broadcast_info));
     broadcast_info->version = LITEMESH_VERSION;
     broadcast_info->max_connection = LITEMESH_MAX_CONNECT_NUMBER;
+    if (strlen((const char*)router_config.ssid) > sizeof(router_config.ssid)) {
+        broadcast_info->router_ssid_len = sizeof(router_config.ssid);
+    } else {
+        broadcast_info->router_ssid_len = strlen((const char*)router_config.ssid);
+    }
+    
+    memcpy(broadcast_info->router_ssid, router_config.ssid, broadcast_info->router_ssid_len);
 
     memset(esp_gateway_vendor_ie, 0, sizeof(*esp_gateway_vendor_ie));
     esp_gateway_vendor_ie->element_id = WIFI_VENDOR_IE_ELEMENT_ID;

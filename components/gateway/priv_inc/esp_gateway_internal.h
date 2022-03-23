@@ -120,6 +120,10 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
  *     - ESP_OK
  */
 esp_err_t esp_gateway_get_external_netif_network_segment(uint8_t* net_segment, uint32_t* max_num);
+
+esp_err_t esp_gateway_wifi_set_config_into_flash(wifi_interface_t interface, wifi_config_t *conf);
+
+esp_err_t esp_gateway_wifi_set_config_into_ram(wifi_interface_t interface, wifi_config_t *conf);
 #ifdef __cplusplus
 }
 #endif
