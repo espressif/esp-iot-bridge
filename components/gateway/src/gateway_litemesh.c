@@ -301,8 +301,7 @@ static void esp_litemesh_event_sta_disconnected_handler(void *arg, esp_event_bas
 
     esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &router_config);
 
-    litemesh_scan_status = true;
-    esp_wifi_scan_start(NULL, false);
+    esp_litemesh_connect();
 }
 
 static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t event_base,
@@ -407,6 +406,12 @@ static void esp_litemesh_event_ap_stadisconnected_handler(void *arg, esp_event_b
     esp_litemesh_info_update(broadcast_info);
 }
 
+void esp_litemesh_connect(void)
+{
+    esp_wifi_scan_start(NULL, false);
+    litemesh_scan_status = true;
+}
+
 esp_err_t esp_litemesh_init(void)
 {
     best_ap_info.rssi = -127;
@@ -444,8 +449,7 @@ esp_err_t esp_litemesh_init(void)
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, esp_litemesh_event_ap_staconnected_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, esp_litemesh_event_ap_stadisconnected_handler, NULL, NULL));
 
-    esp_wifi_scan_start(NULL, false);
-    litemesh_scan_status = true;
+    esp_litemesh_connect();
     ESP_LOGI(TAG, "Litemesh Scan start\r\n");
     esp_litemesh_info_update(broadcast_info);
 

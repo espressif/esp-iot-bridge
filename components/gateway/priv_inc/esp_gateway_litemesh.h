@@ -37,6 +37,8 @@ bool esp_litemesh_network_segment_is_used(uint32_t ip);
   */
 esp_err_t esp_litemesh_init(void);
 
+void esp_litemesh_connect(void);
+
 #ifdef __cplusplus
 }
 #endif
