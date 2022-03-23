@@ -266,7 +266,10 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
                 temp.max_connection = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] >> 4;
                 esp_litemesh_info_inherit((vendor_ie_data_t *)vendor_ie, &temp);
                 /* should choose the best one */
-                if ((temp.max_connection > temp.connected_station_number) && (temp.connect_router_status == 1)) {
+                if ((temp.max_connection > temp.connected_station_number) 
+                    && (temp.connect_router_status == 1)
+                    && (temp.router_ssid_len == ((strlen((char*)router_config.ssid)) > sizeof(router_config.ssid)?sizeof(router_config.ssid):strlen((char*)router_config.ssid)))
+                    && !strncmp((char*)temp.router_ssid, (char*)router_config.ssid, temp.router_ssid_len)) {
                     if (((rssi > best_ap_info.rssi ) && (temp.level < best_ap_info.level))
                         || ((rssi < best_ap_info.rssi) && (rssi > best_ap_info.rssi - 15) && (temp.level < best_ap_info.level))
                         || ((rssi > best_ap_info.rssi + 15) && (temp.level > best_ap_info.level))) {
