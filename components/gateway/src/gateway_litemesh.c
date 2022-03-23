@@ -102,6 +102,7 @@ static esp_gateway_litemesh_info_t *broadcast_info = NULL;
 static ap_info_t best_ap_info;
 
 static bool connected_ap = false;
+static volatile bool litemesh_scan_status = false;
 
 static bool esp_litemesh_info_inherit(vendor_ie_data_t *vendor_ie, esp_gateway_litemesh_info_t* out)
 {
@@ -297,12 +298,17 @@ static void esp_litemesh_event_sta_disconnected_handler(void *arg, esp_event_bas
         esp_wifi_connect();
     } else {
         esp_wifi_scan_start(NULL, false);
+        litemesh_scan_status = true;
     }
 }
 
 static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
+    if (!litemesh_scan_status) {
+        return;
+    }
+    litemesh_scan_status = false;
     ESP_LOGI(TAG, "LiteMesh Scan done\r\n");
     uint16_t count = 0;
     static uint16_t ap_channel = 0;
@@ -330,8 +336,10 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
                 .channel = ap_channel,
             };
             ESP_ERROR_CHECK(esp_wifi_scan_start(&scanconf, false));
+            litemesh_scan_status = true;
         } else {
             ESP_ERROR_CHECK(esp_wifi_scan_start(NULL, false));
+            litemesh_scan_status = true;
         }
         scan_times++;
     } else {
@@ -430,6 +438,7 @@ esp_err_t esp_litemesh_init(void)
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, esp_litemesh_event_ap_stadisconnected_handler, NULL, NULL));
 
     esp_wifi_scan_start(NULL, false);
+    litemesh_scan_status = true;
     ESP_LOGI(TAG, "Litemesh Scan start\r\n");
     esp_litemesh_info_update(broadcast_info);
 
