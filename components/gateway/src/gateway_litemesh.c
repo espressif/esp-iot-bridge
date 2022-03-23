@@ -92,6 +92,7 @@ typedef struct{
     bool valid;
     int8_t rssi;
     uint8_t level;
+    uint8_t channel;
     uint8_t bssid[8];
 } ap_info_t;
 
@@ -272,6 +273,13 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
                         || ((rssi > best_ap_info.rssi + 15) && (temp.level > best_ap_info.level))) {
                         best_ap_info.rssi = rssi;
                         best_ap_info.valid = true;
+
+                        uint8_t primary;
+                        wifi_second_chan_t second;
+                        if (esp_wifi_get_channel(&primary, &second) == ESP_OK) {
+                            best_ap_info.channel = primary;
+                        }
+
                         memcpy(best_ap_info.bssid, sa, sizeof(best_ap_info.bssid));
                         esp_litemesh_info_inherit((vendor_ie_data_t *)vendor_ie, broadcast_info);
                     }
@@ -322,7 +330,7 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
 
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&count, ap_list));
     for (int i = 0; i < count; ++i) {
-        if (!strncmp(ESP_GATEWAY_SOFTAP_SSID, (const char *)ap_list[i].ssid, strlen(ESP_GATEWAY_SOFTAP_SSID))) {
+        if (!strncmp((char*)router_config.ssid, (const char *)ap_list[i].ssid, sizeof(router_config.ssid))) {
             ap_channel = ap_list[i].primary;
             ESP_LOGI(TAG, "============ Find %s ============", ESP_GATEWAY_SOFTAP_SSID);
             break;
@@ -332,9 +340,12 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
 
     if (scan_times < SINGLE_CHANNEL_SCAN_TIMES) {
         esp_wifi_disconnect();
-        if (ap_channel) {
+        if (best_ap_info.valid) {
             wifi_scan_config_t scanconf = {
-                .channel = ap_channel,
+                .channel = best_ap_info.channel,
+                .scan_type = WIFI_SCAN_TYPE_ACTIVE,
+                .scan_time.active.max = 1000,
+                .scan_time.active.min = 500,
             };
             ESP_ERROR_CHECK(esp_wifi_scan_start(&scanconf, false));
             litemesh_scan_status = true;
@@ -344,9 +355,6 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
         }
         scan_times++;
     } else {
-        scan_times = 0;
-        ap_channel = 0;
-
         if (best_ap_info.valid) {
             wifi_config_t wifi_cfg;
 
@@ -355,15 +363,22 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
             snprintf((char*)wifi_cfg.sta.ssid, sizeof(wifi_cfg.sta.ssid), "%s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, best_ap_info.bssid[3], best_ap_info.bssid[4], best_ap_info.bssid[5]);
 #else
             snprintf((char*)wifi_cfg.sta.ssid, sizeof(wifi_cfg.sta.ssid), "%s\r\n", ESP_GATEWAY_SOFTAP_SSID);
-#endif
-            strlcpy((char *)wifi_cfg.sta.password, ESP_GATEWAY_SOFTAP_PASSWORD, sizeof(wifi_cfg.sta.password));
             memcpy(wifi_cfg.sta.bssid, best_ap_info.bssid, sizeof(wifi_cfg.sta.bssid));
             wifi_cfg.sta.bssid_set = 1;
+#endif
+            strlcpy((char *)wifi_cfg.sta.password, ESP_GATEWAY_SOFTAP_PASSWORD, sizeof(wifi_cfg.sta.password));
+            wifi_cfg.sta.channel = best_ap_info.channel;
             best_ap_info.rssi = -127;
             best_ap_info.level = LITEMESH_MAX_LEVEL;
             esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &wifi_cfg);
+        } else if (ap_channel != 0) {
+            router_config.channel = ap_channel;
+            esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &router_config);
         }
         best_ap_info.valid = false;
+        best_ap_info.channel = 0;
+        scan_times = 0;
+        ap_channel = 0;
         esp_wifi_connect();
     }
 }
