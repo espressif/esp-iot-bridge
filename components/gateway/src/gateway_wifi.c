@@ -40,6 +40,30 @@ static const char *TAG = "gateway_wifi";
 #include "esp_gateway_litemesh.h"
 #endif
 
+wifi_sta_config_t router_config;
+
+esp_err_t esp_gateway_wifi_set_config_into_flash(wifi_interface_t interface, wifi_config_t *conf)
+{
+    esp_err_t ret = ESP_OK;
+    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+    ret = esp_wifi_set_config(interface, conf);
+    esp_wifi_set_storage(WIFI_STORAGE_RAM);
+    if (interface == WIFI_IF_STA) {
+        memcpy(&router_config, conf, sizeof(router_config));
+    }
+
+    return ret;
+}
+
+esp_err_t esp_gateway_wifi_set_config_into_ram(wifi_interface_t interface, wifi_config_t *conf)
+{
+    esp_err_t ret = ESP_OK;
+
+    ret = esp_wifi_set_config(interface, conf);
+
+    return ret;
+}
+
 static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *password, const char *bssid)
 {
     ESP_PARAM_CHECK(ssid);
@@ -58,7 +82,7 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
             ESP_LOGI(TAG, "sta ssid: %s password: %s", ssid, password);
         }
 
-        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_cfg));   
+        ESP_ERROR_CHECK(esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &wifi_cfg));   
     }
 
     if (mode & WIFI_MODE_AP) {
@@ -67,7 +91,7 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
         strlcpy((char *)wifi_cfg.ap.ssid, ssid, sizeof(wifi_cfg.ap.ssid));
         strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
 
-        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
+        ESP_ERROR_CHECK(esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_AP, &wifi_cfg));
 
         ESP_LOGI(TAG, "softap ssid: %s password: %s", ssid, password);
     }
@@ -146,16 +170,16 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
     mode |= WIFI_MODE_STA;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
+    /* Get WiFi Station configuration */
+    esp_err_t ret = esp_wifi_get_config(WIFI_IF_STA, &router_config);
+
 #if CONFIG_LITEMESH_ENABLE
     esp_litemesh_init();
 #else
-    /* Get WiFi Station configuration */
-    static wifi_config_t wifi_cfg = { 0 };
-    esp_err_t ret = esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg);
     /* Get sta config success & sta ssid not zero*/
-    if (ret == ESP_OK && strlen((const char*)wifi_cfg.sta.ssid)) {
-        ESP_LOGI(TAG, "Found ssid %s",     (const char*) wifi_cfg.sta.ssid);
-        ESP_LOGI(TAG, "Found password %s", (const char*) wifi_cfg.sta.password);
+    if (ret == ESP_OK && strlen((const char*)router_config.ssid)) {
+        ESP_LOGI(TAG, "Found ssid %s",     (const char*) router_config.ssid);
+        ESP_LOGI(TAG, "Found password %s", (const char*) router_config.password);
         esp_wifi_connect();
     }
 #endif // CONFIG_LITEMESH_ENABLE
