@@ -62,6 +62,10 @@
 static char *s_web_redirect_url = NULL;
 #endif
 
+#if CONFIG_LITEMESH_ENABLE
+extern void esp_litemesh_connect(void);
+#endif
+
 #define ESP_GATEWAY_WEB_SERVER_CHECK(a, str, goto_tag, ...)                                              \
     do                                                                                 \
     {                                                                                  \
@@ -203,7 +207,6 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
         sta.bssid_set = 1;
         memcpy(sta.bssid, bssid, sizeof(sta.bssid));
     }
-    esp_wifi_disconnect();
 
     esp_err_t esp_gateway_wifi_set_config_into_flash(wifi_interface_t interface, wifi_config_t *conf);
     ret = esp_gateway_wifi_set_config_into_flash(ESP_IF_WIFI_STA, (wifi_config_t*) &sta);
@@ -211,9 +214,15 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
         ESP_LOGE(TAG, "wifi set config fail");
         return ret;
     }
-    // apply connect
+
+#if CONFIG_LITEMESH_ENABLE
+    esp_litemesh_connect();
+#else
+    esp_wifi_disconnect();
+
     esp_wifi_connect();
-    
+#endif /* CONFIG_LITEMESH_ENABLE */
+
     if (connect_event != NULL) { // need to wait wifi connect result, now it's phone config wifi and ssid is null
         bits = xEventGroupWaitBits(connect_event,
             ESP_GATEWAY_WEB_WIFI_CONNECTED_BIT | ESP_GATEWAY_WEB_WIFI_FAIL_BIT,
