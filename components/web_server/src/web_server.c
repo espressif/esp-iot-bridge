@@ -942,7 +942,7 @@ connect_finish:
 
 static int udp_create(uint16_t port, char *bind_ip)
 {
-    struct sockaddr_in6 dest_addr = {0};
+    struct sockaddr_in dest_addr = {0};
     struct sockaddr_in *dest_addr_ip4 = (struct sockaddr_in*) &dest_addr;
     int ip_protocol = 0;
     const int on = 1;

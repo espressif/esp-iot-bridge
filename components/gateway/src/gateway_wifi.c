@@ -23,7 +23,9 @@
 #include "lwip/opt.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "lwip/ip_addr.h"
 #include "lwip/lwip_napt.h"
+#include "dhcpserver/dhcpserver.h"
 
 #include "esp_gateway_config.h"
 #include "esp_gateway_wifi.h"

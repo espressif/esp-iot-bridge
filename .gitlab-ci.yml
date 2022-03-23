@@ -32,10 +32,21 @@ esp32_v4.3_build:
     - idf.py set-target esp32
     - idf.py build
 
-    - rm -rf build sdkconfig
+    - git submodule update --init --recursive
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\n" >> sdkconfig.defaults.esp32
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32
+
+    - rm -rf build sdkconfig
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
+    - idf.py set-target esp32
+    - idf.py build
+
+    - rm -rf build sdkconfig
+    - sed -i '$d' sdkconfig.defaults.esp32
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32
+    - idf.py set-target esp32
+    - idf.py build
+
+    - cd examples/rainmaker/led_light
     - idf.py set-target esp32
     - idf.py build
 
@@ -69,10 +80,21 @@ esp32_v4.4_build:
     - idf.py set-target esp32
     - idf.py build
 
-    - rm -rf build sdkconfig
+    - git submodule update --init --recursive
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32
+
+    - rm -rf build sdkconfig
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
+    - idf.py set-target esp32
+    - idf.py build
+
+    - rm -rf build sdkconfig
+    - sed -i '$d' sdkconfig.defaults.esp32
+    - echo -e "\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32
+    - idf.py set-target esp32
+    - idf.py build
+
+    - cd examples/rainmaker/led_light
     - idf.py set-target esp32
     - idf.py build
 
@@ -106,10 +128,21 @@ esp32c3_v4.4_build:
     - idf.py set-target esp32c3
     - idf.py build
 
-    - rm -rf build sdkconfig
+    - git submodule update --init --recursive
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32c3
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32c3
+
+    - rm -rf build sdkconfig
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32c3
+    - idf.py set-target esp32c3
+    - idf.py build
+
+    - rm -rf build sdkconfig
+    - sed -i '$d' sdkconfig.defaults.esp32c3
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32c3
+    - idf.py set-target esp32c3
+    - idf.py build
+
+    - cd examples/rainmaker/led_light
     - idf.py set-target esp32c3
     - idf.py build
 
@@ -143,10 +176,12 @@ esp32s2_v4.4_build:
     - idf.py set-target esp32s2
     - idf.py build
 
-    - rm -rf build sdkconfig
+    - git submodule update --init --recursive
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32s2
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32s2
+
+    - rm -rf build sdkconfig
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.esp32s2
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32s2
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s2
     - idf.py set-target esp32s2
     - idf.py build
@@ -181,11 +216,22 @@ esp32s3_v4.4_build:
     - idf.py set-target esp32s3
     - idf.py build
 
-    - rm -rf build sdkconfig
+    - git submodule update --init --recursive
     - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\n" >> sdkconfig.defaults.esp32s3
-    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y\n" >> sdkconfig.defaults.esp32s3
+
+    - rm -rf build sdkconfig
+    - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32s3
+    - idf.py set-target esp32s3
+    - idf.py build
+
+    - rm -rf build sdkconfig
+    - sed -i '$d' sdkconfig.defaults.esp32s3
+    - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32s3
     - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s3
+    - idf.py set-target esp32s3
+    - idf.py build
+
+    - cd examples/rainmaker/led_light
     - idf.py set-target esp32s3
     - idf.py build
 

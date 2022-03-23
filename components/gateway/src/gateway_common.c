@@ -25,6 +25,9 @@
 #include "esp_netif.h"
 #include "esp_system.h"
 
+#include "lwip/ip_addr.h"
+#include "dhcpserver/dhcpserver.h"
+
 #include "esp_gateway.h"
 #include "esp_gateway_internal.h"
 #include "esp_gateway_litemesh.h"

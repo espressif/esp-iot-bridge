@@ -29,7 +29,7 @@
 #include <freertos/timers.h>
 #include <esp_log.h>
 #include <driver/gpio.h>
-#include <button.h>
+#include <esp_button.h>
 
 #define IOT_CHECK(tag, a, ret)  if(!(a)) {                                             \
         ESP_LOGE(tag,"%s:%d (%s)", __FILE__, __LINE__, __FUNCTION__);      \
