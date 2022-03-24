@@ -3,7 +3,6 @@ menu "Gateway Wi-Fi Provisoning Configuration"
 
     choice ESP_GATEWAY_PROV_TRANSPORT
         bool "Provisioning Transport"
-        default ESP_GATEWAY_PROV_TRANSPORT_SOFTAP if IDF_TARGET_ESP32S2
         default ESP_GATEWAY_PROV_TRANSPORT_BLE
         help
             Wi-Fi provisioning component offers both, SoftAP and BLE transports. Choose any one.
@@ -17,7 +16,6 @@ menu "Gateway Wi-Fi Provisoning Configuration"
     config ESP_GATEWAY_PROV_TRANSPORT
         int
         default 1 if ESP_GATEWAY_PROV_TRANSPORT_BLE
-        default 2 if ESP_GATEWAY_PROV_TRANSPORT_SOFTAP
 
     config ESP_GATEWAY_RESET_PROVISIONED
         bool

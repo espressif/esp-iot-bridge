@@ -307,7 +307,7 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
 
 /* Event handler for catching system events */
 static void esp_litemesh_event_sta_disconnected_handler(void *arg, esp_event_base_t event_base,
-                          int event_id, void *event_data)
+                                                        int32_t event_id, void *event_data)
 {
     uint32_t max_num = sizeof(broadcast_info->self_net_segment)/sizeof(broadcast_info->self_net_segment[0]);
     connected_ap = false;
@@ -318,13 +318,13 @@ static void esp_litemesh_event_sta_disconnected_handler(void *arg, esp_event_bas
     esp_litemesh_set_connect_status(0);
     esp_litemesh_info_update(broadcast_info);
 
-    esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &router_config);
+    esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, (wifi_config_t*)&router_config);
 
     esp_litemesh_connect();
 }
 
 static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t event_base,
-                                int32_t event_id, void* event_data)
+                                                 int32_t event_id, void* event_data)
 {
     if (!litemesh_scan_status) {
         return;
@@ -383,7 +383,7 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
             esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &wifi_cfg);
         } else if (ap_channel != 0) {
             router_config.channel = ap_channel;
-            esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &router_config);
+            esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, (wifi_config_t*)&router_config);
         }
         best_ap_info.valid = false;
         best_ap_info.channel = 0;
@@ -403,7 +403,7 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
 }
 
 static void esp_litemesh_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
-                          int event_id, void *event_data)
+                                                  int32_t event_id, void *event_data)
 {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
 
@@ -425,14 +425,14 @@ static void esp_litemesh_event_sta_got_ip_handler(void *arg, esp_event_base_t ev
 }
 
 static void esp_litemesh_event_ap_staconnected_handler(void *arg, esp_event_base_t event_base,
-                          int event_id, void *event_data)
+                                                       int32_t event_id, void *event_data)
 {
     esp_litemesh_set_connected_station_number(broadcast_info->connected_station_number + 1);
     esp_litemesh_info_update(broadcast_info);
 }
 
 static void esp_litemesh_event_ap_stadisconnected_handler(void *arg, esp_event_base_t event_base,
-                          int event_id, void *event_data)
+                                                          int32_t event_id, void *event_data)
 {
     esp_litemesh_set_connected_station_number(broadcast_info->connected_station_number - 1);
     esp_litemesh_info_update(broadcast_info);
@@ -477,13 +477,13 @@ esp_err_t esp_litemesh_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_vendor_ie_cb((esp_vendor_ie_cb_t)esp_gateway_vendor_ie_cb, NULL));
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, esp_litemesh_event_sta_disconnected_handler, NULL, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, esp_litemesh_event_scan_done_handler, NULL, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, esp_litemesh_event_sta_got_ip_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &esp_litemesh_event_sta_disconnected_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &esp_litemesh_event_scan_done_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &esp_litemesh_event_sta_got_ip_handler, NULL, NULL));
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, esp_litemesh_event_ap_staconnected_handler, NULL, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, esp_litemesh_event_ap_stadisconnected_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &esp_litemesh_event_ap_staconnected_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &esp_litemesh_event_ap_stadisconnected_handler, NULL, NULL));
 
 #if CONFIG_JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO
     esp_litemesh_connect();

@@ -1622,25 +1622,6 @@ err:
     return ESP_FAIL;
 }
 
-static esp_err_t stop_web_server(void)
-{
-    ESP_GATEWAY_WEB_SERVER_CHECK(httpd_stop(s_server) == ESP_OK, "Stop server failed", err);
-    free(s_web_context);
-    s_web_context = NULL;
-    s_server = NULL;
-    ESP_LOGI(TAG, "Stop HTTP Server");
-#ifdef CONFIG_WEB_CAPTIVE_PORTAL_ENABLE
-    if (s_web_redirect_url) {
-        free(s_web_redirect_url);
-        s_web_redirect_url = NULL;
-    }
-#endif
-
-    return ESP_OK;
-err:
-    return ESP_FAIL;
-}
-
 #ifdef CONFIG_WEB_USE_FATFS 
 static esp_err_t esp_web_fatfs_spiflash_mount(const char *base_path,
     const char *partition_label,
@@ -1753,27 +1734,6 @@ static esp_err_t esp_web_start(uint16_t server_port)
         esp_log_level_set("httpd_uri", ESP_LOG_ERROR);
         esp_log_level_set("httpd_txrx", ESP_LOG_ERROR);
         esp_log_level_set(TAG, ESP_LOG_INFO);
-#endif
-    }
-
-    return ESP_OK;
-}
-
-static esp_err_t esp_web_destory(void)
-{
-    esp_err_t err;
-
-    if (s_server != NULL) {
-        if ((err = stop_web_server()) != ESP_OK) {
-            return err;
-        }
-#ifdef CONFIG_WEB_CAPTIVE_PORTAL_ENABLE
-        at_dns_server_stop();
-#endif
-#ifdef CONFIG_WEB_USE_FATFS 
-        if ((err = esp_web_fatfs_spiflash_deinit()) != ESP_OK) {
-            return err;
-        }
 #endif
     }
 

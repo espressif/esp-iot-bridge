@@ -71,7 +71,6 @@ static void on_modem_event(void *arg, esp_event_base_t event_base,
     }
 }
 
-
 static esp_err_t set_dhcps_dns(esp_netif_t *netif, uint32_t addr)
 {
     esp_netif_dns_info_t dns;
@@ -84,7 +83,7 @@ static esp_err_t set_dhcps_dns(esp_netif_t *netif, uint32_t addr)
 }
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
-                                    int32_t event_id, void* event_data)
+                               int32_t event_id, void* event_data)
 {
     if (event_id == WIFI_EVENT_AP_STACONNECTED) {
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
