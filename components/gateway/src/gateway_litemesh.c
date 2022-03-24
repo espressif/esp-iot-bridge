@@ -336,20 +336,17 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
     static uint32_t scan_times = 0;
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&count));
     wifi_ap_record_t *ap_list = (wifi_ap_record_t *)malloc(sizeof(wifi_ap_record_t) * count);
-    if (ap_list == NULL) {
-        ESP_LOGE(TAG, "Failed to malloc buffer to print scan results");
-        return;
-    }
-
-    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&count, ap_list));
-    for (int i = 0; i < count; ++i) {
-        if (!strncmp((char*)router_config.ssid, (const char *)ap_list[i].ssid, sizeof(router_config.ssid))) {
-            ap_channel = ap_list[i].primary;
-            ESP_LOGI(TAG, "============ Find %s ============", ESP_GATEWAY_SOFTAP_SSID);
-            break;
+    if (ap_list) {
+        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&count, ap_list));
+        for (int i = 0; i < count; ++i) {
+            if (!strncmp((char*)router_config.ssid, (const char *)ap_list[i].ssid, sizeof(router_config.ssid))) {
+                ap_channel = ap_list[i].primary;
+                ESP_LOGI(TAG, "============ Find %s ============", ESP_GATEWAY_SOFTAP_SSID);
+                break;
+            }
         }
+        free(ap_list);
     }
-    free(ap_list);
 
     if (scan_times < SINGLE_CHANNEL_SCAN_TIMES) {
         esp_wifi_disconnect();
