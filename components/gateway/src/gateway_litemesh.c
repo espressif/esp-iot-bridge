@@ -20,6 +20,7 @@
 #include "esp_netif_ip_addr.h"
 
 #include "esp_wifi_types.h"
+
 #include "esp_gateway_config.h"
 #include "esp_gateway_internal.h"
 #include "esp_gateway_litemesh.h"
@@ -288,7 +289,6 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
                     }
                 }
             }
-
         }
     }
     return;
@@ -381,6 +381,15 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
         best_ap_info.channel = 0;
         scan_times = 0;
         ap_channel = 0;
+
+        if (strlen((const char*)router_config.ssid) > sizeof(router_config.ssid)) {
+            broadcast_info->router_ssid_len = sizeof(router_config.ssid);
+        } else {
+            broadcast_info->router_ssid_len = strlen((const char*)router_config.ssid);
+        }
+        memcpy(broadcast_info->router_ssid, router_config.ssid, broadcast_info->router_ssid_len);
+        esp_litemesh_info_update(broadcast_info);
+
         esp_wifi_connect();
     }
 }
@@ -442,7 +451,7 @@ esp_err_t esp_litemesh_init(void)
     } else {
         broadcast_info->router_ssid_len = strlen((const char*)router_config.ssid);
     }
-    
+
     memcpy(broadcast_info->router_ssid, router_config.ssid, broadcast_info->router_ssid_len);
 
     memset(esp_gateway_vendor_ie, 0, sizeof(*esp_gateway_vendor_ie));
@@ -464,8 +473,17 @@ esp_err_t esp_litemesh_init(void)
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, esp_litemesh_event_ap_staconnected_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, esp_litemesh_event_ap_stadisconnected_handler, NULL, NULL));
 
+#if CONFIG_JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO
     esp_litemesh_connect();
-    ESP_LOGI(TAG, "Litemesh Scan start\r\n");
+    ESP_LOGI(TAG, "Litemesh Scan start");
+#else
+    if (strlen((const char*)router_config.ssid)) {
+        ESP_LOGI(TAG, "Found ssid %s",     (const char*) router_config.ssid);
+        ESP_LOGI(TAG, "Found password %s", (const char*) router_config.password);
+        esp_wifi_connect();
+    }
+#endif /* CONFIG_JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO */
+
     esp_litemesh_info_update(broadcast_info);
 
     return ESP_OK;
