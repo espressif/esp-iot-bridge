@@ -104,6 +104,8 @@ static esp_gateway_litemesh_info_t *broadcast_info = NULL;
 static ap_info_t best_ap_info;
 
 static bool connected_ap = false;
+static bool connected_eth = false;
+static uint8_t eth_net_segment;
 static volatile bool litemesh_scan_status = false;
 
 extern wifi_sta_config_t router_config;
@@ -169,8 +171,8 @@ static esp_err_t esp_litemesh_info_unpack(vendor_ie_data_t *vendor_ie, esp_gatew
 
     out->inherited_netif_number = inherited_netif_number;
     memcpy(out->inherited_net_segment, vendor_ie->payload + offset, inherited_netif_number);
-   
-    return;
+
+    return ESP_OK;
 }
 
 static void esp_litemesh_info_update(esp_gateway_litemesh_info_t *current_node_info)
@@ -296,7 +298,7 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
                         }
 
                         memcpy(best_ap_info.bssid, sa, sizeof(best_ap_info.bssid));
-                        esp_litemesh_info_inherit((vendor_ie_data_t *)vendor_ie, broadcast_info);
+                        esp_litemesh_info_inherit(&temp, broadcast_info);
                     }
                 }
             }
@@ -315,7 +317,9 @@ static void esp_litemesh_event_sta_disconnected_handler(void *arg, esp_event_bas
     esp_gateway_get_external_netif_network_segment(broadcast_info->self_net_segment, &max_num);
     broadcast_info->self_net_segment_num = max_num;
 
-    esp_litemesh_set_connect_status(0);
+    if (!connected_eth) {
+        esp_litemesh_set_connect_status(0);
+    }
     esp_litemesh_info_update(broadcast_info);
 
     esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, (wifi_config_t*)&router_config);
@@ -402,6 +406,46 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
     }
 }
 
+#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET)
+static void esp_litemesh_event_eth_got_ip_handler(void *arg, esp_event_base_t event_base,
+                                                  int32_t event_id, void *event_data)
+{
+    ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
+    connected_eth = true;
+
+    eth_net_segment = esp_ip4_addr3_16(&event->ip_info.ip);
+    broadcast_info->router_net_segment[broadcast_info->router_number++] = eth_net_segment;
+
+    esp_litemesh_set_connect_status(1);
+    esp_litemesh_info_update(broadcast_info);
+}
+
+static void esp_litemesh_event_eth_disconnected_handler(void *arg, esp_event_base_t event_base,
+                                                  int32_t event_id, void *event_data)
+{
+    if (connected_eth) {
+        /* Remove ETH IP net segment */
+        uint8_t i = 0;
+        for (; i < broadcast_info->router_number; i++) {
+            if (broadcast_info->router_net_segment[i] == eth_net_segment) {
+                break;
+            }
+        }
+
+        for (; i < (broadcast_info->router_number - 1); i++) {
+            broadcast_info->router_net_segment[i] = broadcast_info->router_net_segment[i + 1];
+        }
+        broadcast_info->router_number--;
+
+        if (!connected_ap) {
+            esp_litemesh_set_connect_status(0);
+        }
+        esp_litemesh_info_update(broadcast_info);
+        connected_eth = false;
+    }
+}
+#endif /* CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET */
+
 static void esp_litemesh_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
                                                   int32_t event_id, void *event_data)
 {
@@ -480,6 +524,13 @@ esp_err_t esp_litemesh_init(void)
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &esp_litemesh_event_sta_disconnected_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &esp_litemesh_event_scan_done_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &esp_litemesh_event_sta_got_ip_handler, NULL, NULL));
+
+#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET)
+    /* Register event handler for ETH */
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &esp_litemesh_event_eth_got_ip_handler, NULL ,NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_ETH_LOST_IP, &esp_litemesh_event_eth_disconnected_handler, NULL ,NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(ETH_EVENT, ETHERNET_EVENT_DISCONNECTED, &esp_litemesh_event_eth_disconnected_handler, NULL ,NULL));
+#endif
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &esp_litemesh_event_ap_staconnected_handler, NULL, NULL));
