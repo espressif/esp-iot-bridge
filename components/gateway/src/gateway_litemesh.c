@@ -108,62 +108,69 @@ static volatile bool litemesh_scan_status = false;
 
 extern wifi_sta_config_t router_config;
 
-static bool esp_litemesh_info_inherit(vendor_ie_data_t *vendor_ie, esp_gateway_litemesh_info_t* out)
+static bool esp_litemesh_info_inherit(esp_gateway_litemesh_info_t* in, esp_gateway_litemesh_info_t* out)
 {
-    uint8_t offset = LITEMESH_ROUTER_SSID_OFFSET;
-    uint8_t router_ssid_length = vendor_ie->payload[ROUTER_SSID_LEN];
-    uint8_t router_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] >> 4;
-    uint8_t inherited_netif_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] & 0x0F;
     bool update = false;
 
-    assert(out->version == vendor_ie->payload[VERSION]);
-
-    if (out->connect_router_status != vendor_ie->payload[NODE_INFORMATION] >> 7) {
-        out->connect_router_status = vendor_ie->payload[NODE_INFORMATION] >> 7;
+    if (out->connect_router_status != in->connect_router_status) {
+        out->connect_router_status = in->connect_router_status;
         update = true;
     }
 
-    if (out->level != ((vendor_ie->payload[NODE_INFORMATION] & 0x0F) + 1)) {
-        out->level = (vendor_ie->payload[NODE_INFORMATION] & 0x0F) + 1;
+    if (out->level != (in->level) + 1) {
+        out->level = in->level + 1;
         update = true;
     }
 
-    if (out->router_ssid_len != router_ssid_length) {
-        out->router_ssid_len = router_ssid_length;
-        memcpy(out->router_ssid, vendor_ie->payload + offset, router_ssid_length);
+    if (out->router_number != in->router_number) {
+        out->router_number = in->router_number;
+        memcpy(out->router_net_segment, in->router_net_segment, in->router_number);
         update = true;
     } else {
-        if (!memcmp(out->router_ssid, vendor_ie->payload + offset, router_ssid_length)) {
-            memcpy(out->router_ssid, vendor_ie->payload + offset, router_ssid_length);
+        if (!memcmp(out->router_net_segment, in->router_net_segment, in->router_number)) {
+            memcpy(out->router_net_segment, in->router_net_segment, in->router_number);
             update = true;
         }
     }
-    offset += router_ssid_length;
 
-    if (out->router_number != router_number) {
-        out->router_number = router_number;
-        memcpy(out->router_net_segment, vendor_ie->payload + offset, router_number);
+    if (out->inherited_netif_number != in->inherited_netif_number) {
+        out->inherited_netif_number = in->inherited_netif_number;
+        memcpy(out->inherited_net_segment, in->inherited_net_segment, in->inherited_netif_number);
         update = true;
     } else {
-        if (!memcmp(out->router_net_segment, vendor_ie->payload + offset, router_number)) {
-            memcpy(out->router_net_segment, vendor_ie->payload + offset, router_number);
-            update = true;
-        }
-    }
-    offset += router_number;
-
-    if (out->inherited_netif_number != inherited_netif_number) {
-        out->inherited_netif_number = inherited_netif_number;
-        memcpy(out->inherited_net_segment, vendor_ie->payload + offset, inherited_netif_number);
-        update = true;
-    } else {
-        if (!memcmp(out->inherited_net_segment, vendor_ie->payload + offset, inherited_netif_number)) {
-            memcpy(out->inherited_net_segment, vendor_ie->payload + offset, inherited_netif_number);
+        if (!memcmp(out->inherited_net_segment, in->inherited_net_segment, in->inherited_netif_number)) {
+            memcpy(out->inherited_net_segment, in->inherited_net_segment, in->inherited_netif_number);
             update = true;
         }
     }
 
     return update;
+}
+
+static esp_err_t esp_litemesh_info_unpack(vendor_ie_data_t *vendor_ie, esp_gateway_litemesh_info_t* out)
+{
+    uint8_t offset = LITEMESH_ROUTER_SSID_OFFSET;
+    uint8_t router_ssid_length = vendor_ie->payload[ROUTER_SSID_LEN];
+    uint8_t router_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] >> 4;
+    uint8_t inherited_netif_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] & 0x0F;
+
+    out->version = vendor_ie->payload[VERSION];
+    out->max_connection = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] >> 7;
+    out->connected_station_number = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] & 0x0F;
+    out->connect_router_status = vendor_ie->payload[NODE_INFORMATION] >> 7;
+    out->level = vendor_ie->payload[NODE_INFORMATION] & 0x0F;
+    out->router_ssid_len = router_ssid_length;
+    memcpy(out->router_ssid, vendor_ie->payload + offset, router_ssid_length);
+    offset += router_ssid_length;
+
+    out->router_number = router_number;
+    memcpy(out->router_net_segment, vendor_ie->payload + offset, router_number);
+    offset += router_number;
+
+    out->inherited_netif_number = inherited_netif_number;
+    memcpy(out->inherited_net_segment, vendor_ie->payload + offset, inherited_netif_number);
+   
+    return;
 }
 
 static void esp_litemesh_info_update(esp_gateway_litemesh_info_t *current_node_info)
@@ -252,21 +259,25 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
         if (vendor_ie->vendor_oui[0] == VENDOR_OUI_0 
             && vendor_ie->vendor_oui[1] == VENDOR_OUI_1 
             && vendor_ie->vendor_oui[2] == VENDOR_OUI_2) {
+
+            esp_gateway_litemesh_info_t temp;
+            memset(&temp, 0x0, sizeof(esp_gateway_litemesh_info_t));
+            esp_litemesh_info_unpack((vendor_ie_data_t *)vendor_ie, &temp);
+
             if (connected_ap) { /* update parent info */
                 wifi_ap_record_t ap_info;
                 esp_wifi_sta_get_ap_info(&ap_info);
                 if (!memcmp(ap_info.bssid , sa, sizeof(ap_info.bssid))) {
-                    if (esp_litemesh_info_inherit((vendor_ie_data_t *)vendor_ie, broadcast_info)) {
+                    if ((temp.router_ssid_len != broadcast_info->router_ssid_len)
+                        || strncmp((char*)temp.router_ssid, (char*)broadcast_info->router_ssid, temp.router_ssid_len)) {
+                        esp_wifi_disconnect();
+                        return;
+                    }
+                    if (esp_litemesh_info_inherit(&temp, broadcast_info)) {
                         esp_litemesh_info_update(broadcast_info);
                     }
                 }
             } else {
-                esp_gateway_litemesh_info_t temp;
-                memset(&temp, 0x0, sizeof(esp_gateway_litemesh_info_t));
-                temp.version = 1;
-                temp.connected_station_number = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] & 0x0F;
-                temp.max_connection = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] >> 4;
-                esp_litemesh_info_inherit((vendor_ie_data_t *)vendor_ie, &temp);
                 /* should choose the best one */
                 if ((temp.max_connection > temp.connected_station_number) 
                     && (temp.connect_router_status == 1)
@@ -432,8 +443,12 @@ static void esp_litemesh_event_ap_stadisconnected_handler(void *arg, esp_event_b
 
 void esp_litemesh_connect(void)
 {
-    esp_wifi_scan_start(NULL, false);
-    litemesh_scan_status = true;
+    if (connected_ap) {
+        esp_wifi_disconnect();
+    } else {
+        esp_wifi_scan_start(NULL, false);
+        litemesh_scan_status = true;
+    }
 }
 
 esp_err_t esp_litemesh_init(void)
