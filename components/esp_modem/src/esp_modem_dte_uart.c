@@ -92,7 +92,7 @@ post_event_unknown:
     esp_event_post_to(esp_dte->event_loop_hdl, ESP_MODEM_EVENT, ESP_MODEM_EVENT_UNKNOWN,
                       (void *)line, strlen(line) + 1, pdMS_TO_TICKS(100));
 err:
-    return ESP_FAIL;
+    return err;
 }
 
 /**

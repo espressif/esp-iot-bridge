@@ -401,15 +401,16 @@ void task_runtime_stats_task(void* pvParameters)
 
 void network_adapter_driver_init(void)
 {
-	esp_err_t ret;
 	uint8_t capa = 0;
 	uint8_t prio_q_idx = 0;
-	uint8_t mac[MAC_LEN] = {0};
 	print_firmware_version();
 
 	capa = get_capabilities();
 
 #ifdef CONFIG_ESP_GATEWAY_BT_ENABLED
+	esp_err_t ret;
+	uint8_t mac[MAC_LEN] = {0};
+
 	initialise_bluetooth();
 
 	ret = esp_read_mac(mac, ESP_MAC_BT);

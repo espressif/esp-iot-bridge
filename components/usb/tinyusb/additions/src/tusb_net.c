@@ -23,8 +23,6 @@
 
 #include "tusb_net.h"
 
-static const char *TAG = "tusb_net";
-
 extern bool s_wifi_is_connected;
 static SemaphoreHandle_t Net_Semphore;
 

@@ -103,7 +103,7 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
 
 /* Event handler for catching system events */
 static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t event_base,
-                          int event_id, void *event_data)
+                                                int32_t event_id, void *event_data)
 {
     ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
 #if !CONFIG_LITEMESH_ENABLE
@@ -113,7 +113,7 @@ static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t even
 }
 
 static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
-                          int event_id, void *event_data)
+                                        int32_t event_id, void *event_data)
 {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
     ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
@@ -123,13 +123,13 @@ static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
 }
 
 static void wifi_event_ap_staconnected_handler(void *arg, esp_event_base_t event_base,
-                          int event_id, void *event_data)
+                                               int32_t event_id, void *event_data)
 {
     ESP_LOGI(TAG, "STA Connecting to the AP again...");
 }
 
 static void wifi_event_ap_stadisconnected_handler(void *arg, esp_event_base_t event_base,
-                          int event_id, void *event_data)
+                                                  int32_t event_id, void *event_data)
 {
     ESP_LOGE(TAG, "STA Disconnect to the AP");
 }
@@ -173,13 +173,13 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
     /* Get WiFi Station configuration */
-    esp_err_t ret = esp_wifi_get_config(WIFI_IF_STA, &router_config);
+    esp_wifi_get_config(WIFI_IF_STA, (wifi_config_t*)&router_config);
 
 #if CONFIG_LITEMESH_ENABLE
     esp_litemesh_init();
 #else
-    /* Get sta config success & sta ssid not zero*/
-    if (ret == ESP_OK && strlen((const char*)router_config.ssid)) {
+    /* Get Wi-Fi Station ssid success */
+    if (strlen((const char*)router_config.ssid)) {
         ESP_LOGI(TAG, "Found ssid %s",     (const char*) router_config.ssid);
         ESP_LOGI(TAG, "Found password %s", (const char*) router_config.password);
         esp_wifi_connect();
@@ -187,8 +187,8 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 #endif /* CONFIG_LITEMESH_ENABLE */
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, wifi_event_sta_disconnected_handler, NULL, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, ip_event_sta_got_ip_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_event_sta_disconnected_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_sta_got_ip_handler, NULL, NULL));
 
     return wifi_netif;
 }
@@ -235,8 +235,8 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     }
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, wifi_event_ap_staconnected_handler, NULL, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, wifi_event_ap_stadisconnected_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &wifi_event_ap_staconnected_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &wifi_event_ap_stadisconnected_handler, NULL, NULL));
 
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_AP;
