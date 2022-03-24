@@ -201,20 +201,28 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
     uint32_t allocate_ip4_addr3 = 4;
+    esp_ip4_addr_t netmask = {.addr = ESP_IP4TOADDR(255, 255, 255, 0)};
+    bool ip_segment_is_used = false;
 
     while (p) {
         if ((esp_netif != p->netif) && DHCPS_NETIF_ID(p->netif)) { // DHCP_Server has to be enabled for this netif
+            esp_netif_get_ip_info(esp_netif, &allocate_ip_info);
             esp_netif_get_ip_info(p->netif, &netif_ip);
 
+            if (!ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &netmask)) {
+                p = p->next;
+                continue;
+            }
+
             for (; allocate_ip4_addr3 < 256; allocate_ip4_addr3++) {
+                ip_segment_is_used = !esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1));
 #if CONFIG_LITEMESH_ENABLE
-                if(!esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1))) {
-#else
-                if(!esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1))) {
+                ip_segment_is_used |= !esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1));
 #endif
+                if (ip_segment_is_used) {
                     allocate_ip_info.ip.addr = ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1);
                     allocate_ip_info.gw.addr = ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1);
-                    allocate_ip_info.netmask.addr = ESP_IP4TOADDR(255, 255, 255, 0);
+                    allocate_ip_info.netmask.addr = netmask.addr;
                     ESP_LOGI("ip reallocate", "IP Address:" IPSTR, IP2STR(&allocate_ip_info.ip));
                     ESP_LOGI("ip reallocate", "GW Address:" IPSTR, IP2STR(&allocate_ip_info.gw));
                     ESP_LOGI("ip reallocate", "NM Address:" IPSTR, IP2STR(&allocate_ip_info.netmask));
