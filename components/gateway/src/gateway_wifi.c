@@ -84,7 +84,7 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
             ESP_LOGI(TAG, "sta ssid: %s password: %s", ssid, password);
         }
 
-        ESP_ERROR_CHECK(esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &wifi_cfg));   
+        ESP_ERROR_CHECK(esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &wifi_cfg));
     }
 
     if (mode & WIFI_MODE_AP) {

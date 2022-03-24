@@ -6,4 +6,4 @@ sec_cert, 0x3F, ,        ,          0x3000, ,  # Never mark this as an encrypted
 ota_0,    app,  ota_0,   0x10000,   960K,   ,
 ota_1,    app,  ota_1,   ,          960K,   ,
 nvs,      data, nvs,     0x1f0000,  0x6000, ,
-fctry,    data, nvs,     ,          0x6000, ,
+fctry,    data, nvs,     0x1f6000,  0x6000, ,
