@@ -1451,11 +1451,11 @@ esp_err_t wifi_prov_mgr_start_provisioning(wifi_prov_security_t security, const 
     /* Erase Wi-Fi credentials in RAM, when call disconnect and user code
      * receive WIFI_EVENT_STA_DISCONNECTED and maybe call esp_wifi_connect, at
      * this time Wi-Fi will have no configuration to connect */
-    ret = esp_wifi_set_config(WIFI_IF_STA, &wifi_cfg_empty);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to set empty Wi-Fi credentials");
-        goto err;
-    }
+    // ret = esp_wifi_set_config(WIFI_IF_STA, &wifi_cfg_empty);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to set empty Wi-Fi credentials");
+    //     goto err;
+    // }
     /* WiFi settings needs to be restored if provisioning error before exiting this API */
     restore_wifi_flag |= WIFI_PROV_SETTING_BIT;
 
