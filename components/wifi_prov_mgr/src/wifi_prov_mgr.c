@@ -34,7 +34,9 @@
 #endif /* CONFIG_ESP_GATEWAY_PROV_TRANSPORT_SOFTAP */
 #include "qrcode.h"
 
-static const char *TAG = "wifi_prov_mgr";
+#include "esp_gateway.h"
+
+static const char *TAG = "esp_gateway_wifi_prov_mgr";
 
 static bool wifi_prov_status = false;
 static esp_timer_handle_t deinit_wifi_prov_mgr_timer = NULL;
@@ -92,8 +94,14 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                          "\n\tSSID     : %s\n\tPassword : %s",
                          (const char *) wifi_sta_cfg->ssid,
                          (const char *) wifi_sta_cfg->password);
-                esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*)wifi_sta_cfg);
+                esp_gateway_wifi_set_config_into_flash(ESP_IF_WIFI_STA, (wifi_config_t*)wifi_sta_cfg);
+#if CONFIG_LITEMESH_ENABLE
+                esp_litemesh_connect();
+#else
+                esp_wifi_disconnect();
+
                 esp_wifi_connect();
+#endif /* CONFIG_LITEMESH_ENABLE */
                 break;
             }
             case WIFI_PROV_CRED_FAIL: {
@@ -124,6 +132,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 if (stat != ESP_OK) {
                     ESP_LOGI(TAG, "%s failed to delete timer, err 0x%x\n", __func__, stat);
                 }
+                wifi_prov_event_unregister();
                 /* De-initialize manager once provisioning is finished */
                 wifi_prov_mgr_deinit();
                 wifi_prov_status = false;
