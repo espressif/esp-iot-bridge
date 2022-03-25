@@ -62,9 +62,7 @@
 static char *s_web_redirect_url = NULL;
 #endif
 
-#if CONFIG_LITEMESH_ENABLE
-extern void esp_litemesh_connect(void);
-#endif
+#include "esp_gateway.h"
 
 #define ESP_GATEWAY_WEB_SERVER_CHECK(a, str, goto_tag, ...)                                              \
     do                                                                                 \
@@ -208,7 +206,6 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
         memcpy(sta.bssid, bssid, sizeof(sta.bssid));
     }
 
-    esp_err_t esp_gateway_wifi_set_config_into_flash(wifi_interface_t interface, wifi_config_t *conf);
     ret = esp_gateway_wifi_set_config_into_flash(ESP_IF_WIFI_STA, (wifi_config_t*) &sta);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "wifi set config fail");
