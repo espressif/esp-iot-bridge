@@ -157,7 +157,7 @@ static esp_err_t esp_litemesh_info_unpack(vendor_ie_data_t *vendor_ie, esp_gatew
     uint8_t inherited_netif_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] & 0x0F;
 
     out->version = vendor_ie->payload[VERSION];
-    out->max_connection = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] >> 7;
+    out->max_connection = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] >> 4;
     out->connected_station_number = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] & 0x0F;
     out->connect_router_status = vendor_ie->payload[NODE_INFORMATION] >> 7;
     out->level = vendor_ie->payload[NODE_INFORMATION] & 0x0F;
