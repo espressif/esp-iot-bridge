@@ -276,10 +276,12 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
                 wifi_ap_record_t ap_info;
                 esp_wifi_sta_get_ap_info(&ap_info);
                 if (!memcmp(ap_info.bssid , sa, sizeof(ap_info.bssid))) {
-                    if ((temp.router_ssid_len != broadcast_info->router_ssid_len)
-                        || strncmp((char*)temp.router_ssid, (char*)broadcast_info->router_ssid, temp.router_ssid_len)) {
-                        esp_wifi_disconnect();
-                        return;
+                    if (broadcast_info->router_ssid_len != 0) { /* No need to compare ssid without network configuration */
+                        if ((temp.router_ssid_len != broadcast_info->router_ssid_len) /* Compare ssid to distinguish different mesh networks */
+                            || strncmp((char*)temp.router_ssid, (char*)broadcast_info->router_ssid, temp.router_ssid_len)) {
+                            esp_wifi_disconnect();
+                            return;
+                        }
                     }
                     if (esp_litemesh_info_inherit(&temp, broadcast_info)) {
                         esp_litemesh_info_update(broadcast_info);
@@ -288,23 +290,26 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
             } else {
                 /* should choose the best one */
                 if ((temp.max_connection > temp.connected_station_number) 
-                    && (temp.connect_router_status == 1)
-                    && (temp.router_ssid_len == ((strlen((char*)router_config.ssid)) > sizeof(router_config.ssid)?sizeof(router_config.ssid):strlen((char*)router_config.ssid)))
-                    && !strncmp((char*)temp.router_ssid, (char*)router_config.ssid, temp.router_ssid_len)) {
-                    if (((rssi > best_ap_info.rssi ) && (temp.level < best_ap_info.level))
-                        || ((rssi < best_ap_info.rssi) && (rssi > best_ap_info.rssi - 15) && (temp.level < best_ap_info.level))
-                        || ((rssi > best_ap_info.rssi + 15) && (temp.level > best_ap_info.level))) {
-                        best_ap_info.rssi = rssi;
-                        best_ap_info.valid = true;
+                    && (temp.connect_router_status == 1)){
+                    /* No network configuration || Judge whether it is the same mesh network in the distribution network state */
+                    if ((strlen((char*)router_config.ssid) == 0) || ((temp.router_ssid_len == ((strlen((char*)router_config.ssid)) > sizeof(router_config.ssid)?sizeof(router_config.ssid):strlen((char*)router_config.ssid)))
+                        && !strncmp((char*)temp.router_ssid, (char*)router_config.ssid, temp.router_ssid_len))) {
+                        /* The conditions that need to be met to select the optimal node */
+                        if (((rssi > best_ap_info.rssi ) && (temp.level < best_ap_info.level))
+                            || ((rssi < best_ap_info.rssi) && (rssi > best_ap_info.rssi - 15) && (temp.level < best_ap_info.level))
+                            || ((rssi > best_ap_info.rssi + 15) && (temp.level > best_ap_info.level))) {
+                            best_ap_info.rssi = rssi;
+                            best_ap_info.valid = true;
 
-                        uint8_t primary;
-                        wifi_second_chan_t second;
-                        if (esp_wifi_get_channel(&primary, &second) == ESP_OK) {
-                            best_ap_info.channel = primary;
+                            uint8_t primary;
+                            wifi_second_chan_t second;
+                            if (esp_wifi_get_channel(&primary, &second) == ESP_OK) {
+                                best_ap_info.channel = primary;
+                            }
+
+                            memcpy(best_ap_info.bssid, sa, sizeof(best_ap_info.bssid));
+                            esp_litemesh_info_inherit(&temp, broadcast_info);
                         }
-
-                        memcpy(best_ap_info.bssid, sa, sizeof(best_ap_info.bssid));
-                        esp_litemesh_info_inherit(&temp, broadcast_info);
                     }
                 }
             }
