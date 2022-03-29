@@ -105,8 +105,10 @@ static ap_info_t best_ap_info;
 
 static bool connected_ap = false;
 static bool connected_eth = false;
-static uint8_t eth_net_segment;
 static volatile bool litemesh_scan_status = false;
+#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET)
+static uint8_t eth_net_segment;
+#endif
 
 extern wifi_sta_config_t router_config;
 
@@ -218,19 +220,23 @@ bool esp_litemesh_network_segment_is_used(uint32_t ip)
     esp_ip4_addr_t ip4_addr = {.addr = ip};
     uint8_t addr3 = esp_ip4_addr3_16(&ip4_addr);
 
-    for (uint32_t loop = 0; loop < broadcast_info->router_number; loop++) {
+    if (broadcast_info == NULL) {
+        return false;
+    }
+
+    for (uint8_t loop = 0; loop < broadcast_info->router_number; loop++) {
         if (addr3 == broadcast_info->router_net_segment[loop]) {
             return true;
         }
     }
 
-    for (uint32_t loop = 0; loop < broadcast_info->inherited_netif_number; loop++) {
+    for (uint8_t loop = 0; loop < broadcast_info->inherited_netif_number; loop++) {
         if (addr3 == broadcast_info->inherited_net_segment[loop]) {
             return true;
         }
     }
 
-    for (uint32_t loop = 0; loop < broadcast_info->self_net_segment_num; loop++) {
+    for (uint8_t loop = 0; loop < broadcast_info->self_net_segment_num; loop++) {
         if (addr3 == broadcast_info->self_net_segment[loop]) {
             return true;
         }
