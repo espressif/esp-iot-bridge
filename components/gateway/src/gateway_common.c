@@ -136,10 +136,14 @@ static bool esp_gateway_netif_network_segment_is_used(uint32_t ip)
 
 esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info)
 {
-    uint8_t gateway_ip;
+    bool ip_segment_is_used = true;
 
-    for (gateway_ip = 4; gateway_ip < 255; gateway_ip++) {
-        if(!esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1))) {
+    for (uint8_t gateway_ip = 4; gateway_ip < 255; gateway_ip++) {
+        ip_segment_is_used = esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1));
+#if CONFIG_LITEMESH_ENABLE
+        ip_segment_is_used |= esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1));
+#endif
+        if (!ip_segment_is_used) {
             ip_info->ip.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 1);
             ip_info->gw.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 1);
             ip_info->netmask.addr = ESP_IP4TOADDR(255, 255, 255, 0);
@@ -149,7 +153,6 @@ esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info)
 
             return ESP_OK;
         }
-        gateway_ip++;
     }
 
     return ESP_FAIL;
@@ -200,7 +203,6 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
     gateway_netif_t* p = gateway_link;
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
-    uint32_t allocate_ip4_addr3 = 4;
     esp_ip4_addr_t netmask = {.addr = ESP_IP4TOADDR(255, 255, 255, 0)};
     bool ip_segment_is_used = false;
 
@@ -209,27 +211,17 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
             esp_netif_get_ip_info(esp_netif, &allocate_ip_info);
             esp_netif_get_ip_info(p->netif, &netif_ip);
 
-            if (!ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &netmask)) {
+#if CONFIG_LITEMESH_ENABLE
+            ip_segment_is_used = esp_litemesh_network_segment_is_used(netif_ip.ip.addr);
+#endif
+            /* The checked network segment does not conflict with the external netif */
+            /* And the same ip net segment is not be used by other external netifs */
+            if ((!ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &netmask)) && !ip_segment_is_used) {
                 p = p->next;
                 continue;
             }
 
-            for (; allocate_ip4_addr3 < 256; allocate_ip4_addr3++) {
-                ip_segment_is_used = !esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1));
-#if CONFIG_LITEMESH_ENABLE
-                ip_segment_is_used |= !esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1));
-#endif
-                if (ip_segment_is_used) {
-                    allocate_ip_info.ip.addr = ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1);
-                    allocate_ip_info.gw.addr = ESP_IP4TOADDR(192, 168, allocate_ip4_addr3, 1);
-                    allocate_ip_info.netmask.addr = netmask.addr;
-                    ESP_LOGI("ip reallocate", "IP Address:" IPSTR, IP2STR(&allocate_ip_info.ip));
-                    ESP_LOGI("ip reallocate", "GW Address:" IPSTR, IP2STR(&allocate_ip_info.gw));
-                    ESP_LOGI("ip reallocate", "NM Address:" IPSTR, IP2STR(&allocate_ip_info.netmask));
-
-                    break;
-                }
-            }
+            esp_gateway_netif_request_ip(&allocate_ip_info);
 
             ESP_ERROR_CHECK(esp_netif_dhcps_stop(p->netif));
             esp_netif_set_ip_info(p->netif, &allocate_ip_info);
@@ -242,6 +234,8 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
             dhcps_offer_t dhcps_dns_value = OFFER_DNS;
             esp_netif_dhcps_option(p->netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value));
             esp_netif_set_dns_info(p->netif, ESP_NETIF_DNS_MAIN, &dns);
+
+            break;
         }
         p = p->next;
     }
