@@ -15,6 +15,7 @@
 #pragma once
 
 #include <esp_err.h>
+#include "esp_mac.h"
 #include "esp_wifi.h"
 
 #include "lwip/opt.h"
@@ -33,9 +34,6 @@ extern "C"
             return ESP_ERR_INVALID_ARG; \
         } \
     } while(0)
-
-#define MAC2STR(a)                  (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
-#define MACSTR                      "%02x:%02x:%02x:%02x:%02x:%02x"
 
 #ifdef __cplusplus
 }

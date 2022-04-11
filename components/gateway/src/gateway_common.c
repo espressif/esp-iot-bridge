@@ -21,6 +21,7 @@
 #include <sys/unistd.h>
 #include <sys/select.h>
 
+#include "esp_mac.h"
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_system.h"

@@ -24,7 +24,6 @@
 #include "esp_event.h"
 
 #include "esp_gateway.h"
-#include "esp_button.h"
 #include "web_server.h"
 #include "wifi_prov_mgr.h"
 
@@ -46,41 +45,6 @@ static esp_err_t esp_storage_init(void)
     return ret;
 }
 
-#if defined(CONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE)
-static bool wifi_prov_restart = false;
-
-static void esp_gateway_wifi_prov_mgr_task(void *pvParameters)
-{
-    if (!wifi_provision_in_progress()) {
-        esp_gateway_wifi_prov_mgr();
-    } else {
-        ESP_LOGI(TAG, "Wi-Fi Provisioning is still progress");
-    }
-    vTaskDelete(NULL);
-}
-
-static void button_press_3sec_cb(void *arg)
-{
-    ESP_LOGI(TAG, "Start Wi-Fi Provisioning");
-    wifi_prov_restart = true;
-}
-
-static void button_release_3sec_cb(void *arg)
-{
-    if (wifi_prov_restart) {
-        xTaskCreate(esp_gateway_wifi_prov_mgr_task, "esp_gateway_wifi_prov_mgr", 4096, NULL, 5, NULL);
-        wifi_prov_restart = false;
-    }
-}
-#endif /* CONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE */
-
-static void button_press_6sec_cb(void *arg)
-{
-    ESP_LOGI(TAG, "Restore factory settings");
-    nvs_flash_erase();
-    esp_restart();
-}
-
 void app_main(void)
 {
     esp_log_level_set("*", ESP_LOG_INFO);
@@ -90,17 +54,12 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    button_handle_t button_handle = button_create((gpio_num_t)GPIO_BUTTON_SW1, BUTTON_ACTIVE_LOW);
-    button_add_press_cb(button_handle, 6, button_press_6sec_cb, NULL);
-
     esp_gateway_create_all_netif();
 
 #if defined(CONFIG_GATEWAY_USE_WEB_SERVER)
     StartWebServer();
 #endif /* CONFIG_GATEWAY_USE_WEB_SERVER */
 #if defined(CONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE)
-    button_add_press_cb(button_handle, 3, button_press_3sec_cb, NULL);
-    button_add_release_cb(button_handle, 3, button_release_3sec_cb, NULL);
     esp_gateway_wifi_prov_mgr();
 #endif /* CONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE */
 }

@@ -21,7 +21,10 @@ variables: &global-variables
   - export IDF_PATH=$(pwd)/esp-idf
   - source $IDF_PATH/tools/ci/configure_ci_environment.sh
   - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-  - python3 $IDF_PATH/tools/idf_tools.py install-python-env
+  - python $IDF_PATH/tools/idf_tools.py install-python-env
+
+.install_requirements: &install_requirements
+  - pip install -r requirements.txt
 
 .get_gateway_priv: &get_gateway_priv
   - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
@@ -29,7 +32,12 @@ variables: &global-variables
   - git checkout ${CI_BUILD_REF_NAME} || echo "Using esp-gateway default branch"
   - cd -
 
-.build_esp32: &build_esp32
+.build_rainmaker: &build_rainmaker
+  - cd examples/rainmaker/led_light
+  - idf.py set-target esp32
+  - idf.py build
+
+.build_gateway_esp32: &build_gateway_esp32
   - idf.py set-target esp32
   - idf.py build
   
@@ -44,11 +52,7 @@ variables: &global-variables
   - idf.py set-target esp32
   - idf.py build
 
-  - cd examples/rainmaker/led_light
-  - idf.py set-target esp32
-  - idf.py build
-
-.build_esp32c3: &build_esp32c3
+.build_gateway_esp32c3: &build_gateway_esp32c3
   - idf.py set-target esp32c3
   - idf.py build
 
@@ -63,11 +67,7 @@ variables: &global-variables
   - idf.py set-target esp32c3
   - idf.py build
 
-  - cd examples/rainmaker/led_light
-  - idf.py set-target esp32c3
-  - idf.py build
-
-.build_esp32s2: &build_esp32s2
+.build_gateway_esp32s2: &build_gateway_esp32s2
   - idf.py set-target esp32s2
   - idf.py build
 
@@ -78,7 +78,7 @@ variables: &global-variables
   - idf.py set-target esp32s2
   - idf.py build
 
-.build_esp32s3: &build_esp32s3
+.build_gateway_esp32s3: &build_gateway_esp32s3
   - idf.py set-target esp32s3
   - idf.py build
 
@@ -91,10 +91,6 @@ variables: &global-variables
   - sed -i '$d' sdkconfig.defaults.esp32s3
   - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32s3
   - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s3
-  - idf.py set-target esp32s3
-  - idf.py build
-
-  - cd examples/rainmaker/led_light
   - idf.py set-target esp32s3
   - idf.py build
 
@@ -114,7 +110,27 @@ esp32_v4.4_build:
     - *get_gateway_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_esp32
+    - *build_gateway_esp32
+    - *build_rainmaker
+
+esp32_master_build:
+  stage: build
+  image: $CI_DOCKER_REGISTRY/esp-env-v5.0:2
+  tags:
+    - build
+
+  variables:
+    <<: *global-variables
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *get_gateway_priv
+    - git clone -b master --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *install_requirements
+    - *build_gateway_esp32
 
 esp32c3_v4.4_build:
   stage: build
@@ -132,7 +148,27 @@ esp32c3_v4.4_build:
     - *get_gateway_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_esp32c3
+    - *build_gateway_esp32c3
+    - *build_rainmaker
+
+esp32c3_master_build:
+  stage: build
+  image: $CI_DOCKER_REGISTRY/esp-env-v5.0:2
+  tags:
+    - build
+
+  variables:
+    <<: *global-variables
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *get_gateway_priv
+    - git clone -b master --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *install_requirements
+    - *build_gateway_esp32c3
 
 esp32s2_v4.4_build:
   stage: build
@@ -150,7 +186,27 @@ esp32s2_v4.4_build:
     - *get_gateway_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_esp32s2
+    - *build_gateway_esp32s2
+    - *build_rainmaker
+
+esp32s2_master_build:
+  stage: build
+  image: $CI_DOCKER_REGISTRY/esp-env-v5.0:2
+  tags:
+    - build
+
+  variables:
+    <<: *global-variables
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *get_gateway_priv
+    - git clone -b master --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *install_requirements
+    - *build_gateway_esp32s2
 
 esp32s3_v4.4_build:
   stage: build
@@ -168,7 +224,27 @@ esp32s3_v4.4_build:
     - *get_gateway_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_esp32s3
+    - *build_gateway_esp32s3
+    - *build_rainmaker
+
+esp32s3_master_build:
+  stage: build
+  image: $CI_DOCKER_REGISTRY/esp-env-v5.0:2
+  tags:
+    - build
+
+  variables:
+    <<: *global-variables
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *get_gateway_priv
+    - git clone -b master --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+    - *setup_tools
+    - *install_requirements
+    - *build_gateway_esp32s3
 
 push_master_to_github:
   stage: deploy

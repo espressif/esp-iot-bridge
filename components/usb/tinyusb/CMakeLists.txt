@@ -41,9 +41,19 @@ if(CONFIG_TINYUSB)
         "additions/tusb/src/lib/networking"
         "additions/tusb/src/class/dfu"
         "additions/tusb/src/class/vendor"
-        # The FreeRTOS API include convention in tinyusb is different from esp-idf
-        "${freertos_component_dir}/include/freertos"
         )
+
+    # The FreeRTOS API include convention in tinyusb is different from esp-idf
+    if(IDF_VERSION_MAJOR STREQUAL "4")
+        list(APPEND includes_public
+            "${freertos_component_dir}/include/freertos"
+        )
+    elseif(IDF_VERSION_MAJOR STREQUAL "5")
+        list(APPEND includes_public
+            "${freertos_component_dir}/esp_additions/include/freertos"
+            "${freertos_component_dir}/FreeRTOS-Kernel/include/freertos"
+        )
+    endif()
 
     list(APPEND srcs
         "${IDF_PATH}/components/tinyusb/tinyusb/src/portable/espressif/${tusb_family}/dcd_${tusb_family}.c"
