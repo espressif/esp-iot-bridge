@@ -2,6 +2,12 @@ stages:
   - build
   - deploy
 
+# global variables
+variables: &global-variables
+  GIT_STRATEGY: clone
+  PYTHON_VER: 3
+
+
 .before_script_preparation: &before_script_preparation
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
@@ -15,7 +21,7 @@ stages:
   - export IDF_PATH=$(pwd)/esp-idf
   - source $IDF_PATH/tools/ci/configure_ci_environment.sh
   - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
-  - $IDF_PATH/tools/idf_tools.py install-python-env
+  - python3 $IDF_PATH/tools/idf_tools.py install-python-env
 
 .build_esp32: &build_esp32
   - idf.py set-target esp32
@@ -101,7 +107,7 @@ esp32_v4.3_build:
     - build
 
   variables:
-    GIT_STRATEGY: clone
+    <<: *global-variables
 
   before_script:
     - *before_script_preparation
@@ -118,7 +124,7 @@ esp32_v4.4_build:
     - build
 
   variables:
-    GIT_STRATEGY: clone
+    <<: *global-variables
 
   before_script:
     - *before_script_preparation
@@ -135,7 +141,7 @@ esp32c3_v4.4_build:
     - build
 
   variables:
-    GIT_STRATEGY: clone
+    <<: *global-variables
 
   before_script:
     - *before_script_preparation
@@ -152,7 +158,7 @@ esp32s2_v4.4_build:
     - build
 
   variables:
-    GIT_STRATEGY: clone
+    <<: *global-variables
 
   before_script:
     - *before_script_preparation
@@ -169,7 +175,7 @@ esp32s3_v4.4_build:
     - build
 
   variables:
-    GIT_STRATEGY: clone
+    <<: *global-variables
 
   before_script:
     - *before_script_preparation
