@@ -23,12 +23,16 @@ variables: &global-variables
   - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
   - python3 $IDF_PATH/tools/idf_tools.py install-python-env
 
+.get_gateway_priv: &get_gateway_priv
+  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
+  - cd components/gateway/priv_src
+  - git checkout ${CI_BUILD_REF_NAME} || echo "Using esp-gateway default branch"
+  - cd -
+
 .build_esp32: &build_esp32
   - idf.py set-target esp32
   - idf.py build
-
-  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-
+  
   - rm -rf build sdkconfig
   - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
   - idf.py set-target esp32
@@ -47,8 +51,6 @@ variables: &global-variables
 .build_esp32c3: &build_esp32c3
   - idf.py set-target esp32c3
   - idf.py build
-
-  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
 
   - rm -rf build sdkconfig
   - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32c3
@@ -69,8 +71,6 @@ variables: &global-variables
   - idf.py set-target esp32s2
   - idf.py build
 
-  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
-
   - rm -rf build sdkconfig
   - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.esp32s2
   - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32s2
@@ -81,8 +81,6 @@ variables: &global-variables
 .build_esp32s3: &build_esp32s3
   - idf.py set-target esp32s3
   - idf.py build
-
-  - git clone ${GITLAB_PRIV_SRC_URL} components/gateway/priv_src
 
   - rm -rf build sdkconfig
   - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_EXTERNAL_NETIF_MODEM=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32s3
@@ -113,6 +111,7 @@ esp32_v4.3_build:
     - *before_script_preparation
 
   script:
+    - *get_gateway_priv
     - git clone -b release/v4.3 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_esp32
@@ -130,6 +129,7 @@ esp32_v4.4_build:
     - *before_script_preparation
 
   script:
+    - *get_gateway_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_esp32
@@ -147,6 +147,7 @@ esp32c3_v4.4_build:
     - *before_script_preparation
 
   script:
+    - *get_gateway_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_esp32c3
@@ -164,6 +165,7 @@ esp32s2_v4.4_build:
     - *before_script_preparation
 
   script:
+    - *get_gateway_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_esp32s2
@@ -181,6 +183,7 @@ esp32s3_v4.4_build:
     - *before_script_preparation
 
   script:
+    - *get_gateway_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_esp32s3
