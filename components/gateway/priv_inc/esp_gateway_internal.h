@@ -30,6 +30,8 @@ extern "C"
 /* Definitions for error constants. */
 #define ESP_ERR_DUPLICATE_ADDITION    0x110   /*!< Netif was added repeatedly */
 
+typedef esp_err_t (*dhcps_change_cb_t)(esp_ip_addr_t *ip_info);
+
 /**
  * @brief  Cause the TCP/IP stack to bring up an interface
  * This function is called automatically by default called from event handlers/actions
@@ -62,12 +64,13 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
  * @brief  Add netif instance to the list.
  *
  * @param[in]  netif netif instance
+ * @param[in]  dhcps_change_cb reset Nic when netif IP was changed
  *
  * @return
  *     - ESP_OK: Add netif instance successfully
  *     - others: other failure occurred include netif duplicate addition or Out of memory
  */
-esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif);
+esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb);
 
 /**
  * @brief  Remove netif instance to the list.

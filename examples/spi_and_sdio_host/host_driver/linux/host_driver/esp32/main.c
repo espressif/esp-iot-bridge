@@ -375,6 +375,7 @@ static void process_priv_communication(struct sk_buff *skb)
 static void process_rx_packet(struct sk_buff *skb)
 {
 	struct esp_private *priv = NULL;
+	struct esp_dhcps *dhcps = NULL;
 	struct esp_payload_header *payload_header = NULL;
 	u16 len = 0, offset = 0;
 	u16 rx_checksum = 0, checksum = 0;
@@ -427,7 +428,21 @@ static void process_rx_packet(struct sk_buff *skb)
 		if (!priv) {
 			printk (KERN_ERR "%s: empty priv\n", __func__);
 			dev_kfree_skb_any(skb);
-/*			atomic_dec(&adapter.rx_pending);*/
+			//atomic_dec(&adapter.rx_pending);
+			return;
+		}
+
+		if (payload_header->flags == DHCPS_CHANGED) {
+			dhcps = (struct esp_dhcps*)skb->data;
+			if (dhcps->set_link == NIC_LINK_DOWN) {
+				printk (KERN_ERR "%s: Down ethsta0\n", __func__);
+			} else {
+				printk (KERN_ERR "%s: Up ethsta0\n", __func__);
+			}
+
+			dev_change_proto_down_generic(priv->ndev, dhcps->set_link);
+
+			dev_kfree_skb_any(skb);
 			return;
 		}
 

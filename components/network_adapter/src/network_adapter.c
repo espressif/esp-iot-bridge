@@ -119,16 +119,9 @@ static uint8_t get_capabilities()
 	return cap;
 }
 
-esp_err_t pkt_netif2driver(void *buffer, uint16_t len)
+static esp_err_t compose_sta_if_pkt(interface_buffer_handle_t *buf_handle, void *buffer, uint16_t len, uint8_t flag)
 {
-	if (flag) return ESP_FAIL;
-	esp_err_t ret = ESP_OK;
-	interface_buffer_handle_t buf_handle = {0};
 	uint8_t *netif_buf = NULL;
-
-	if (!buffer || !datapath) {
-		return ESP_OK;
-	}
 
 	netif_buf = (uint8_t *) malloc(len);
 
@@ -139,15 +132,59 @@ esp_err_t pkt_netif2driver(void *buffer, uint16_t len)
 
 	memcpy(netif_buf, buffer, len);
 
-	buf_handle.if_type = ESP_STA_IF;
-	buf_handle.if_num = 0;
-	buf_handle.payload_len = len;
-	buf_handle.payload = netif_buf;
-	buf_handle.priv_buffer_handle = netif_buf;
-	buf_handle.free_buf_handle = free;
+	buf_handle->if_type = ESP_STA_IF;
+	buf_handle->if_num = 0;
+	buf_handle->payload_len = len;
+	buf_handle->payload = netif_buf;
+	buf_handle->flag = flag;
+	buf_handle->priv_buffer_handle = netif_buf;
+	buf_handle->free_buf_handle = free;
+
+	return ESP_OK;
+}
+
+esp_err_t pkt_netif2driver(void *buffer, uint16_t len)
+{
+	if (flag) return ESP_FAIL;
+	esp_err_t ret = ESP_OK;
+	interface_buffer_handle_t buf_handle;
+	memset(&buf_handle, 0x0, sizeof(interface_buffer_handle_t));
+
+	if (!buffer || !datapath) {
+		return ESP_OK;
+	}
+
+	ret = compose_sta_if_pkt(&buf_handle, buffer, len, 0);
+	if (ret != ESP_OK) {
+		return ESP_FAIL;
+	}
 
 	ret = xQueueSend(to_host_queue[PRIO_Q_OTHERS], &buf_handle, portMAX_DELAY);
+	if (ret != pdTRUE) {
+		ESP_LOGE(TAG, "Slave -> Host: Failed to send buffer\n");
+		return ESP_FAIL;
+	}
 
+	return ESP_OK;
+}
+
+esp_err_t pkt_dhcp_status_change(void *buffer, uint16_t len)
+{
+	if (flag) return ESP_FAIL;
+	esp_err_t ret = ESP_OK;
+	interface_buffer_handle_t buf_handle;
+	memset(&buf_handle, 0x0, sizeof(interface_buffer_handle_t));
+
+	if (!buffer || !datapath) {
+		return ESP_OK;
+	}
+
+	ret = compose_sta_if_pkt(&buf_handle, buffer, len, DHCPS_CHANGED);
+	if (ret != ESP_OK) {
+		return ESP_FAIL;
+	}
+
+	ret = xQueueSend(to_host_queue[PRIO_Q_OTHERS], &buf_handle, portMAX_DELAY);
 	if (ret != pdTRUE) {
 		ESP_LOGE(TAG, "Slave -> Host: Failed to send buffer\n");
 		return ESP_FAIL;
