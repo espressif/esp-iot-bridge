@@ -33,14 +33,16 @@ extern "C" {
  * 
  * @return esp_err_t
  */
-esp_err_t pkt_wifi2virtual(void *buffer, uint16_t len, void *eb);
-
-esp_err_t usb_send_data(void *buffer, uint16_t len);
+esp_err_t pkt_wifi2usb(void *buffer, uint16_t len, void *eb);
 
 /**
  * @brief Initialize NET Device.
  */
 void tusb_net_init(void);
+
+void ecm_close(void);
+
+void ecm_open(void);
 
 #ifdef __cplusplus
 }

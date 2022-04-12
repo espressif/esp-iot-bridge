@@ -114,16 +114,14 @@ static const char *rndis_vendor = RNDIS_VENDOR;
 
 static void rndis_query(void)
 {
-  uint8_t usb_net_mac[6] = {0};
-  esp_read_mac(usb_net_mac, ESP_MAC_WIFI_STA);
-  /* Virtual USB Net Mac */
-  usb_net_mac[5] = usb_net_mac[5] + 8;
+  uint8_t sta_mac[6] = {0};
+  esp_wifi_get_mac(WIFI_IF_STA, sta_mac);
   switch (((rndis_query_msg_t *)encapsulated_buffer)->Oid)
   {
     case OID_GEN_SUPPORTED_LIST:         rndis_query_cmplt(RNDIS_STATUS_SUCCESS, OIDSupportedList, 4 * OID_LIST_LENGTH); return;
     case OID_GEN_VENDOR_DRIVER_VERSION:  rndis_query_cmplt32(RNDIS_STATUS_SUCCESS, 0x00001000);  return;
-    case OID_802_3_CURRENT_ADDRESS:      rndis_query_cmplt(RNDIS_STATUS_SUCCESS, usb_net_mac, 6); return;
-    case OID_802_3_PERMANENT_ADDRESS:    rndis_query_cmplt(RNDIS_STATUS_SUCCESS, usb_net_mac, 6); return;
+    case OID_802_3_CURRENT_ADDRESS:      rndis_query_cmplt(RNDIS_STATUS_SUCCESS, sta_mac, 6); return;
+    case OID_802_3_PERMANENT_ADDRESS:    rndis_query_cmplt(RNDIS_STATUS_SUCCESS, sta_mac, 6); return;
     case OID_GEN_MEDIA_SUPPORTED:        rndis_query_cmplt32(RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
     case OID_GEN_MEDIA_IN_USE:           rndis_query_cmplt32(RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
     case OID_GEN_PHYSICAL_MEDIUM:        rndis_query_cmplt32(RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
@@ -234,6 +232,32 @@ static void rndis_handle_set_msg(void)
   /* c->MessageID is same as before */
   rndis_report();
   return;
+}
+
+void rndis_indicate_status(int status)
+{
+  rndis_indicate_status_t *c;
+  c = (rndis_indicate_status_t *)encapsulated_buffer;
+  c->MessageType = REMOTE_NDIS_INDICATE_STATUS_MSG;
+  c->MessageLength = sizeof(rndis_indicate_status_t);
+  c->Status = status;
+  c->StatusBufferLength = 0;
+  c->StatusBufferOffset = 0;
+  rndis_report();
+}
+
+void rndis_disconnect(void)
+{
+  int status = RNDIS_STATUS_MEDIA_DISCONNECT;
+
+  rndis_indicate_status(status);
+}
+
+void rndis_connect(void)
+{
+  int status = RNDIS_STATUS_MEDIA_CONNECT;
+
+  rndis_indicate_status(status);
 }
 
 void rndis_class_set_handler(uint8_t *data, int size)

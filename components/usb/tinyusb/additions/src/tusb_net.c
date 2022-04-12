@@ -19,14 +19,10 @@
 #include "lwip/netif.h"
 #include "esp_private/wifi.h"
 
-#include "esp_log.h"
-
 #include "tusb_net.h"
 
 extern bool s_wifi_is_connected;
 static SemaphoreHandle_t Net_Semphore;
-
-extern esp_netif_t* usb_netif;
 
 bool tud_network_wait_xmit(uint32_t ms)
 {
@@ -37,20 +33,21 @@ bool tud_network_wait_xmit(uint32_t ms)
     return false;
 }
 
-esp_err_t pkt_netif2usb(void *buffer, uint16_t len)
+esp_err_t pkt_wifi2usb(void *buffer, uint16_t len, void *eb)
 {
     if (!tud_ready()) {
+        esp_wifi_internal_free_rx_buffer(eb);
         return ERR_USE;
     }
-
+    
     if (tud_network_wait_xmit(100)) {
         /* if the network driver can accept another packet, we make it happen */
         if (tud_network_can_xmit()) {
-            // ESP_LOG_BUFFER_HEXDUMP(" netif ==> usb", buffer, len, ESP_LOG_INFO);
             tud_network_xmit(buffer, len);
         }
     }
 
+    esp_wifi_internal_free_rx_buffer(eb);
     return ESP_OK;
 }
 
@@ -65,8 +62,9 @@ void tusb_net_init(void)
 
 bool tud_network_recv_cb(const uint8_t *src, uint16_t size)
 {
-    // ESP_LOG_BUFFER_HEXDUMP(" usb ==> netif", src, size, ESP_LOG_INFO);
-    esp_netif_receive(usb_netif, src, size, NULL);
+    if (s_wifi_is_connected) {
+        esp_wifi_internal_tx(ESP_IF_WIFI_STA, src, size);
+    }
     tud_network_recv_renew();
     return true;
 }
