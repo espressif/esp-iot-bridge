@@ -14,6 +14,7 @@
 
 #include "esp_log.h"
 #include "descriptors_control.h"
+#include "dfu_device.h"
 
 static const char *TAG = "tusb_desc";
 static tusb_desc_device_t s_descriptor;
@@ -28,6 +29,8 @@ uint8_t const desc_hid_report[] = {
 };
 #endif
 
+#define FUNC_ATTRS (DFU_ATTR_CAN_UPLOAD | DFU_ATTR_CAN_DOWNLOAD | DFU_ATTR_MANIFESTATION_TOLERANT)
+
 uint8_t const desc_configuration[] = {
 #if CONFIG_TINYUSB_NET_ECM
     // Config number, interface count, string index, total length, attribute, power in mA
@@ -41,6 +44,12 @@ uint8_t const desc_configuration[] = {
     // Interface number, string index, attributes, event endpoint, event endpoint size, interval, data in, data out, data endpoint size, iso endpoint sizes
     TUD_BTH_DESCRIPTOR(ITF_NUM_BTH, 0 /* STRID_BTH_INTERFACE */, (0x80 | EPNUM_BT_EVT), 16, 1, (0x80 | EPNUM_BT_BULK_OUT), EPNUM_BT_BULK_OUT, 64, 0, 9, 17, 25, 33, 49),
 #endif
+
+#if CFG_TUD_CDC
+    // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, STRID_CDC_INTERFACE, (0x80 | EPNUM_CDC_NOTIF), 8, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
+#endif
+
 #if CFG_TUD_NET
 #if CONFIG_TINYUSB_NET_ECM
     // Interface number, description string index, MAC address string index, EP notification address and size, EP data address (out, in), and size, max segment size.
@@ -50,10 +59,12 @@ uint8_t const desc_configuration[] = {
     TUD_RNDIS_DESCRIPTOR(ITF_NUM_NET, STRID_NET_INTERFACE, (0x80 | EPNUM_NET_NOTIF), 8, EPNUM_NET_DATA, (0x80 | EPNUM_NET_DATA), CFG_TUD_NET_ENDPOINT_SIZE),
 #endif
 #endif
-#if CFG_TUD_CDC
-    // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
-    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, STRID_CDC_INTERFACE, (0x80 | EPNUM_CDC_NOTIF), 8, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
+
+#if CFG_TUD_VENDOR
+    // Interface number, string index, EP Out & IN address, EP size
+    TUD_VENDOR_DESCRIPTOR(ITF_NUM_VENDOR, STRID_WEBUSB_INTERFACE, EPNUM_VENDOR, 0x80 | EPNUM_VENDOR, 64),
 #endif
+
 #if CFG_TUD_MSC
     // Interface number, string index, EP Out & EP In address, EP size
     TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, STRID_MSC_INTERFACE, EPNUM_MSC_DATA, (0x80 | EPNUM_MSC_DATA), 64), // highspeed 512
@@ -62,6 +73,12 @@ uint8_t const desc_configuration[] = {
     // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
     TUD_HID_DESCRIPTOR(ITF_NUM_HID, STRID_HID_INTERFACE, HID_PROTOCOL_NONE, sizeof(desc_hid_report), (0x80 | EPNUM_HID_DATA), 16, 10)
 #endif
+
+#if CFG_TUD_DFU
+    // Interface number, Alternate count, starting string index, attributes, detach timeout, transfer size
+    TUD_DFU_DESCRIPTOR(ITF_NUM_DFU, DFU_ALT_COUNT, STRID_DFU_INTERFACE, FUNC_ATTRS, 1000, CFG_TUD_DFU_XFER_BUFSIZE),
+#endif
+
 };
 
 // =============================================================================
@@ -102,8 +119,7 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 
     uint8_t chr_count;
 
-    if (STRID_LANGID == index)
-    {
+    if ( index == 0) {
         memcpy(&_desc_str[1], s_str_descriptor[0], 2);
         chr_count = 1;
     }  

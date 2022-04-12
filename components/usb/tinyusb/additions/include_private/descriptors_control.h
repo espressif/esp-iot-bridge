@@ -37,14 +37,18 @@ enum {
     EPNUM_BT_BULK_OUT,
 #   endif
 
-#   if CFG_TUD_NET
-    EPNUM_NET_NOTIF,
-    EPNUM_NET_DATA,
-#   endif
-
 #   if CFG_TUD_CDC
     EPNUM_CDC_NOTIF,
     EPNUM_CDC_DATA,
+#   endif
+
+#   if CFG_TUD_VENDOR
+    EPNUM_VENDOR,
+#   endif
+
+#   if CFG_TUD_NET
+    EPNUM_NET_NOTIF,
+    EPNUM_NET_DATA,
 #   endif
 
 #   if CFG_TUD_MSC
@@ -85,6 +89,10 @@ enum {
     ITF_NUM_CDC_DATA,
 #   endif
 
+#   if CFG_TUD_VENDOR
+    ITF_NUM_VENDOR,
+#   endif
+
 #   if CFG_TUD_MSC
     ITF_NUM_MSC,
 #   endif
@@ -93,6 +101,9 @@ enum {
     ITF_NUM_HID,
 #   endif
 
+#   if CFG_TUD_DFU
+    ITF_NUM_DFU,
+#   endif
     ITF_NUM_TOTAL
 };
 
@@ -109,6 +120,9 @@ enum {
     STRID_NET_INTERFACE,
     STRID_MAC,
 #endif
+#if CFG_TUD_VENDOR
+    STRID_WEBUSB_INTERFACE,
+#endif
 #if CFG_TUD_MSC
     STRID_MSC_INTERFACE,
 #endif
@@ -118,19 +132,32 @@ enum {
 #if CFG_TUD_BTH
     STRID_BTH_INTERFACE,
 #endif
+#if CFG_TUD_DFU
+    STRID_DFU_INTERFACE,
+#endif
 };
+
+#define DFU_ALT_COUNT   2
+#define TUD_DFU_DESC_LEN(_alt_count)    (9 + (_alt_count) * 9)
 
 enum {
     TUSB_DESC_TOTAL_LEN = TUD_CONFIG_DESC_LEN + 
                           TUD_CDC_DESC_LEN * CFG_TUD_CDC + 
-                          TUD_RNDIS_DESC_LEN * CFG_TUD_NET + 
+                          TUD_RNDIS_DESC_LEN * CFG_TUD_NET +
+                          TUD_VENDOR_DESC_LEN * CFG_TUD_VENDOR + 
                           TUD_MSC_DESC_LEN * CFG_TUD_MSC + 
                           TUD_HID_DESC_LEN * CFG_TUD_HID +
-                          TUD_BTH_DESC_LEN * CFG_TUD_BTH,
+                          TUD_BTH_DESC_LEN * CFG_TUD_BTH +
+                          TUD_DFU_DESC_LEN(DFU_ALT_COUNT) * CFG_TUD_DFU,
 
     ALT_CONFIG_TOTAL_LEN = TUD_CONFIG_DESC_LEN + 
                            TUD_CDC_ECM_DESC_LEN * CFG_TUD_NET + 
-                           TUD_CDC_DESC_LEN * CFG_TUD_CDC
+                           TUD_CDC_DESC_LEN * CFG_TUD_CDC +
+                           TUD_VENDOR_DESC_LEN * CFG_TUD_VENDOR +
+                           TUD_MSC_DESC_LEN * CFG_TUD_MSC + 
+                           TUD_HID_DESC_LEN * CFG_TUD_HID +
+                           TUD_BTH_DESC_LEN * CFG_TUD_BTH +
+                           TUD_DFU_DESC_LEN(DFU_ALT_COUNT) * CFG_TUD_DFU
 };
 
 bool tusb_desc_set;
