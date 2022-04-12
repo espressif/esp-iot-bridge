@@ -25,17 +25,6 @@ extern "C" {
 #include "tinyusb.h"
 
 /**
- * @brief Forward packets from Wi-Fi to USB.
- *
- * @param buffer - Data pointer
- * 
- * @param len    - Data length
- * 
- * @return esp_err_t
- */
-esp_err_t pkt_wifi2usb(void *buffer, uint16_t len, void *eb);
-
-/**
  * @brief Initialize NET Device.
  */
 void tusb_net_init(void);

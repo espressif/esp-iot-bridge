@@ -40,7 +40,7 @@ esp_err_t tusb_run_task(void)
     // doing a sanity check anyway
     ESP_RETURN_ON_FALSE(!s_tusb_tskh, ESP_ERR_INVALID_STATE, TAG, "TinyUSB main task already started");
     // Create a task for tinyusb device stack:
-    xTaskCreate(tusb_device_task, "TinyUSB", CONFIG_TINYUSB_TASK_STACK_SIZE, NULL, CONFIG_TINYUSB_TASK_PRIORITY, &s_tusb_tskh);
+    xTaskCreatePinnedToCore(tusb_device_task, "TinyUSB", CONFIG_TINYUSB_TASK_STACK_SIZE, NULL, CONFIG_TINYUSB_TASK_PRIORITY, &s_tusb_tskh, 0);
     ESP_RETURN_ON_FALSE(s_tusb_tskh, ESP_FAIL, TAG, "create TinyUSB main task failed");
     return ESP_OK;
 }
