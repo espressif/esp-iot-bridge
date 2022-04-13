@@ -14,25 +14,22 @@
 
 #include <string.h>
 #include <stdlib.h>
+
+#include "nvs.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
-
-#include "esp_netif_ip_addr.h"
-
 #include "esp_wifi_types.h"
+#include "esp_netif_ip_addr.h"
 
 #include "esp_gateway_config.h"
 #include "esp_gateway_internal.h"
 #include "esp_gateway_litemesh.h"
 
-#define VENDOR_OUI_0                                    CONFIG_VENDOR_OUI_0
-#define VENDOR_OUI_1                                    CONFIG_VENDOR_OUI_1
-#define VENDOR_OUI_2                                    CONFIG_VENDOR_OUI_2
-
 #define WIFI_CONNECT_MAX_RETRY                          (5)
 #define SINGLE_CHANNEL_SCAN_TIMES                       (1)
 
 #define VENDOR_IE_DATA_LENGTH_MINIMUM                   (4)
+#define VENDOR_IE_PAYLOAD_LENGTH_MINIMUM                (5)
 #define VENDOR_IE_DATA_LENGTH                           (VENDOR_IE_DATA_LENGTH_MINIMUM + VENDOR_IE_MAX)
 
 #define LITEMESH_VERSION                                (1)
@@ -72,6 +69,7 @@ typedef enum {
 } esp_gateway_vendor_ie_t;
 
 typedef struct {
+    uint8_t mesh_id;
     uint8_t version;
     uint8_t max_connection:4;
     uint8_t connected_station_number:4;
@@ -103,8 +101,10 @@ static const char *TAG = "vendor_ie";
 static vendor_ie_data_t *esp_gateway_vendor_ie = NULL;
 static esp_gateway_litemesh_info_t *broadcast_info = NULL;
 static ap_info_t best_ap_info;
+static nvs_handle_t litemesh_nvs_handle;
 
 static uint8_t wifi_connect_retry = 0;
+static uint8_t mesh_id_number = 0;
 static bool connected_ap = false;
 static bool connected_eth = false;
 static volatile bool litemesh_scan_status = false;
@@ -113,6 +113,43 @@ static uint8_t eth_net_segment;
 #endif
 
 extern wifi_sta_config_t router_config;
+
+static esp_err_t esp_litemesh_nvs_set_mesh_id(nvs_handle_t nvs_handle, uint8_t mesh_id)
+{
+    /* NVS Open */
+    esp_err_t err = nvs_open("LiteMesh", NVS_READWRITE, &nvs_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error (%s) opening NVS handle!", esp_err_to_name(err));
+    } else {
+        if (nvs_set_u8(nvs_handle, "mesh_id", mesh_id) != ESP_OK) {
+            ESP_LOGE(TAG, "Error Seting!");
+        }
+
+        err = nvs_commit(nvs_handle);
+
+        /* NVS Close */
+        nvs_close(nvs_handle);
+    }
+    return err;
+}
+
+static esp_err_t esp_litemesh_nvs_get_mesh_id(nvs_handle_t nvs_handle, uint8_t* mesh_id)
+{
+    /* NVS Open */
+    esp_err_t err = nvs_open("LiteMesh", NVS_READWRITE, &nvs_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error (%s) opening NVS handle!", esp_err_to_name(err));
+    } else {
+        if (nvs_get_u8(nvs_handle, "mesh_id", mesh_id) != ESP_OK) {
+            ESP_LOGE(TAG, "Error Get!");
+            err = ESP_FAIL;
+        }
+
+        /* NVS Close */
+        nvs_close(nvs_handle);
+    }
+    return err;
+}
 
 static bool esp_litemesh_info_inherit(esp_gateway_litemesh_info_t* in, esp_gateway_litemesh_info_t* out)
 {
@@ -133,7 +170,7 @@ static bool esp_litemesh_info_inherit(esp_gateway_litemesh_info_t* in, esp_gatew
         memcpy(out->router_net_segment, in->router_net_segment, in->router_number);
         update = true;
     } else {
-        if (!memcmp(out->router_net_segment, in->router_net_segment, in->router_number)) {
+        if (memcmp(out->router_net_segment, in->router_net_segment, in->router_number)) {
             memcpy(out->router_net_segment, in->router_net_segment, in->router_number);
             update = true;
         }
@@ -144,7 +181,7 @@ static bool esp_litemesh_info_inherit(esp_gateway_litemesh_info_t* in, esp_gatew
         memcpy(out->inherited_net_segment, in->inherited_net_segment, in->inherited_netif_number);
         update = true;
     } else {
-        if (!memcmp(out->inherited_net_segment, in->inherited_net_segment, in->inherited_netif_number)) {
+        if (memcmp(out->inherited_net_segment, in->inherited_net_segment, in->inherited_netif_number)) {
             memcpy(out->inherited_net_segment, in->inherited_net_segment, in->inherited_netif_number);
             update = true;
         }
@@ -155,10 +192,28 @@ static bool esp_litemesh_info_inherit(esp_gateway_litemesh_info_t* in, esp_gatew
 
 static esp_err_t esp_litemesh_info_unpack(vendor_ie_data_t *vendor_ie, esp_gateway_litemesh_info_t* out)
 {
+    uint8_t length = VENDOR_IE_DATA_LENGTH_MINIMUM + VENDOR_IE_PAYLOAD_LENGTH_MINIMUM;
+
+    uint8_t router_ssid_length = 0;
+    uint8_t router_number = 0;
+    uint8_t inherited_netif_number = 0;
+
+    if (vendor_ie->length > length) {
+        router_ssid_length = vendor_ie->payload[ROUTER_SSID_LEN];
+        router_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] >> 4;
+        inherited_netif_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] & 0x0F;
+
+        length = length + router_ssid_length + router_number + inherited_netif_number;
+        if (vendor_ie->length != length) {
+            return ESP_FAIL;
+        }
+    } else {
+        return ESP_FAIL;
+    }
+
+    out->mesh_id = vendor_ie->vendor_oui[2];
+
     uint8_t offset = LITEMESH_ROUTER_SSID_OFFSET;
-    uint8_t router_ssid_length = vendor_ie->payload[ROUTER_SSID_LEN];
-    uint8_t router_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] >> 4;
-    uint8_t inherited_netif_number = vendor_ie->payload[TRACE_ROUTER_NUMBER] & 0x0F;
 
     out->version = vendor_ie->payload[VERSION];
     out->max_connection = vendor_ie->payload[CONNECT_NUMBER_INFORMATION] >> 4;
@@ -182,6 +237,8 @@ static esp_err_t esp_litemesh_info_unpack(vendor_ie_data_t *vendor_ie, esp_gatew
 static void esp_litemesh_info_update(esp_gateway_litemesh_info_t *current_node_info)
 {
     ESP_ERROR_CHECK(esp_wifi_set_vendor_ie(false, WIFI_VND_IE_TYPE_BEACON, WIFI_VND_IE_ID_0, esp_gateway_vendor_ie));
+
+    esp_gateway_vendor_ie->vendor_oui[2] = current_node_info->mesh_id;
 
     uint8_t offset = LITEMESH_ROUTER_SSID_OFFSET;
     uint8_t router_ssid_length = current_node_info->router_ssid_len;
@@ -266,13 +323,17 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
 {
     if (type == WIFI_VND_IE_TYPE_BEACON) {
         vendor_ie_data_t *vendor_ie = (vendor_ie_data_t *)vnd_ie;
-        if (vendor_ie->vendor_oui[0] == VENDOR_OUI_0 
-            && vendor_ie->vendor_oui[1] == VENDOR_OUI_1 
-            && vendor_ie->vendor_oui[2] == VENDOR_OUI_2) {
-
+        /* Filter unmatched Vendor_IE information || No filtering when no vendor_oui is specified */
+        if ((vendor_ie->vendor_oui[0] == VENDOR_ID_0
+            && vendor_ie->vendor_oui[1] == VENDOR_ID_1)
+            && (vendor_ie->vendor_oui[2] == mesh_id_number
+            || mesh_id_number == 0)) {
             esp_gateway_litemesh_info_t temp;
             memset(&temp, 0x0, sizeof(esp_gateway_litemesh_info_t));
-            esp_litemesh_info_unpack((vendor_ie_data_t *)vendor_ie, &temp);
+
+            if (esp_litemesh_info_unpack((vendor_ie_data_t *)vendor_ie, &temp) != ESP_OK) {
+                return;
+            }
 
             if (connected_ap) { /* update parent info */
                 wifi_ap_record_t ap_info;
@@ -302,6 +363,8 @@ static void esp_gateway_vendor_ie_cb(void *ctx, wifi_vendor_ie_type_t type, cons
                             || ((rssi > best_ap_info.rssi + 15) && (temp.level > best_ap_info.level))) {
                             best_ap_info.rssi = rssi;
                             best_ap_info.valid = true;
+
+                            broadcast_info->mesh_id = temp.mesh_id;
 
                             uint8_t primary;
                             wifi_second_chan_t second;
@@ -480,6 +543,7 @@ static void esp_litemesh_event_sta_got_ip_handler(void *arg, esp_event_base_t ev
         esp_gateway_get_external_netif_network_segment(broadcast_info->self_net_segment, &max_num);
         broadcast_info->self_net_segment_num = max_num;
         esp_litemesh_set_level(esp_litemesh_get_level() + 1);
+        esp_litemesh_nvs_set_mesh_id(litemesh_nvs_handle, broadcast_info->mesh_id);
     }
 
     esp_litemesh_set_connect_status(1);
@@ -499,6 +563,11 @@ static void esp_litemesh_event_ap_stadisconnected_handler(void *arg, esp_event_b
 {
     esp_litemesh_set_connected_station_number(broadcast_info->connected_station_number - 1);
     esp_litemesh_info_update(broadcast_info);
+}
+
+void esp_litemesh_set_mesh_id(uint8_t mesh_id)
+{
+    mesh_id_number = mesh_id;
 }
 
 void esp_litemesh_connect(void)
@@ -532,9 +601,16 @@ esp_err_t esp_litemesh_init(void)
     memset(esp_gateway_vendor_ie, 0, sizeof(*esp_gateway_vendor_ie));
     esp_gateway_vendor_ie->element_id = WIFI_VENDOR_IE_ELEMENT_ID;
     esp_gateway_vendor_ie->length = VENDOR_IE_DATA_LENGTH;
-    esp_gateway_vendor_ie->vendor_oui[0] = VENDOR_OUI_0;
-    esp_gateway_vendor_ie->vendor_oui[1] = VENDOR_OUI_1;
-    esp_gateway_vendor_ie->vendor_oui[2] = VENDOR_OUI_2;
+    esp_gateway_vendor_ie->vendor_oui[0] = VENDOR_ID_0;
+    esp_gateway_vendor_ie->vendor_oui[1] = VENDOR_ID_1;
+
+    /* Try to get vendor_oui information from flash */
+    if (esp_litemesh_nvs_get_mesh_id(litemesh_nvs_handle, &mesh_id_number) != ESP_OK) {
+        ESP_LOGW(TAG, "Mesh ID is not saved in flash");
+    }
+    ESP_LOGD(TAG, "Mesh ID: %d\r\n", mesh_id_number);
+
+    broadcast_info->mesh_id = mesh_id_number;
 
     ESP_ERROR_CHECK(esp_wifi_set_vendor_ie(true, WIFI_VND_IE_TYPE_BEACON, WIFI_VND_IE_ID_0, esp_gateway_vendor_ie));
     ESP_ERROR_CHECK(esp_wifi_set_vendor_ie_cb((esp_vendor_ie_cb_t)esp_gateway_vendor_ie_cb, NULL));

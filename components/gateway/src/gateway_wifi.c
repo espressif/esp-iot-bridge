@@ -176,6 +176,8 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
     esp_wifi_get_config(WIFI_IF_STA, (wifi_config_t*)&router_config);
 
 #if CONFIG_LITEMESH_ENABLE
+    esp_litemesh_set_mesh_id(MESH_ID);
+
     esp_litemesh_init();
 #else
     /* Get Wi-Fi Station ssid success */

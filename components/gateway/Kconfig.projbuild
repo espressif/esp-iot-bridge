@@ -69,16 +69,16 @@ menu "Gateway Configuration"
 
             menu "Lite Mesh info configuration"
                 depends on LITEMESH_ENABLE
-                config VENDOR_OUI_0
-                    int "VENDOR_OUI_0 for Lite Mesh"
+                config VENDOR_ID_0
+                    int "VENDOR_ID_0 for Lite Mesh"
                     default 71
 
-                config VENDOR_OUI_1
-                    int "VENDOR_OUI_1 for Lite Mesh"
+                config VENDOR_ID_1
+                    int "VENDOR_ID_1 for Lite Mesh"
                     default 87
 
-                config VENDOR_OUI_2
-                    int "VENDOR_OUI_2 for Lite Mesh"
+                config MESH_ID
+                    int "MESH_ID for Lite Mesh"
                     default 77
 
                 config LITEMESH_MAX_CONNECT_NUMBER
