@@ -16,6 +16,8 @@
 #include "descriptors_control.h"
 #include "dfu_device.h"
 
+#include "esp_wifi.h"
+
 static const char *TAG = "tusb_desc";
 static tusb_desc_device_t s_descriptor;
 static char *s_str_descriptor[USB_STRING_DESCRIPTOR_ARRAY_SIZE];
@@ -117,25 +119,30 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 {
     (void) langid;
 
-    uint8_t chr_count;
+    uint8_t chr_count = 0;
 
     if ( index == 0) {
         memcpy(&_desc_str[1], s_str_descriptor[0], 2);
         chr_count = 1;
-    }  
+    }
 #if CONFIG_TINYUSB_NET_ECM
     else if (STRID_MAC == index)
     {
         // Convert MAC address into UTF-16
+        uint8_t usb_net_mac[6];
+        memset(usb_net_mac, 0x0, sizeof(usb_net_mac));
+        esp_read_mac(usb_net_mac, ESP_MAC_WIFI_STA);
+        /* USB Netif Mac */
+        usb_net_mac[5] = usb_net_mac[5] + 8;
 
-        for (unsigned i=0; i<sizeof(tud_network_mac_address); i++)
+        for (unsigned i=0; i<sizeof(usb_net_mac); i++)
         {
-        _desc_str[1+chr_count++] = "0123456789ABCDEF"[(tud_network_mac_address[i] >> 4) & 0xf];
-        _desc_str[1+chr_count++] = "0123456789ABCDEF"[(tud_network_mac_address[i] >> 0) & 0xf];
+        _desc_str[1+chr_count++] = "0123456789ABCDEF"[(usb_net_mac[i] >> 4) & 0xf];
+        _desc_str[1+chr_count++] = "0123456789ABCDEF"[(usb_net_mac[i] >> 0) & 0xf];
         }
-    } 
+    }
 #endif
-    else 
+    else
     {
         // Convert ASCII string into UTF-16
 
