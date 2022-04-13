@@ -94,12 +94,15 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                          "\n\tSSID     : %s\n\tPassword : %s",
                          (const char *) wifi_sta_cfg->ssid,
                          (const char *) wifi_sta_cfg->password);
-                esp_gateway_wifi_set_config_into_flash(ESP_IF_WIFI_STA, (wifi_config_t*)wifi_sta_cfg);
 #if CONFIG_LITEMESH_ENABLE
+                esp_litemesh_set_router_config(wifi_sta_cfg);
                 esp_litemesh_connect();
 #else
-                esp_wifi_disconnect();
+                esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+                esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*)wifi_sta_cfg);
+                esp_wifi_set_storage(WIFI_STORAGE_RAM);
 
+                esp_wifi_disconnect();
                 esp_wifi_connect();
 #endif /* CONFIG_LITEMESH_ENABLE */
                 break;
@@ -128,10 +131,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case WIFI_PROV_END:
                 esp_timer_stop(deinit_wifi_prov_mgr_timer);
-                esp_err_t stat = esp_timer_delete(deinit_wifi_prov_mgr_timer);
-                if (stat != ESP_OK) {
-                    ESP_LOGI(TAG, "%s failed to delete timer, err 0x%x\n", __func__, stat);
-                }
                 wifi_prov_event_unregister();
                 /* De-initialize manager once provisioning is finished */
                 wifi_prov_mgr_deinit();

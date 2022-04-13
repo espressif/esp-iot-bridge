@@ -117,19 +117,6 @@ esp_err_t esp_gateway_netif_request_mac(uint8_t* mac);
  */
 esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_netif);
 
-/**
- * @param[in]  net_segment network segment
- * @param[in]  max_num Expect the maximum number of network segments to be obtained,
- *                     and return the actual number.
- *
- * @return
- *     - ESP_OK
- */
-esp_err_t esp_gateway_get_external_netif_network_segment(uint8_t* net_segment, uint32_t* max_num);
-
-esp_err_t esp_gateway_wifi_set_config_into_flash(wifi_interface_t interface, wifi_config_t *conf);
-
-esp_err_t esp_gateway_wifi_set_config_into_ram(wifi_interface_t interface, wifi_config_t *conf);
 #ifdef __cplusplus
 }
 #endif

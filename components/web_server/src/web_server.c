@@ -206,15 +206,13 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
         memcpy(sta.bssid, bssid, sizeof(sta.bssid));
     }
 
-    ret = esp_gateway_wifi_set_config_into_flash(ESP_IF_WIFI_STA, (wifi_config_t*) &sta);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "wifi set config fail");
-        return ret;
-    }
-
 #if CONFIG_LITEMESH_ENABLE
+    ret = esp_litemesh_set_router_config(&sta);
     esp_litemesh_connect();
 #else
+    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+    ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*) &sta);
+    esp_wifi_set_storage(WIFI_STORAGE_RAM);
     esp_wifi_disconnect();
 
     esp_wifi_connect();

@@ -8,10 +8,6 @@ if (CONFIG_GATEWAY_EXTERNAL_NETIF_STATION OR CONFIG_GATEWAY_DATA_FORWARDING_NETI
     list(APPEND srcs "src/gateway_wifi.c")
 endif()
 
-if (CONFIG_LITEMESH_ENABLE)
-    list(APPEND srcs "src/gateway_litemesh.c")
-endif()
-
 if (CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
     list(APPEND srcs "src/gateway_modem.c")
     if(CONFIG_GATEWAY_MODEM_USB)
@@ -38,7 +34,8 @@ if (CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
     list(APPEND priv_srcs "priv_src/gateway_spi.c")
 endif()
 
-list(APPEND requires "network_adapter" "esp_modem" "tinyusb" "led")
+list(APPEND requires "esp-litemesh" "network_adapter" "esp_modem" "tinyusb" "led" "json")
+
 idf_component_register(SRCS "${srcs}" "${priv_srcs}"
                        INCLUDE_DIRS "${include_dirs}"
                        PRIV_INCLUDE_DIRS "${priv_includes}"

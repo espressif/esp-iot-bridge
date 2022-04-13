@@ -200,12 +200,16 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 if (strlen((const char *) wifi_sta_cfg->password)) {
                     app_wifi_keystore_set(KEYSTORE_NAMESPACE, KEY_STA_PASSWORD, wifi_sta_cfg->password, strlen((const char *) wifi_sta_cfg->password));
                 }
-                esp_gateway_wifi_set_config_into_flash(ESP_IF_WIFI_STA, (wifi_config_t*)wifi_sta_cfg);
+                
 #if CONFIG_LITEMESH_ENABLE
+                esp_litemesh_set_router_config((wifi_config_t*)wifi_sta_cfg);
                 esp_litemesh_connect();
 #else
-                esp_wifi_disconnect();
+                esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+                esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*)wifi_sta_cfg);
+                esp_wifi_set_storage(WIFI_STORAGE_RAM);
 
+                esp_wifi_disconnect();
                 esp_wifi_connect();
 #endif /* CONFIG_LITEMESH_ENABLE */
                 xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_EVENT);

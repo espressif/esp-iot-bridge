@@ -39,32 +39,8 @@ static EventGroupHandle_t s_wifi_event_group = NULL;
 static const char *TAG = "gateway_wifi";
 
 #if CONFIG_LITEMESH_ENABLE
-#include "esp_gateway_litemesh.h"
+#include "esp_litemesh.h"
 #endif
-
-wifi_sta_config_t router_config;
-
-esp_err_t esp_gateway_wifi_set_config_into_flash(wifi_interface_t interface, wifi_config_t *conf)
-{
-    esp_err_t ret = ESP_OK;
-    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
-    ret = esp_wifi_set_config(interface, conf);
-    esp_wifi_set_storage(WIFI_STORAGE_RAM);
-    if (interface == WIFI_IF_STA) {
-        memcpy(&router_config, conf, sizeof(router_config));
-    }
-
-    return ret;
-}
-
-esp_err_t esp_gateway_wifi_set_config_into_ram(wifi_interface_t interface, wifi_config_t *conf)
-{
-    esp_err_t ret = ESP_OK;
-
-    ret = esp_wifi_set_config(interface, conf);
-
-    return ret;
-}
 
 static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *password, const char *bssid)
 {
@@ -84,7 +60,7 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
             ESP_LOGI(TAG, "sta ssid: %s password: %s", ssid, password);
         }
 
-        ESP_ERROR_CHECK(esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, &wifi_cfg));
+        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_cfg));
     }
 
     if (mode & WIFI_MODE_AP) {
@@ -93,7 +69,7 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
         strlcpy((char *)wifi_cfg.ap.ssid, ssid, sizeof(wifi_cfg.ap.ssid));
         strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
 
-        ESP_ERROR_CHECK(esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_AP, &wifi_cfg));
+        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
 
         ESP_LOGI(TAG, "softap ssid: %s password: %s", ssid, password);
     }
@@ -155,6 +131,25 @@ static esp_err_t esp_gateway_wifi_init(void)
 #endif /* CONFIG_GATEWAY_EXTERNAL_NETIF_STATION || CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP */
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
+#ifdef CONFIG_LITEMESH_ENABLE
+static void esp_litemesh_event_ip_changed_handler(void *arg, esp_event_base_t event_base,
+                                                          int32_t event_id, void *event_data)
+{
+    switch(event_id) {
+        case LITEMESH_EVENT_STARTED:
+            ESP_LOGI(TAG, "LiteMesh connecting");
+            esp_litemesh_connect();
+            break;
+        case LITEMESH_EVENT_INHERITED_NET_SEGMENT_CHANGED:
+            ESP_LOGI(TAG, "netif network segment conflict check");
+            esp_gateway_netif_network_segment_conflict_update(NULL);
+            break;
+        case LITEMESH_EVENT_ROUTER_INFO_CHANGED:
+            break;
+    }
+}
+#endif
+
 esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     esp_netif_t *wifi_netif = NULL;
@@ -172,14 +167,11 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
     mode |= WIFI_MODE_STA;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
+#if !CONFIG_LITEMESH_ENABLE
+    wifi_sta_config_t router_config;
     /* Get WiFi Station configuration */
     esp_wifi_get_config(WIFI_IF_STA, (wifi_config_t*)&router_config);
 
-#if CONFIG_LITEMESH_ENABLE
-    esp_litemesh_set_mesh_id(MESH_ID);
-
-    esp_litemesh_init();
-#else
     /* Get Wi-Fi Station ssid success */
     if (strlen((const char*)router_config.ssid)) {
         ESP_LOGI(TAG, "Found ssid %s",     (const char*) router_config.ssid);
@@ -250,7 +242,9 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &wifi_event_ap_staconnected_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &wifi_event_ap_stadisconnected_handler, NULL, NULL));
-
+#ifdef CONFIG_LITEMESH_ENABLE
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(LITEMESH_EVENT, ESP_EVENT_ANY_ID, &esp_litemesh_event_ip_changed_handler, NULL, NULL));
+#endif
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_AP;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
