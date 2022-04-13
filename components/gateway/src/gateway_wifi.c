@@ -105,8 +105,8 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
 static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t event_base,
                                                 int32_t event_id, void *event_data)
 {
-    ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
 #if !CONFIG_LITEMESH_ENABLE
+    ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
     esp_wifi_connect();
 #endif
     xEventGroupClearBits(s_wifi_event_group, GATEWAY_EVENT_STA_CONNECTED);
@@ -166,7 +166,7 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 
     esp_gateway_wifi_init();
     wifi_netif = esp_netif_create_default_wifi_sta();
-    esp_gateway_netif_list_add(wifi_netif);
+    esp_gateway_netif_list_add(wifi_netif, NULL);
 
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_STA;
@@ -195,6 +195,17 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 #endif /* CONFIG_GATEWAY_EXTERNAL_NETIF_STATION */
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
+static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
+{
+    esp_err_t ret = ESP_FAIL;
+
+    if (esp_wifi_deauth_sta(0) == ESP_OK) {
+        ret = ESP_OK;
+    }
+
+    return ret;
+}
+
 esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     esp_netif_ip_info_t netif_ip;
@@ -222,7 +233,7 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     }
     esp_netif_get_ip_info(wifi_netif, &netif_ip);
     ESP_LOGI(TAG, "IP Address:" IPSTR, IP2STR(&netif_ip.ip));
-    esp_gateway_netif_list_add(wifi_netif);
+    esp_gateway_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
 
     if (enable_dhcps) {
         esp_netif_dhcps_start(wifi_netif);

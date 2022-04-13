@@ -29,6 +29,7 @@
 #define VENDOR_OUI_1                                    CONFIG_VENDOR_OUI_1
 #define VENDOR_OUI_2                                    CONFIG_VENDOR_OUI_2
 
+#define WIFI_CONNECT_MAX_RETRY                          (5)
 #define SINGLE_CHANNEL_SCAN_TIMES                       (1)
 
 #define VENDOR_IE_DATA_LENGTH_MINIMUM                   (4)
@@ -103,6 +104,7 @@ static vendor_ie_data_t *esp_gateway_vendor_ie = NULL;
 static esp_gateway_litemesh_info_t *broadcast_info = NULL;
 static ap_info_t best_ap_info;
 
+static uint8_t wifi_connect_retry = 0;
 static bool connected_ap = false;
 static bool connected_eth = false;
 static volatile bool litemesh_scan_status = false;
@@ -333,9 +335,14 @@ static void esp_litemesh_event_sta_disconnected_handler(void *arg, esp_event_bas
     }
     esp_litemesh_info_update(broadcast_info);
 
-    esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, (wifi_config_t*)&router_config);
-
-    esp_litemesh_connect();
+    if (wifi_connect_retry < WIFI_CONNECT_MAX_RETRY) {
+        esp_wifi_connect();
+        wifi_connect_retry++;
+        ESP_LOGI(TAG, "Retry to connect to the AP");
+    } else {
+        esp_gateway_wifi_set_config_into_ram(ESP_IF_WIFI_STA, (wifi_config_t*)&router_config);
+        esp_litemesh_connect();
+    }
 }
 
 static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t event_base,
@@ -387,7 +394,7 @@ static void esp_litemesh_event_scan_done_handler(void* arg, esp_event_base_t eve
 #if CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
             snprintf((char*)wifi_cfg.sta.ssid, sizeof(wifi_cfg.sta.ssid), "%s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, best_ap_info.bssid[3], best_ap_info.bssid[4], best_ap_info.bssid[5]);
 #else
-            snprintf((char*)wifi_cfg.sta.ssid, sizeof(wifi_cfg.sta.ssid), "%s\r\n", ESP_GATEWAY_SOFTAP_SSID);
+            snprintf((char*)wifi_cfg.sta.ssid, sizeof(wifi_cfg.sta.ssid), "%s", ESP_GATEWAY_SOFTAP_SSID);
             memcpy(wifi_cfg.sta.bssid, best_ap_info.bssid, sizeof(wifi_cfg.sta.bssid));
             wifi_cfg.sta.bssid_set = 1;
 #endif
@@ -463,6 +470,7 @@ static void esp_litemesh_event_sta_got_ip_handler(void *arg, esp_event_base_t ev
     ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
 
     connected_ap = true;
+    wifi_connect_retry = 0;
 
     if (broadcast_info->level == WIFI_ROUTER_LEVEL_0) {
         broadcast_info->router_net_segment[broadcast_info->router_number++] = esp_ip4_addr3_16(&event->ip_info.ip);

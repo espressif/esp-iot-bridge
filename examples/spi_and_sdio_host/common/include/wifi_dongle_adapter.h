@@ -9,7 +9,58 @@
 #define MAX_PRIORITY_QUEUES     2
 
 /* ESP Payload Header Flags */
-#define MORE_FRAGMENT			(1 << 0)
+#define MORE_FRAGMENT           (1 << 0)
+#define DHCPS_CHANGED           (1 << 1)
+
+#define NIC_LINK_UP             false
+#define NIC_LINK_DOWN           true
+
+/** @ingroup ipaddr
+ * IP address types for use in ip_addr_t.type member.
+ */
+enum ip_addr_type {
+    /** IPv4 */
+    TYPE_V4 =   0U,
+    /** IPv6 */
+    TYPE_V6 =   6U,
+    /** IPv4+IPv6 ("dual-stack") */
+    TYPE_ANY = 46U
+};
+
+typedef struct {
+    uint32_t addr;
+} ipv4_addr_t;
+
+typedef struct {
+    uint32_t addr[4];
+    uint8_t zone;
+} ipv6_addr_t;
+
+/** @brief IPV4 IP address information
+  */
+typedef struct {
+    ipv4_addr_t ip;      /**< Interface IPV4 address */
+    ipv4_addr_t netmask; /**< Interface IPV4 netmask */
+    ipv4_addr_t gw;      /**< Interface IPV4 gateway address */
+} ipv4_info_t;
+
+/** @brief IPV6 IP address information
+  */
+typedef struct {
+    ipv6_addr_t ip; /**< Interface IPV6 address */
+} ipv6_info_t;
+
+struct esp_dhcps {
+    union {
+        ipv6_info_t ip6;
+        ipv4_info_t ip4;
+    } u_addr;
+    /** @ref ip_addr_type */
+    uint8_t type;
+    uint8_t set_link;
+};
+
+typedef struct esp_dhcps esp_dhcps_t;
 
 struct esp_payload_header {
 	uint8_t          if_type:4;

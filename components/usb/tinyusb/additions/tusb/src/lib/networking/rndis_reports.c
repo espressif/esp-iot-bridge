@@ -114,9 +114,10 @@ static const char *rndis_vendor = RNDIS_VENDOR;
 
 static void rndis_query(void)
 {
-  uint8_t usb_net_mac[6] = {0};
+  uint8_t usb_net_mac[6];
+  memset(usb_net_mac, 0x0, sizeof(usb_net_mac));
   esp_read_mac(usb_net_mac, ESP_MAC_WIFI_STA);
-  /* Virtual USB Net Mac */
+  /* USB Netif Mac */
   usb_net_mac[5] = usb_net_mac[5] + 8;
   switch (((rndis_query_msg_t *)encapsulated_buffer)->Oid)
   {

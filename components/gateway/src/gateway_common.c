@@ -37,13 +37,14 @@
 
 typedef struct gateway_netif {
     esp_netif_t* netif;
+    dhcps_change_cb_t dhcps_change_cb;
     struct gateway_netif* next;
 } gateway_netif_t;
 
 static const char* TAG = "gateway_common";
 static gateway_netif_t* gateway_link = NULL;
 
-esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif)
+esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb)
 {
     gateway_netif_t* new = gateway_link;
     gateway_netif_t* tail = NULL;
@@ -63,6 +64,7 @@ esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif)
         return ESP_ERR_NO_MEM;
     }
     new->netif = netif;
+    new->dhcps_change_cb = dhcps_change_cb;
     new->next = NULL;
 
     if (tail == NULL) { // the first one
@@ -203,11 +205,12 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
     gateway_netif_t* p = gateway_link;
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
+    esp_ip_addr_t esp_ip_addr_info;
     esp_ip4_addr_t netmask = {.addr = ESP_IP4TOADDR(255, 255, 255, 0)};
     bool ip_segment_is_used = false;
 
     while (p) {
-        if ((esp_netif != p->netif) && DHCPS_NETIF_ID(p->netif)) { // DHCP_Server has to be enabled for this netif
+        if ((esp_netif != p->netif) && DHCPS_NETIF_ID(p->netif)) { /* DHCP_Server has to be enabled for this netif */
             esp_netif_get_ip_info(esp_netif, &allocate_ip_info);
             esp_netif_get_ip_info(p->netif, &netif_ip);
 
@@ -221,7 +224,10 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
                 continue;
             }
 
-            esp_gateway_netif_request_ip(&allocate_ip_info);
+            if (esp_gateway_netif_request_ip(&allocate_ip_info) != ESP_OK) {
+                ESP_LOGE(TAG, "ip reallocate fail");
+                break;
+            }
 
             ESP_ERROR_CHECK(esp_netif_dhcps_stop(p->netif));
             esp_netif_set_ip_info(p->netif, &allocate_ip_info);
@@ -234,6 +240,13 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
             dhcps_offer_t dhcps_dns_value = OFFER_DNS;
             esp_netif_dhcps_option(p->netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value));
             esp_netif_set_dns_info(p->netif, ESP_NETIF_DNS_MAIN, &dns);
+
+            esp_ip_addr_info.type = ESP_IPADDR_TYPE_V4;
+            esp_ip_addr_info.u_addr.ip4.addr = allocate_ip_info.ip.addr;
+
+            if (p->dhcps_change_cb) {
+                p->dhcps_change_cb(&esp_ip_addr_info);
+            }
 
             break;
         }
