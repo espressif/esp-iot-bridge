@@ -19,6 +19,10 @@ extern "C"
 {
 #endif
 
+#define VENDOR_ID_0    CONFIG_VENDOR_ID_0
+#define VENDOR_ID_1    CONFIG_VENDOR_ID_1
+#define MESH_ID        CONFIG_MESH_ID
+
 /**
   * @brief Check if the network segment is used to avoid conflicts.
   * 
@@ -38,6 +42,8 @@ bool esp_litemesh_network_segment_is_used(uint32_t ip);
 esp_err_t esp_litemesh_init(void);
 
 void esp_litemesh_connect(void);
+
+void esp_litemesh_set_mesh_id(uint8_t mesh_id);
 
 #ifdef __cplusplus
 }
