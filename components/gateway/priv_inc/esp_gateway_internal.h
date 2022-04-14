@@ -70,7 +70,10 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
  *     - ESP_OK: Add netif instance successfully
  *     - others: other failure occurred include netif duplicate addition or Out of memory
  */
-esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb);
+#define esp_gateway_netif_list_add(netif, dhcps_change_cb) \
+        _esp_gateway_netif_list_add(netif, dhcps_change_cb, COMMIT_ID)
+
+esp_err_t _esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb, const char* commit_id);
 
 /**
  * @brief  Remove netif instance to the list.

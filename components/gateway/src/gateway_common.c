@@ -44,7 +44,7 @@ typedef struct gateway_netif {
 static const char* TAG = "gateway_common";
 static gateway_netif_t* gateway_link = NULL;
 
-esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb)
+esp_err_t _esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb, const char* commit_id)
 {
     gateway_netif_t* new = gateway_link;
     gateway_netif_t* tail = NULL;
@@ -63,6 +63,7 @@ esp_err_t esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps
         ESP_LOGE(TAG, "add fail");
         return ESP_ERR_NO_MEM;
     }
+    printf("Add netif %s with %s(commit id)\r\n", esp_netif_get_desc(netif), commit_id);
     new->netif = netif;
     new->dhcps_change_cb = dhcps_change_cb;
     new->next = NULL;
