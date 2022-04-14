@@ -109,6 +109,7 @@ menu "Gateway Configuration"
             default n
             depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
             select TINYUSB
+            select TINYUSB_NET_ENABLED
 
         config GATEWAY_DATA_FORWARDING_NETIF_ETHERNET
             bool "Use ethernet interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
