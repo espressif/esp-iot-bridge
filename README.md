@@ -1,5 +1,7 @@
 # ESP-Gateway 智能网关方案
 
+- [英文版](README_EN.md)
+
 本文档将介绍 ESP-Gateway 智能网关方案的配置流程和使用方法。
 
 

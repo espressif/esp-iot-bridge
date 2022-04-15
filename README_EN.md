@@ -1,5 +1,7 @@
 # ESP-Gateway Smart Gateway Solution
 
+- [中文版](README.md)
+
 ESP-Gateway is a smart gateway solution offered by Espressif. This document describes how to configure and use ESP-Gateway.
 
 
