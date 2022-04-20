@@ -98,24 +98,6 @@ variables: &global-variables
   - idf.py set-target esp32s3
   - idf.py build
 
-esp32_v4.3_build:
-  stage: build
-  image: $CI_DOCKER_REGISTRY/esp32-ci-env
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *get_gateway_priv
-    - git clone -b release/v4.3 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
-    - *setup_tools
-    - *build_esp32
-
 esp32_v4.4_build:
   stage: build
   image: $CI_DOCKER_REGISTRY/esp-env:v4.4-1
