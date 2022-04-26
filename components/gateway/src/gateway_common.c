@@ -25,12 +25,17 @@
 #include "esp_netif.h"
 #include "esp_system.h"
 
+#include "lwip/inet.h"
 #include "lwip/ip_addr.h"
 #include "dhcpserver/dhcpserver.h"
 
 #include "esp_gateway.h"
+#include "esp_gateway_wifi.h"
 #include "esp_gateway_internal.h"
-#include "esp_gateway_litemesh.h"
+
+#if CONFIG_LITEMESH_ENABLE
+#include "esp_litemesh.h"
+#endif
 
 // DHCP_Server has to be enabled for this netif
 #define DHCPS_NETIF_ID(netif) (ESP_NETIF_DHCP_SERVER & esp_netif_get_flags(netif))
@@ -101,26 +106,6 @@ esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif)
     return ESP_OK;
 }
 
-esp_err_t esp_gateway_get_external_netif_network_segment(uint8_t* net_segment, uint32_t* max_num)
-{
-    gateway_netif_t* p = gateway_link;
-    esp_netif_ip_info_t netif_ip;
-    uint32_t count = 0;
-    while (p && (count < *max_num)) {
-        if (!DHCPS_NETIF_ID(p->netif)) {
-            esp_netif_get_ip_info(p->netif, &netif_ip);
-            if ((esp_ip4_addr1_16(&netif_ip.ip) == 192)
-                && (esp_ip4_addr2_16(&netif_ip.ip) == 168)) {
-                net_segment[count++] = esp_ip4_addr3_16(&netif_ip.ip);
-            }
-        }
-        p = p->next;
-    }
-
-    *max_num = count;
-    return ESP_OK;
-}
-
 static bool esp_gateway_netif_network_segment_is_used(uint32_t ip)
 {
     gateway_netif_t* p = gateway_link;
@@ -171,7 +156,7 @@ static bool esp_gateway_netif_mac_is_used(uint8_t mac[6])
         if (!memcmp(netif_mac, mac, sizeof(netif_mac))) {
             return true;
         }
-        
+
         p = p->next;
     }
 
@@ -210,9 +195,13 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
     esp_ip4_addr_t netmask = {.addr = ESP_IP4TOADDR(255, 255, 255, 0)};
     bool ip_segment_is_used = false;
 
+    memset(&allocate_ip_info, 0x0, sizeof(esp_netif_ip_info_t));
+
     while (p) {
         if ((esp_netif != p->netif) && DHCPS_NETIF_ID(p->netif)) { /* DHCP_Server has to be enabled for this netif */
-            esp_netif_get_ip_info(esp_netif, &allocate_ip_info);
+            if (esp_netif) {
+                esp_netif_get_ip_info(esp_netif, &allocate_ip_info);
+            }
             esp_netif_get_ip_info(p->netif, &netif_ip);
 
 #if CONFIG_LITEMESH_ENABLE
@@ -310,6 +299,11 @@ void esp_gateway_create_all_netif(void)
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
     esp_gateway_create_station_netif(NULL, NULL, false, false);
+#endif
+
+#if CONFIG_LITEMESH_ENABLE
+    esp_litemesh_config_t litemesh_config = ESP_LITEMESH_DEFAULT_INIT();
+    esp_litemesh_init(&litemesh_config);
 #endif
 
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)

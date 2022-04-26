@@ -14,6 +14,10 @@
 
 #pragma once
 
+#ifdef CONFIG_LITEMESH_ENABLE
+#include "esp_litemesh.h"
+#endif
+
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
 /**
 * @brief Create modem netif for gateway.
@@ -124,16 +128,6 @@ esp_netif_t* esp_gateway_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t
 *      - NULL: failed because some error occurred
 */
 esp_netif_t* esp_gateway_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
-#endif
-
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION) || defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
-esp_err_t esp_gateway_wifi_set_config_into_flash(wifi_interface_t interface, wifi_config_t *conf);
-
-esp_err_t esp_gateway_wifi_set_config_into_ram(wifi_interface_t interface, wifi_config_t *conf);
-#endif
-
-#if defined(CONFIG_LITEMESH_ENABLE)
-void esp_litemesh_connect(void);
 #endif
 
 /**
