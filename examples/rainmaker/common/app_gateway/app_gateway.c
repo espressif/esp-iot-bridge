@@ -34,13 +34,7 @@ esp_err_t app_gateway_enable(void)
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
-    esp_gateway_create_softap_netif(NULL, NULL, true, true);
-#endif
-
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
-    esp_gateway_create_station_netif(NULL, NULL, false, false);
-#endif
+    esp_gateway_create_all_netif();
 
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, NULL));
 

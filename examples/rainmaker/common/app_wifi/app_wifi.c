@@ -202,7 +202,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 }
                 
 #if CONFIG_LITEMESH_ENABLE
-                esp_litemesh_set_router_config((wifi_config_t*)wifi_sta_cfg);
+                esp_litemesh_set_router_config(wifi_sta_cfg);
                 esp_litemesh_connect();
 #else
                 esp_wifi_set_storage(WIFI_STORAGE_FLASH);
