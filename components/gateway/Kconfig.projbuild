@@ -39,25 +39,41 @@ menu "Gateway Configuration"
             bool "Use Wi-Fi SoftAP interface to provide network data forwarding for other devices"
             default y
 
+            menu "LITEMESH_ENABLE is enabled, please configure SoftAP in \"Gateway LiteMesh Configuration\""
+                visible if LITEMESH_ENABLE
+            endmenu
+
             menu "SoftAP Config"
                 depends on GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
+                visible if !LITEMESH_ENABLE
+
                 config ESP_GATEWAY_SOFTAP_SSID
-                    string "SoftAP SSID"
-                    default "ESP_Gateway"
+                    string
+                    prompt "SoftAP SSID"
+                    default "ESP_Gateway" if !LITEMESH_ENABLE
+                    default LITEMESH_SOFTAP_SSID if LITEMESH_ENABLE
                     help
                         SSID of ESP-Gateway SoftAP.
 
                 config ESP_GATEWAY_SOFTAP_PASSWORD
                     string "SoftAP Password"
-                    default "12345678"
+                    default "12345678" if !LITEMESH_ENABLE
+                    default LITEMESH_SOFTAP_PASSWORD if LITEMESH_ENABLE
                     help
                         password of ESP-Gateway SoftAP.
 
                 config ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
                     bool "SoftAP SSID ends with the MAC"
-                    default n
+                    default n if !LITEMESH_ENABLE
+                    default LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC if LITEMESH_ENABLE
                     help
-                        Add Mac to the end of SSID
+                        Add MAC to the end of SSID
+
+                config ESP_GATEWAY_SOFTAP_MAX_CONNECT_NUMBER
+                    int "Maximum number of connections per node"
+                    default 6 if !LITEMESH_ENABLE
+                    default LITEMESH_MAX_CONNECT_NUMBER if LITEMESH_ENABLE
+                    range 1 10
             endmenu
 
         config GATEWAY_DATA_FORWARDING_NETIF_USB
