@@ -20,11 +20,12 @@ extern "C"
 #endif
 extern const char* LITEMESH_EVENT;
 
-#ifdef CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC 
-#define ESP_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
+#ifdef CONFIG_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC 
+#define ESP_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC CONFIG_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC
 #else
 #define ESP_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC 0
 #endif
+
 #ifdef CONFIG_JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO
 #define JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO CONFIG_JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO
 #else
@@ -33,12 +34,12 @@ extern const char* LITEMESH_EVENT;
 
 #define ESP_LITEMESH_DEFAULT_INIT()                                                           \
     {                                                                                         \
-        .vendor_id = {CONFIG_LITEMESH_VENDOR_ID_0, CONFIG_LITEMESH_VENDOR_ID_1},                                \
+        .vendor_id = {CONFIG_LITEMESH_VENDOR_ID_0, CONFIG_LITEMESH_VENDOR_ID_1},              \
         .mesh_id = CONFIG_MESH_ID,                                                            \
         .end_with_mac = ESP_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC,                            \
-        .join_mesh_without_configured_wifi = JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO,         \
-        .softap_ssid = CONFIG_ESP_GATEWAY_SOFTAP_SSID,                                       \
-        .softap_password = CONFIG_ESP_GATEWAY_SOFTAP_PASSWORD,                               \
+        .join_mesh_without_configured_wifi = JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO,          \
+        .softap_ssid = CONFIG_LITEMESH_SOFTAP_SSID,                                           \
+        .softap_password = CONFIG_LITEMESH_SOFTAP_PASSWORD,                                   \
     }
 
 

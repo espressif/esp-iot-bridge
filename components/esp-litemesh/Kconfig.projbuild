@@ -20,6 +20,25 @@ menu "Gateway LiteMesh Configuration"
             int "MESH_ID for LiteMesh"
             default 77
 
+        config LITEMESH_SOFTAP_SSID
+            string
+            prompt "SoftAP SSID"
+            default "ESP_Gateway"
+            help
+                SSID of ESP-LiteMesh SoftAP.
+
+        config LITEMESH_SOFTAP_PASSWORD
+            string "SoftAP Password"
+            default "12345678"
+            help
+                password of ESP-LiteMesh SoftAP.
+
+        config LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC
+            bool "SoftAP SSID ends with the MAC"
+            default n
+            help
+                Add MAC to the end of SSID
+
         config LITEMESH_MAX_CONNECT_NUMBER
             int "Maximum number of connections per node"
             default 8
