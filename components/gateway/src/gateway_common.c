@@ -65,7 +65,7 @@ esp_err_t _esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcp
     // not found, create a new
     new = (gateway_netif_t*)malloc(sizeof(gateway_netif_t));
     if (new == NULL) {
-        ESP_LOGE(TAG, "add fail");
+        ESP_LOGE(TAG, "netif list add fail");
         return ESP_ERR_NO_MEM;
     }
     printf("Add netif %s with %s(commit id)\r\n", esp_netif_get_desc(netif), commit_id);
@@ -78,7 +78,7 @@ esp_err_t _esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcp
     } else {
         tail->next = new;
     }
-    ESP_LOGI(TAG, "add success");
+    ESP_LOGI(TAG, "netif list add success");
 
     return ESP_OK;
 }
