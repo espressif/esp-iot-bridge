@@ -49,8 +49,8 @@ menu "Gateway LiteMesh Configuration"
             default 3
             range 1 5
 
-        config LITEMESH_MAX_INHERITED_NETIF_NUMBER
-            int "Maximum number of external netif router trace number"
+        config LITEMESH_MAXIMUM_LEVEL_ALLOWED
+            int "The maximum level allowed"
             default 10
             range 1 16
 

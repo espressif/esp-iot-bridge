@@ -36,12 +36,14 @@ extern const char* LITEMESH_EVENT;
     {                                                                                         \
         .vendor_id = {CONFIG_LITEMESH_VENDOR_ID_0, CONFIG_LITEMESH_VENDOR_ID_1},              \
         .mesh_id = CONFIG_MESH_ID,                                                            \
+        .max_connect_number = CONFIG_LITEMESH_MAX_CONNECT_NUMBER,                             \
+        .max_router_number = CONFIG_LITEMESH_MAX_ROUTER_NUMBER,                               \
+        .max_level = CONFIG_LITEMESH_MAXIMUM_LEVEL_ALLOWED,                                   \
         .end_with_mac = ESP_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC,                            \
         .join_mesh_without_configured_wifi = JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO,          \
         .softap_ssid = CONFIG_LITEMESH_SOFTAP_SSID,                                           \
         .softap_password = CONFIG_LITEMESH_SOFTAP_PASSWORD,                                   \
     }
-
 
 typedef enum {
     LITEMESH_EVENT_STARTED,
@@ -52,6 +54,9 @@ typedef enum {
 typedef struct {
     uint8_t vendor_id[2];
     uint8_t mesh_id;
+    uint8_t max_connect_number;
+    uint8_t max_router_number;
+    uint8_t max_level;
     bool end_with_mac;
     bool join_mesh_without_configured_wifi;
     const char* softap_ssid;
