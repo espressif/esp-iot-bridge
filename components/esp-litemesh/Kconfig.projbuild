@@ -21,11 +21,11 @@ menu "Gateway LiteMesh Configuration"
             default 77
 
         config LITEMESH_SOFTAP_SSID
-            string
-            prompt "SoftAP SSID"
+            string "SoftAP SSID"
             default "ESP_Gateway"
             help
                 SSID of ESP-LiteMesh SoftAP.
+                If enable LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC, the maximum length of ssid is 25.
 
         config LITEMESH_SOFTAP_PASSWORD
             string "SoftAP Password"

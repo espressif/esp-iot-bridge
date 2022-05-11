@@ -32,6 +32,18 @@ extern const char* LITEMESH_EVENT;
 #define JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO 0
 #endif
 
+#define STATIC_ASSERT(condition) typedef char p__LINE__[ (condition) ? 1 : -1];
+
+#if ESP_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC
+#define SSID_MAC_LEN    7  // _XXYYZZ
+#else
+#define SSID_MAC_LEN    0
+#endif
+
+STATIC_ASSERT((sizeof(CONFIG_LITEMESH_SOFTAP_SSID) + SSID_MAC_LEN) < (32 + 2))
+
+STATIC_ASSERT(sizeof(CONFIG_LITEMESH_SOFTAP_PASSWORD) < (63 + 2))
+
 #define ESP_LITEMESH_DEFAULT_INIT()                                                           \
     {                                                                                         \
         .vendor_id = {CONFIG_LITEMESH_VENDOR_ID_0, CONFIG_LITEMESH_VENDOR_ID_1},              \
