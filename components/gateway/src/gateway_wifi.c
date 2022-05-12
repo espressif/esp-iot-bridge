@@ -50,7 +50,7 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
     wifi_config_t wifi_cfg = {0};
 
     if (mode & WIFI_MODE_STA) {
-        strncpy((char *)wifi_cfg.sta.ssid, ssid, sizeof(wifi_cfg.sta.ssid));
+        memcpy((char *)wifi_cfg.sta.ssid, ssid, sizeof(wifi_cfg.sta.ssid));
         strlcpy((char *)wifi_cfg.sta.password, password, sizeof(wifi_cfg.sta.password));
         if (bssid != NULL) {
             wifi_cfg.sta.bssid_set = 1;
@@ -66,7 +66,7 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
     if (mode & WIFI_MODE_AP) {
         wifi_cfg.ap.max_connection = 10;
         wifi_cfg.ap.authmode = strlen(password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
-        strncpy((char *)wifi_cfg.ap.ssid, ssid, sizeof(wifi_cfg.ap.ssid));
+        memcpy((char *)wifi_cfg.ap.ssid, ssid, sizeof(wifi_cfg.ap.ssid));
         strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
 
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
@@ -204,7 +204,7 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
 {
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
-    char softap_ssid[ESP_GATEWAY_SSID_MAX_LEN];
+    char softap_ssid[ESP_GATEWAY_SSID_MAX_LEN + 1];
     esp_netif_t *wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
 
@@ -252,7 +252,7 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
 #if CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
     uint8_t softap_mac[ESP_GATEWAY_MAC_MAX_LEN];
     esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
-    snprintf(softap_ssid, sizeof(softap_ssid), "%s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
+    snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
 #else
     snprintf(softap_ssid, sizeof(softap_ssid), "%s", ESP_GATEWAY_SOFTAP_SSID);
 #endif
