@@ -93,6 +93,10 @@ bool esp_litemesh_network_segment_is_used(uint32_t ip);
   */
 esp_err_t esp_litemesh_init(esp_litemesh_config_t* config);
 
+esp_err_t esp_litemesh_set_allowed_level(uint8_t level);
+
+esp_err_t esp_litemesh_set_disallowed_level(uint8_t level);
+
 esp_err_t esp_litemesh_set_router_config(wifi_sta_config_t *conf);
 
 esp_err_t esp_litemesh_set_softap_info(const char* softap_ssid, const char* softap_password, bool end_with_mac);
