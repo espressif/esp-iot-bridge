@@ -32,6 +32,12 @@ extern const char* LITEMESH_EVENT;
 #define JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO 0
 #endif
 
+#ifdef CONFIG_JOIN_MESH_IGNORE_ROUTER_STATUS
+#define JOIN_MESH_IGNORE_ROUTER_STATUS CONFIG_JOIN_MESH_IGNORE_ROUTER_STATUS
+#else
+#define JOIN_MESH_IGNORE_ROUTER_STATUS 0
+#endif
+
 #define STATIC_ASSERT(condition) typedef char p__LINE__[ (condition) ? 1 : -1];
 
 #if ESP_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC
@@ -52,6 +58,7 @@ STATIC_ASSERT(sizeof(CONFIG_LITEMESH_SOFTAP_PASSWORD) < (63 + 2))
         .max_router_number = CONFIG_LITEMESH_MAX_ROUTER_NUMBER,                               \
         .max_level = CONFIG_LITEMESH_MAXIMUM_LEVEL_ALLOWED,                                   \
         .end_with_mac = ESP_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC,                            \
+        .join_mesh_ignore_router_status = JOIN_MESH_IGNORE_ROUTER_STATUS,                     \
         .join_mesh_without_configured_wifi = JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO,          \
         .softap_ssid = CONFIG_LITEMESH_SOFTAP_SSID,                                           \
         .softap_password = CONFIG_LITEMESH_SOFTAP_PASSWORD,                                   \
@@ -70,6 +77,7 @@ typedef struct {
     uint8_t max_router_number;
     uint8_t max_level;
     bool end_with_mac;
+    bool join_mesh_ignore_router_status;
     bool join_mesh_without_configured_wifi;
     const char* softap_ssid;
     const char* softap_password;

@@ -60,5 +60,11 @@ menu "Gateway LiteMesh Configuration"
             help
                 Join the mesh network directly when starting up, regardless of whether Wi-Fi information is configured or not.
                 If disabled, it will only join the mesh network after configuring Wi-Fi information.
+
+        config JOIN_MESH_IGNORE_ROUTER_STATUS
+            bool "Join Mesh no matter whether the node is connected to router"
+            default n
+            help
+                If enabled, it will join Mesh no matter whether the node is connected to router
     endmenu
 endmenu
