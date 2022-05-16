@@ -1,26 +1,26 @@
-# ESP-Gateway Smart Gateway Solution
+# ESP-Gateway 智能网关方案
 
-- [中文版](README.md)
+- [English Version](README.md)
 
-ESP-Gateway is a smart gateway solution offered by Espressif. This document describes how to configure and use ESP-Gateway.
+本文档将介绍 ESP-Gateway 智能网关方案的配置流程和使用方法。
 
 
-# Table of Contents
+# 目录
 
-- [1. Overview](#1)
-- [2. Hardware](#2)
-- [3. Development Environment](#3)
-- [4. SDK](#4)
-- [5. Configuration](#5)
-- [6. Build & Flash & Monitor the Output](#6)
-- [7. Network Configuration](#7)
-- [8. Solution Highlights](#8)
+- [1. 概述](#1)
+- [2. 硬件准备](#2)
+- [3. 环境搭建](#3)
+- [4. SDK 准备](#4)
+- [5. 配置项介绍](#5)
+- [6. 编译 & 烧录 & 监视输出](#6)
+- [7. 配网](#7)
+- [8. 方案优势](#8)
 
-## <span id = "1">1. Overview</span>
+## <span id = "1">1. 概述</span>
 
-ESP-Gateway is supported by various Espressif chips, as shown in the table below:
+乐鑫 ESP-Gateway 智能网关方案已经适配乐鑫多种芯片：
 
-| Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v4.4 |
+| 芯片     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v5.0 |
 | -------- | ------------------------------------------------------------ | -------------------- |
 | ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | TODO                 |
 | ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | TODO                 |
@@ -29,37 +29,37 @@ ESP-Gateway is supported by various Espressif chips, as shown in the table below
 | ESP32-H2 | TODO                                                         | TODO                 |
 | ESP32-C2 | *N/A*                                                        | TODO                 |
 
-The ESP-Gateway solution provides several network interfaces, which can be divided into two main categories:
+ESP-Gateway 方案提供多个网络接口，不同的网络接口可以分为两大类：
 
-- Interfaces for connecting to the Internet
+- 用于连接互联网的接口
 
-- Interfaces for forwarding network packets for other devices so that they can access the Internet
+- 用于帮助其他设备转发网络数据使其联网的接口
 
-Users can realize personalized smart gateway solutions through different network interface combinations to maximize the network advantages of Espressif chips.
+用户可以通过多种不同的网络接口组合来实现个性化的智能网关方案，最大程度地发挥乐鑫芯片的网络优势。
 
 
 
-![esp_gateway](./doc/_static/esp_gateway_en.png)
+![esp_gateway](./doc/_static/esp_gateway.png)
 
-A variety of functions can be achieved depending on the combination of interfaces, as shown in the table below:
+根据接口的不同组合可以实现多种功能，如下表：
 
-|                    | Wireless Hotspot     | Ethernet Interface | USB Interface | SPI Interface | SDIO Interface | Bluetooth LE Interface | Thread Interface          |
+|                    | 无线热点     | 以太网接口 | USB 接口 | SPI 接口 | SDIO 接口 | Bluetooth LE 接口 | Thread 接口          |
 | ------------------ | ------------ | ---------- | -------- | -------- | --------- | -------- | -------------------- |
-| **Wi-Fi**     | Wi-Fi Router | Wireless NIC   | Wireless NIC | Wireless NIC | Wireless NIC  | Bluetooth LE Gateway | Thread Border Router |
-| **Ethernet**         | Wi-Fi Router | Unsupported     | Wired NIC | Wired NIC | Wired NIC  | Bluetooth LE Gateway | Thread Border Router |
-| **Cat.1 4G (UART)** | 4G Hotspot      | 4G NIC    | 4G NIC  | 4G NIC  | 4G NIC   | Bluetooth LE Gateway | Thread Border Router |
-| **Cat.1 4G (USB)**  | 4G Hotspot      | 4G NIC    | Unsupported   | 4G NIC  | 4G NIC   | Bluetooth LE Gateway | Thread Border Router |
+| **无线 Wi-Fi**     | Wi-Fi 路由器 | 无线网卡   | 无线网卡 | 无线网卡 | 无线网卡  | Bluetooth LE 网关 | Thread 边界路由器 |
+| **以太网**         | Wi-Fi 路由器 | 不支持     | 有线网卡 | 有线网卡 | 有线网卡  | Bluetooth LE 网关 | Thread 边界路由器 |
+| **Cat.1 4G (UART)** | 4G 热点      | 4G 网卡    | 4G 网卡  | 4G 网卡  | 4G 网卡   | Bluetooth LE 网关 | Thread 边界路由器 |
+| **Cat.1 4G (USB)**  | 4G 热点      | 4G 网卡    | 不支持   | 4G 网卡  | 4G 网卡   | Bluetooth LE 网关 | Thread 边界路由器 |
 
-Notes:
+备注：
 
-- **NIC: network interface controller**
-- **Wi-Fi, Ethernet, Cat.1 4G (UART), and Cat.1 4G (USB) in the first column are interfaces for connecting to the Internet**
-- **The wireless hotspot, Ethernet interface, USB interface, SPI interface, SDIO interface, Bluetooth LE interface, and Thread interface in the first row are the interfaces that provide Internet access to other devices.**
+- **第一列的无线 Wi-Fi、以太网、Cat.1 4G (UART)、以及 Cat.1 4G (USB) 是连接到互联网的接口。**
+
+- **第一行的无线热点、以太网接口、USB 接口、SPI 接口、SDIO 接口、Bluetooth LE 接口、以及 Thread 接口是为其它设备提供上网功能的接入接口。**
 
 
-To summarize, the above table mainly involves the following application scenarios: Wi-Fi Router, 4G hotspot, 4G NIC, wireless NIC, wired NIC, Bluetooth LE gateway and Thread Border Router. The table below shows what scenarios each specific ESP chip supports:
+可以总结出上表主要涉及以下几种应用场景：Wi-Fi 路由器、4G 热点、4G 网卡、无线网卡、有线网卡、Bluetooth LE 网关和 Thread 边界路由器。ESP 芯片对这些场景的支持情况如下表所示：
 
-| ESP Chips | Wi-Fi Router                                                 | 4G Hotspot                                                      | 4G NIC                                                      | Wireless NIC                                                     | Wired NIC                                                     | Bluetooth LE Gateway | Thread Border Router |
+| ESP 设备 | Wi-Fi 路由器                                                 | 4G 热点                                                      | 4G 网卡                                                      | 无线网卡                                                     | 有线网卡                                                     | Bluetooth LE 网关 | Thread 边界路由器 |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | -------- | -------------------- |
 | ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SDIO/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SDIO/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SDIO/SPI) | TODO     | TODO                 |
 | ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/454168caab8b950c543c742ed575f11641ae9eb80be0ad511df3cb1c1b783baa/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d707265766965772d6f72616e6765)](https://camo.githubusercontent.com/454168caab8b950c543c742ed575f11641ae9eb80be0ad511df3cb1c1b783baa/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d707265766965772d6f72616e6765) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SPI) | TODO     | TODO                 |
@@ -67,37 +67,37 @@ To summarize, the above table mainly involves the following application scenario
 | ESP32-S3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/SPI) | TODO     | TODO                 |
 | ESP32-H2 | TODO                                                         | TODO                                                         | TODO                                                         | TODO                                                         | TODO                                                         | TODO     | TODO                 |
 
-Notes:
+备注：
 
-- **ESP32 doesn't have a USB interface and the USB interface for ESP32-C3 can't be used for application communication. If you need to use <font color=red> USB NIC </font> or <font color=red> Cat.1 4G (USB)</font> function, please choose ESP32-S2 or ESP32-S3.**
-- **Only ESP32 supports Ethernet interface. Other chips need to connect with external Ethernet chip over SPI. For ESP32 MAC & PHY configuration, please refer to [Configure MAC and PHY](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_eth.html#configure-mac-and-phy).**
-- **When using the Thread Border Router, an 802.15.4 chip is required, such as ESP32-H2.**
-- **For ESP32 SDIO interface, the pin pull-up requirements should be applied to the hardware. For details, please refer to [SD Pull-up Requirements](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html).**
+- **ESP32 没有 USB 接口，ESP32-C3 的 USB 接口无法用于通讯。如需使用 <font color=red>USB 网卡 </font>或 <font color=red>Cat.1 4G(USB)</font> 功能，请选择 ESP32-S2 或 ESP32-S3。**
+- **只有 ESP32 支持以太网接口，其它芯片需要外接 SPI 连接以太网芯片。关于 ESP32 MAC & PHY 配置，请参考 [配置 MAC 和 PHY](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_eth.html#configure-mac-and-phy)。**
+- **使用 Thread 边界路由器时，需要搭配 802.15.4 芯片，如 ESP32-H2。**
+- **对于 ESP32 SDIO 接口，硬件上有管脚上拉需求，具体请参考 [SD 上拉需求](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html)。**
 
 
 
-### 1.1 Wi-Fi Router
+### 1.1 Wi-Fi 路由器
 
-ESP-Gateway device can connect to the network by connecting to the router via Wi-Fi or by plugging the Ethernet cable into the LAN port of the router. Then other smart devices can connect to the SoftAP hotspot from the ESP-Gateway to access the Internet.
+ESP-Gateway 设备通过 Wi-Fi 或者有线以太网网口连接至路由器，智能设备通过连接至 ESP-Gateway 设备的 SoftAP 热点进行上网。
 
-- Currently, ESP-Gateway supports lightweight mesh networking — [LiteMesh](./doc/LiteMesh.md). Users can customize the hierarchical network provision.
+- ESP-Gateway 当前支持轻量化的 Mesh 组网功能 —— [LiteMesh](./doc/LiteMesh.md)，用户可以通过自定义方式，灵活实现网络组网、层级分布。
 
-- By enabling ``ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC`` in menuconfig (``Gateway Configuration`` > ``SoftAP Config``), users can add MAC information at the end of SoftAP SSID.
+- 通过在 menuconfig（``Gateway Configuration`` > ``SoftAP Config``）中启用 ``ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC``，可在 SoftAP SSID 末尾增加 MAC 信息。
 
-- A single ESP-Gateway device supports up to 10 stations connected at the same time, and bandwidth is shared by these stations.
+- 单个 Gateway 设备最多支持 10 个 Station 同时连接，多个 Station 设备共享带宽。
 
-- You need to configure your network if the ESP-Gateway device connects to the router via Wi-Fi. Currently, the following ways are supported:
+- 若 ESP-Gateway 设备通过 Wi-Fi 连接至路由器，则需要进行配网操作，目前支持以下两种配网方式：
 
-    > - [Configure the network on web page](#web)
-    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#wifi_provisioning)（ESP32-S2 not supported）
+    > - [网页配网](#web)
+    > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wifi_provisioning)（不支持 ESP32-S2）
 
-<img src="./doc/_static/wifi_router_en.png" alt="wifi_router" style="zoom: 80%;" />
+<img src="./doc/_static/wifi_router.png" alt="wifi_router" style="zoom: 80%;" />
 
-### 1.2 4G Hotspot
+### 1.2 4G 热点
 
-ESP-Gateway device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-Gateway device to gain Internet access.
+ESP-Gateway 设备在搭载插有 SIM 卡的移动网络模块后可将蜂窝网络转换为 Wi-Fi 信号，周围的智能设备连接其开启的热点后即可联网。
 
-The table below shows modules that are compatible with 4G Cat.1.
+以下模块已适配 **4G Cat.1**：
 
 | UART      | USB             |
 | --------- | --------------- |
@@ -107,204 +107,204 @@ The table below shows modules that are compatible with 4G Cat.1.
 |           | EC600N-CNLC-N06 |
 |           | SIMCom A7600C1  |
 
-<img src="./doc/_static/4G_hotpot_en.png" alt="4G_hotpot" style="zoom: 80%;" />
+<img src="./doc/_static/4G_hotpot.png" alt="4G_hotpot" style="zoom: 80%;" />
 
-### 1.3 4G NIC
+### 1.3 4G 网卡
 
-ESP-Gateway device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface (ETH/SDIO/SPI) to gain Internet access.
+ESP-Gateway 设备可搭载插有 SIM 卡的移动网络模块，网络模块联网后，可通过多个网络接口（ETH/SDIO/SPI）接入 PC 或 MCU，为设备提供上网能力。
 
-<img src="./doc/_static/4G_dongle_en.png" alt="4G_dongle" style="zoom: 80%;" />
+<img src="./doc/_static/4G_dongle.png" alt="4G_dongle" style="zoom: 80%;" />
 
 <font color=red>**⚠️Note**</font>：
 
-> Please contact sales@espressif.com for source code or firmware for the 4G NIC solution.
+> 如需使用 4G 网卡方案，请联系 sales@espressif.com 获取源码或固件。
 
-### 1.4 Wireless NIC
+### 1.4 无线网卡
 
-ESP-Gateway device can be connected to the PC or MCU through multiple network interfaces (USB/ETH/SDIO/SPI). Once connected, the PC or MCU will have an additional network card. These devices can access the Internet after configuring the network.
+ESP-Gateway 设备可通过多个网络接口（USB/ETH/SDIO/SPI）接入 PC 或 MCU，在连接成功后，PC 或 MCU 等设备会新增一个网卡。待配网成功后，即可为设备提供上网能力。
 
-- Use a USB cable to connect the GPIO19/20 of ESP32-S2 or ESP32-S3 with MCU.
+- USB 线一端连接至 ESP32-S2/ESP32-S2S3 的 GPIO19/20，一端连接至 MCU
 
     |             | USB_DP | USB_DM |
     | ----------- | ------ | ------ |
     | ESP32-S2/S3 | GPIO20 | GPIO19 |
 
-- When using SPI/SDIO interface, it is necessary to configure the MCU (Host). For specific dependencies configuration, please refer to **[Linux_based_readme](./doc/Linux_based_readme.md)**.
+- 使用 SPI/SDIO 接口需要对 MCU(Host) 侧进行配置。具体依赖项设置引导，请参考 **[Linux_based_readme](./doc/Linux_based_readme.md)**。
 
-- For SDIO hardware connection and MCU (Host) configuration, please refer to **[SDIO_setup](./doc/SDIO_setup.md)**.
+- 关于 SDIO 硬件连线和 MCU(Host) 配置，请参考 **[SDIO_setup](./doc/SDIO_setup.md)**。
 
-- For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./doc/SPI_setup.md)**.
+- 关于 SPI 硬件连线和 MCU(Host) 配置，请参考 **[SPI_setup](./doc/SPI_setup.md)**。
 
-- This feature requires you to configure the network. Currently, the following ways are supported:
+- 该方案需要进行配网操作，目前支持以下两种配网方式:
 
-    > - [Configure the network on web page](#web)
-    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#wifi_provisioning)（not support ESP32-S2）
+    > - [网页配网](#web)
+    > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wifi_provisioning)（不支持 ESP32-S2）
 
-<img src="./doc/_static/wireless_dongle_en.png" alt="wireless_dongle" style="zoom: 80%;" />
+<img src="./doc/_static/wireless_dongle.png" alt="wireless_dongle" style="zoom: 80%;" />
 
 <font color=red>**⚠️Note**</font>：
 
-> Please contact sales@espressif.com for source code or firmware for wireless NIC solution.
+> 如需使用无线网卡方案，请联系 sales@espressif.com 获取源码或固件。
 
-### 1.5 Wired NIC
+### 1.5 有线网卡
 
-ESP-Gateway device can connect to the network by plugging the Ethernet cable into the LAN port of router. PC or MCU can connect with the ESP-Gateway device through multiple interfaces (USB/SDIO/SPI) to gain internet access.
+ESP-Gateway 设备可通过将以太网网线插入路由器 LAN 口连接网络，并通过多个网络接口（USB/SDIO/SPI）接入 PC 或 MCU，为设备提供上网能力。
 
-- Use a USB cable to connect the GPIO19/20 of ESP32-S2 or ESP32-S3 with MCU.
+- USB 线一端连接至 ESP32-S2/ESP32-S3 的 GPIO19/20，一端连接至 MCU
 
     |             | USB_DP | USB_DM |
     | ----------- | ------ | ------ |
     | ESP32-S2/S3 | GPIO20 | GPIO19 |
 
-- Using SPI/SDIO interface needs to configure the MCU (Host). For specific dependencies configuration, please refer to **[Linux_based_readme](./doc/Linux_based_readme.md)**.
+- 使用 SPI/SDIO 接口需要对 MCU(Host) 侧进行配置，具体依赖项设置引导，请参考 **[Linux_based_readme](./doc/Linux_based_readme.md)**。
 
-- For SDIO hardware connection and MCU (Host) configuration, please refer to **[SDIO_setup](./doc/SDIO_setup.md)**.
+- 关于 SDIO 硬件连线和 MCU(Host) 配置，请参考 **[SDIO_setup](./doc/SDIO_setup.md)**。
 
-- For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./doc/SPI_setup.md)**.
+- 关于 SPI 硬件连线和 MCU(Host) 配置，请参考 **[SPI_setup](./doc/SPI_setup.md)**。
 
-<img src="./doc/_static/dongle_en.png" alt="dongle" style="zoom: 80%;" />
+<img src="./doc/_static/dongle.png" alt="dongle" style="zoom: 80%;" />
 
 ⚠️<font color=red>**Note:** </font>
 
-> Please contact sales@espressif.com for source code or firmware for wired NIC solution.
+> 如需使用有线网卡方案，请联系 sales@espressif.com 获取源码或固件。
 
-## <span id = "2">2. Hardware</span>
+## <span id = "2">2. 硬件准备</span>
 
-- **Linux Environment**
+- **Linux 环境**
 
-The Linux environment is necessary for building, flashing, and running.
+Linux 环境是用于执行编译、烧写、运行等操作的必须环境。
 
-> For Windows users, it is recommended to install a virtual machine for setting up the Linux environment.
+> Windows 用户可安装虚拟机，在虚拟机中安装 Linux。
 
-- **ESP devices**
+- **ESP 设备**
 
-ESP devices include ESP chips, ESP modules, ESP development boards, etc.
+ESP 设备包括 ESP 芯片，ESP 模组，ESP 开发板等。
 
-> - For **Ethernet Router** and **Ethernet Wireless Card** features:
->    - ESP32 requires an additional Ethernet PHY chip.
->    - Other ESP chips need a chip to convert SPI to Ethernet.
-> - For the **Portable Wi-Fi** feature, ESP device requires an additional mobile network module with SIM card.
+> - 对于**以太网路由器**、**以太网无线网卡**功能：
+>     - ESP32 需要额外增加一个以太网 PHY 芯片
+>     - 其它 ESP 芯片需要 SPI 转以太网芯片
+> - 对于**随身 Wi-Fi** 功能，需要额外增加一个插有 SIM 卡的移动网络模块。
 
-- **USB Cable**
+- **USB 线**
 
-USB cable is used to connect PC with ESP devices, flash or download programs, and view logs, etc.
-
-
-## <span id = "3">3. Set Up Development Environment</span>
-
-If you are familiar with the ESP development environment, you can easily understand the following steps. If you are not familiar with a certain part, such as building or flashing, please refer to [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/index.html).
+USB 线主要是用于连接 PC 和 ESP 设备、烧写/下载程序以及查看 log 等。
 
 
-### 3.1 Download & Set up Toolchain
+## <span id = "3">3. 环境搭建</span>
 
-Please refer to [Standard Toolchain Setup for Linux](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/linux-macos-setup.html#setting-up-development-environment) to download and set up the toolchain for building your project.
+**如果您熟悉 ESP 开发环境，则可以很轻松理解下面步骤; 如果您不熟悉某个部分，比如编译或烧录，请参考官方文档 [ESP-IDF 编程指南](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/index.html)。**
 
-### 3.2 Flash/Download Tool
 
-- The flash tool is located under `./components/esptool_py/esptool/esptool.py` of [ESP-IDF](https://github.com/espressif/esp-idf).
+### 3.1 下载和设置工具链
 
-- Run the following command to get the full features for esptool:
+请参考 [Linux 平台工具链的标准设置](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32/get-started/linux-macos-setup.html) 下载和设置工具链，用于项目编译。
+
+### 3.2 烧录工具/下载工具获取
+
+- 烧录工具位于 [esp-idf](https://github.com/espressif/esp-idf) 的 `./components/esptool_py/esptool/esptool.py` 中
+
+- esptool 功能参考:
 
 ```
 $ ./components/esptool_py/esptool/esptool.py --help
 ```
 
-### 3.3 Clone ESP-Gateway Repository
+### 3.3 ESP-Gateway 仓库获取
 
 ```
 $ git clone --recursive https://github.com/espressif/esp-gateway.git
 ```
 
-## <span id = "4">4. Get SDK </span>
+## <span id = "4">4. SDK 准备</span>
 
-- Get Espressif SDK from [ESP-IDF](https://github.com/espressif/esp-idf).
+- 获取 Espressif SDK [ESP-IDF](https://github.com/espressif/esp-idf)。
 
-- To ensure that the ESP-IDF is successfully obtained, please enter `idf.py --version` in the terminal. If the output is similar to `ESP-IDF v4.4-dev-3675-g35b20cadce`, ESP-IDF is installed successfully. For detailed installation and configuration instructions, please refer to [ESP-IDF Get Started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html).
+- 为确保成功获取了完整的 ESP-IDF，请在终端中输入 `idf.py --version`，如果输出结果类似于 `ESP-IDF v4.4-dev-3675-g35b20cadce`，则代表安装成功。详细的安装和配置说明请参考[快速入门文档](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32s2/get-started/index.html)。
 
-- After successfully obtaining ESP-IDF, please switch its version to the `release/v4.4` branch.
+- 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v4.4`  分支。
 
-- Patch the ESP-IDF, please refer to [Patch for ESP-IDF](./idf_patch/README.md).
+- 给 ESP-IDF 打上 Patch，详情请参考 [Patch for ESP-IDF](./idf_patch/README.md)
 
 
-## <span id = "5">5. Configuration</span>
+## <span id = "5">5. 配置项</span>
 
-**Select the interface for connecting to the Internet**
+**选择连接外部网络的接口**
 
 ![external](./doc/_static/external.png)
 
-**Select the interface for forwarding network packets for other devices**
+**选择为其它设备提供网络数据转发的接口**
 
 ![data_forwarding](./doc/_static/data_forwarding.png)
 
-- Users can choose a combination of different interfaces to achieve different functions.
-- Currently, it is not supported to select multiple network packet forwarding interfaces at the same time (this function will be supported in future versions).
-- The LiteMesh function can be enabled through the *Enable Lite Mesh* option. For details, please refer to [LiteMesh](./doc/LiteMesh.md).
+- 用户可选择不同的接口组合来实现相应的功能。
+- 暂时不支持同时选择多个网络数据转发接口（该功能将会在以后版本中进行支持）。
+- 开启 Enable Lite Mesh 选项后可以使能 LiteMesh 功能，详情请参考 [LiteMesh](./doc/LiteMesh.md)。
 
-**ETH Configuration**
+**ETH 配置项**
 
 ![eth](./doc/_static/eth.png)
 
-**Modem Configuration**
+**Modem 配置项**
 
 ![modem](./doc/_static/modem.png)
 
 
-## <span id = "6">6. Build & Flash & Monitor the Output</span>
+## <span id = "6">6. 编译 & 烧写 & 监视输出</span>
 
-### 6.1 Build the Project
+### 6.1 编译
 
-Navigate to the ``esp-gateway`` directory and run the following command:
+在 esp-gateway 目录下执行：
 
 ```
 $ idf.py menuconfig
 ```
 
-After selecting the appropriate configuration items according to [Configuration Items](#5), run the following command to generate the bin file.
+根据 [5.配置项](#5) 选择合适的配置选项，配置完成之后执行以下命令生成 bin。
 
 ```
 $ idf.py build
 ```
 
-### 6.2 Flash & Monitor the Output
+### 6.2 烧录程序 & 监视输出
 
-Connect the ESP device to the PC with a USB cable, and make sure the right port is used.
+使用 USB 线连接 ESP 设备和 PC，确保烧写端口正确。
 
-#### 6.2.1 Flash onto the Device
+#### 6.2.1 烧录程序
 
 ```
 $ idf.py flash
 ```
 
-#### 6.2.3 Monitor the Output
+#### 6.2.3 监视输出
 
 ```
 $ idf.py monitor
 ```
 
-> You can combine building, flashing and monitoring into one step by running:  `idf.py build flash monitor`.
+> 也可使用组合命令 `idf.py build flash monitor` 一次性执行构建、烧录和监视过程。
 
-## <span id = "7">7. Network Configuration</span>
+## <span id = "7">7. 配网</span>
 
-### <span id = "web">7.1 Configure Network on Web Page</span>
+### <span id = "web">7.1 网页配网</span>
 
-After the PC or MCU connects to the hotspot from the ESP-Gateway device and obtains the IP address successfully, it can configure the network on the web page by accessing the gateway IP.
+PC 或 MCU 连接至 ESP-Gateway 设备热点并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页配网。
 
-<img src="./doc/_static/web_server_en.png" alt="web_server" style="zoom: 67%;" />
+<img src="./doc/_static/web_server.png" alt="web_server" style="zoom: 67%;" />
 
-### <span id = "wifi_provisioning">7.2 Configure Network through Wi-Fi Provisioning (Bluetooth LE)</span>
+### <span id = "wifi_provisioning">7.2 Wi-Fi Provisioning (Bluetooth LE) 配网</span>
 
-#### 7.2.1 APP Get
+#### 7.2.1 获取 APP
 
 - Android:
     - [Bluetooth LE Provisioning app on Play Store](https://play.google.com/store/apps/details?id=com.espressif.provble).
-    - Source code on GitHub: [esp-idf-provisioning-android](https://github.com/espressif/esp-idf-provisioning-android).
+    - GitHub 中源码: [esp-idf-provisioning-android](https://github.com/espressif/esp-idf-provisioning-android).
 - iOS:
     - [Bluetooth LE Provisioning app on app store](https://apps.apple.com/in/app/esp-ble-provisioning/id1473590141)
-    - Source code on GitHub: [esp-idf-provisioning-ios](https://github.com/espressif/esp-idf-provisioning-ios)
+    - GitHub 中源码: [esp-idf-provisioning-ios](https://github.com/espressif/esp-idf-provisioning-ios)
 
-#### 7.2.2 QR Code Scanning
+#### 7.2.2 扫描二维码
 
-Scan the QR code shown in the log to configure the network.
+扫描如 log 显示的二维码进行配网操作
 
 ```
 I (1604) QRCODE: {"ver":"v1","name":"PROV_806314","pop":"abcd1234","transport":"ble"}
@@ -339,17 +339,17 @@ https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"P
 
 <font color=red>**⚠️Note**</font>：
 
-Since ESP32-S2 does not support Bluetooth LE, this network configuration method is not applicable to ESP32-S2.
+由于 ESP32-S2 不支持 BLE，故该配网方案不适用于 ESP32-S2
 
-## <span id = "8">7.Solution Highlights</span>
+## <span id = "8">8. 方案优势</span>
 
-| Features       | Highlights                                                                                                                |
+| 功能模式       | 优势                                                                                                                |
 | ------------- | ----------------------------------------------------------------------------------------------------------------   |
-| Wi-Fi Router (Station) | Act as a Wi-Fi repeater or Wi-Fi signal amplifier, effectively reducing the burden of the router and expanding Wi-Fi coverage                                         |
-| Wi-Fi Router (ETH) | Reduce the number of routers used and lower the deployment cost  |
-| 4G Hotspot | Network provision is not required; strong mobility; can be used for shared massage chairs, shared power bank and other similar scenarios; low cost (only one shared device equipped with a mobile network module is required, and other devices can connect to the Internet by simply connecting to its hotspot |
-| Wireless NIC (ETH) | Driver-free; support using MCU that needs to connect to the network through network cables at any location |
-| Wireless NIC (USB) | Driver-free; hot-swappable; easy to use; low development cost|
-| Wireless NIC (SPI/SDIO) | High transfer rate|
+| Wi-Fi 路由器（Station） | 可作为 Wi-Fi 中继或 Wi-Fi 信号放大器、有效减轻实际路由器的承载力，同时扩大无线覆盖范围                                         |
+| Wi-Fi 路由器（ETH） | 可以减少实际使用的路由器数量、部署成本低                                                                                 |
+| 4G 热点 | 无需配网、移动性强、应用于共享场景中（如共享按摩椅、共享充电宝等）；仅需一台共享设备搭载移动网络模块，其他设备连接其热点即可联网，大大节约成本 |
+| 无线网卡（ETH） | 免驱动、支持用户在任意位置部署需要通过网线联网的 MCU                                                                     |
+| 无线网卡（USB） | 免驱动、可热插拔、使用简便，开发成本低 |
+| 无线网卡（SPI/SDIO） | 传输速率高 |
 
-**Please refer to the [ESP-Gateway Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-Gateway.**
+**请参考 [ESP-Gateway 视频](https://www.bilibili.com/video/BV1wo4y1R7NG)，该视频演示了 ESP-Gateway 的部分功能。**
