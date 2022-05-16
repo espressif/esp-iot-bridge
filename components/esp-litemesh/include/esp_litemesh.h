@@ -93,6 +93,10 @@ bool esp_litemesh_network_segment_is_used(uint32_t ip);
   */
 esp_err_t esp_litemesh_init(esp_litemesh_config_t* config);
 
+void esp_litemesh_set_mesh_id(uint8_t mesh_id);
+
+uint8_t esp_litemesh_get_mesh_id(void);
+
 esp_err_t esp_litemesh_set_allowed_level(uint8_t level);
 
 esp_err_t esp_litemesh_set_disallowed_level(uint8_t level);
