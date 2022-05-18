@@ -1,6 +1,6 @@
 
 version:
-libesp_litemesh_esp32   : c12ba0a5
-libesp_litemesh_esp32s2 : c12ba0a5
-libesp_litemesh_esp32s3 : c12ba0a5
-libesp_litemesh_esp32c3 : c12ba0a5
+libesp_litemesh_esp32   : 4583c0d0
+libesp_litemesh_esp32s2 : 4583c0d0
+libesp_litemesh_esp32s3 : 4583c0d0
+libesp_litemesh_esp32c3 : 4583c0d0
