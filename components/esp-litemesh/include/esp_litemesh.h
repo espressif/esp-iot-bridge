@@ -18,6 +18,9 @@
 extern "C"
 {
 #endif
+
+#include "cJSON.h"
+
 extern const char* LITEMESH_EVENT;
 
 #ifdef CONFIG_LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC 
@@ -37,6 +40,9 @@ extern const char* LITEMESH_EVENT;
 #else
 #define JOIN_MESH_IGNORE_ROUTER_STATUS 0
 #endif
+
+/* Definitions for error constants. */
+#define ESP_ERR_DUPLICATE_ADDITION    0x110   /*!< msg_action was added repeatedly */
 
 #define STATIC_ASSERT(condition) typedef char p__LINE__[ (condition) ? 1 : -1];
 
@@ -83,6 +89,14 @@ typedef struct {
     const char* softap_password;
 } esp_litemesh_config_t;
 
+typedef cJSON* (*msg_process_cb_t)(cJSON *payload, uint32_t seq);
+
+typedef struct esp_litemesh_msg_action {
+    const char* type;
+    const char* rsp_type;
+    msg_process_cb_t process;
+} esp_litemesh_msg_action_t;
+
 /**
   * @brief Check if the network segment is used to avoid conflicts.
   * 
@@ -114,6 +128,27 @@ esp_err_t esp_litemesh_set_router_config(wifi_sta_config_t *conf);
 esp_err_t esp_litemesh_set_softap_info(const char* softap_ssid, const char* softap_password, bool end_with_mac);
 
 void esp_litemesh_connect(void);
+
+/**
+ * @brief ESP-LiteMesh Communication
+ *
+ */
+esp_err_t esp_litemesh_send_broadcast_msg_to_child(const char* payload);
+
+esp_err_t esp_litemesh_send_broadcast_msg_to_parent(const char* payload);
+
+esp_err_t esp_litemesh_send_msg_to_root(const char* payload);
+
+esp_err_t esp_litemesh_send_msg_to_parent(const char* payload);
+
+esp_err_t esp_litemesh_try_sending_msg(char* expect_msg,
+                                       uint32_t max_retry,
+                                       char* req_payload,
+                                       esp_err_t (*resend)(const char* payload));
+
+esp_err_t esp_litemesh_msg_action_list_register(const esp_litemesh_msg_action_t* esp_litemesh_msg_action);
+
+esp_err_t esp_litemesh_msg_action_list_unregister(const esp_litemesh_msg_action_t* esp_litemesh_msg_action);
 
 #ifdef __cplusplus
 }
