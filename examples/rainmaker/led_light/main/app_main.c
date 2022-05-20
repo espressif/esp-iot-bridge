@@ -38,7 +38,7 @@ static esp_err_t esp_storage_init(void)
 void session_cost_information(const char *tag, const char *func, int line, const char *desc)
 {
     static uint32_t free_heap = 0;
-    
+
     ESP_LOGW(tag, "%s %d %s const heap %d", func, line, desc ? desc : "NULL", esp_get_free_heap_size() - free_heap);
     free_heap = esp_get_free_heap_size();
     ESP_LOGW(tag, "free heap %d, minimum %d", free_heap, esp_get_minimum_free_heap_size());

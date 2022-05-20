@@ -115,9 +115,11 @@ bool esp_litemesh_network_segment_is_used(uint32_t ip);
   */
 esp_err_t esp_litemesh_init(esp_litemesh_config_t* config);
 
-void esp_litemesh_set_mesh_id(uint8_t mesh_id);
-
 uint8_t esp_litemesh_get_mesh_id(void);
+
+uint8_t esp_litemesh_get_level(void);
+
+void esp_litemesh_set_mesh_id(uint8_t mesh_id);
 
 esp_err_t esp_litemesh_set_allowed_level(uint8_t level);
 
@@ -141,14 +143,15 @@ esp_err_t esp_litemesh_send_msg_to_root(const char* payload);
 
 esp_err_t esp_litemesh_send_msg_to_parent(const char* payload);
 
-esp_err_t esp_litemesh_try_sending_msg(char* expect_msg,
+esp_err_t esp_litemesh_try_sending_msg(char* send_msg,
+                                       char* expect_msg,
                                        uint32_t max_retry,
-                                       char* req_payload,
+                                       cJSON* req_payload,
                                        esp_err_t (*resend)(const char* payload));
 
-esp_err_t esp_litemesh_msg_action_list_register(const esp_litemesh_msg_action_t* esp_litemesh_msg_action);
+esp_err_t esp_litemesh_msg_action_list_register(const esp_litemesh_msg_action_t* msg_action);
 
-esp_err_t esp_litemesh_msg_action_list_unregister(const esp_litemesh_msg_action_t* esp_litemesh_msg_action);
+esp_err_t esp_litemesh_msg_action_list_unregister(const esp_litemesh_msg_action_t* msg_action);
 
 #ifdef __cplusplus
 }
