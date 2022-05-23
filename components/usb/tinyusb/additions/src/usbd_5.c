@@ -215,7 +215,7 @@ static usbd_class_driver_t const _usbd_driver[] =
   },
   #endif
 
-  #if CFG_TUD_ECM_RNDIS || CFG_TUD_NCM
+  #if CFG_TUD_NET || CFG_TUD_NCM
   {
     DRIVER_NAME("NET")
     .init             = netd_init,

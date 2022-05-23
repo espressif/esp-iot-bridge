@@ -7,7 +7,6 @@ variables: &global-variables
   GIT_STRATEGY: clone
   PYTHON_VER: 3
 
-
 .before_script_preparation: &before_script_preparation
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh

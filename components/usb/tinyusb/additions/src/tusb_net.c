@@ -45,7 +45,11 @@ esp_err_t pkt_netif2usb(void *buffer, uint16_t len)
 
     if (tud_network_wait_xmit(100)) {
         /* if the network driver can accept another packet, we make it happen */
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        if (tud_network_can_xmit(len)) {
+#else
         if (tud_network_can_xmit()) {
+#endif /* ESP_IDF_VERSION >= 5.0.0 */
             // ESP_LOG_BUFFER_HEXDUMP(" netif ==> usb", buffer, len, ESP_LOG_INFO);
             tud_network_xmit(buffer, len);
         }

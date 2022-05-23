@@ -27,12 +27,12 @@
 
 #include "tusb_option.h"
 
-#if ( TUSB_OPT_DEVICE_ENABLED && CFG_TUD_ECM_RNDIS )
+#if ( TUSB_OPT_DEVICE_ENABLED && CFG_TUD_NET )
 
 #include "device/usbd.h"
 #include "device/usbd_pvt.h"
 
-#include "net_device.h"
+#include "class/net/net_device.h"
 #include "rndis_protocol.h"
 
 void rndis_class_set_handler(uint8_t *data, int size); /* found in ./misc/networking/rndis_reports.c */
@@ -114,6 +114,11 @@ void tud_network_recv_renew(void)
 static void do_in_xfer(uint8_t *buf, uint16_t len)
 {
   can_xmit = false;
+
+  if (tud_network_idle_status_change_cb) {
+    tud_network_idle_status_change_cb(can_xmit);
+  }
+
   usbd_edpt_xfer(TUD_OPT_RHPORT, _netd_itf.ep_in, buf, len);
 }
 
@@ -214,6 +219,9 @@ uint16_t netd_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint1
 
     // we are ready to transmit a packet
     can_xmit = true;
+    if (tud_network_idle_status_change_cb) {
+      tud_network_idle_status_change_cb(can_xmit);
+    }
 
     // prepare for incoming packets
     tud_network_recv_renew();
@@ -222,6 +230,34 @@ uint16_t netd_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint1
   drv_len += 2*sizeof(tusb_desc_endpoint_t);
 
   return drv_len;
+}
+
+void ecm_close(void)
+{
+  printf("Ecm close\n");
+  tusb_control_request_t notify_data =
+  {
+    .bmRequestType = 0xA1,
+    .bRequest = 0 /* NETWORK_CONNECTION aka NetworkConnection */,
+    .wValue = 0 /* Disconnected */,
+    .wLength = 0,
+  };
+  notify_data.wIndex = _netd_itf.itf_num;
+  netd_report((uint8_t *)&notify_data, sizeof(notify_data));
+}
+
+void ecm_open(void)
+{
+  printf("Ecm OPEN\n");
+  tusb_control_request_t notify_data =
+  {
+    .bmRequestType = 0xA1,
+    .bRequest = 0 /* NETWORK_CONNECTION aka NetworkConnection */,
+    .wValue = 1 /* Connected */,
+    .wLength = 0,
+  };
+  notify_data.wIndex = _netd_itf.itf_num;
+  netd_report((uint8_t *)&notify_data, sizeof(notify_data));
 }
 
 static void ecm_report(bool nc)
@@ -278,6 +314,9 @@ bool netd_control_xfer_cb (uint8_t rhport, uint8_t stage, tusb_control_request_t
                 // Also should have opposite callback for application to disable network !!
                 tud_network_init_cb();
                 can_xmit = true; // we are ready to transmit a packet
+                if (tud_network_idle_status_change_cb) {
+                  tud_network_idle_status_change_cb(can_xmit);
+                }
                 tud_network_recv_renew(); // prepare for incoming packets
               }
             }else
@@ -398,6 +437,9 @@ bool netd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_
     {
       /* we're finally finished */
       can_xmit = true;
+      if (tud_network_idle_status_change_cb) {
+        tud_network_idle_status_change_cb(can_xmit);
+      }
     }
   }
 
@@ -409,12 +451,19 @@ bool netd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_
   return true;
 }
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 bool tud_network_can_xmit(uint16_t size)
 {
   (void)size;
 
   return can_xmit;
 }
+#else
+bool tud_network_can_xmit(void)
+{
+  return can_xmit;
+}
+#endif /* ESP_IDF_VERSION >= 5.0.0 */
 
 void tud_network_xmit(void *ref, uint16_t arg)
 {
