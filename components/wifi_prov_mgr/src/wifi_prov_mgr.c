@@ -53,9 +53,6 @@ const int WIFI_CONNECTED_EVENT = BIT0;
 /* Register Wi-Fi Provisioning events */
 static void wifi_prov_event_register(void);
 
-/* Unregister Wi-Fi Provisioning events */
-static void wifi_prov_event_unregister(void);
-
 bool wifi_provision_in_progress(void)
 {
     return wifi_prov_status;
@@ -63,24 +60,21 @@ bool wifi_provision_in_progress(void)
 
 static void deinit_wifi_prov_mgr_timer_callback(void* arg)
 {
-    wifi_prov_event_unregister();
-
     if (wifi_provision_in_progress()) {
-        wifi_prov_mgr_endpoint_unregister("custom-data");
         wifi_prov_mgr_stop_provisioning();
         /* We don't need the manager as device is already provisioned,
          * so let's release it's resources */
         wifi_prov_mgr_deinit();
-        wifi_prov_status = false;
     }
-
-    ESP_ERROR_CHECK(esp_timer_delete(deinit_wifi_prov_mgr_timer));
 }
 
 /* Event handler for catching system events */
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data)
 {
+    if (!wifi_prov_status) {
+        return;
+    }
 #ifdef CONFIG_ESP_GATEWAY_RESET_PROV_MGR_ON_FAILURE
     static int retries;
 #endif
@@ -132,7 +126,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case WIFI_PROV_END:
                 esp_timer_stop(deinit_wifi_prov_mgr_timer);
-                wifi_prov_event_unregister();
+                esp_timer_delete(deinit_wifi_prov_mgr_timer);
                 /* De-initialize manager once provisioning is finished */
                 wifi_prov_mgr_deinit();
                 wifi_prov_status = false;
@@ -155,15 +149,6 @@ static void wifi_prov_event_register(void)
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_PROV_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
-}
-
-// unregister Wi-Fi Provisioning events
-static void wifi_prov_event_unregister(void)
-{
-    /* Unregister our event handler for Wi-Fi, IP and Provisioning related events */
-    ESP_ERROR_CHECK(esp_event_handler_unregister(WIFI_PROV_EVENT, ESP_EVENT_ANY_ID, &event_handler));
-    ESP_ERROR_CHECK(esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler));
-    ESP_ERROR_CHECK(esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler));
 }
 
 static void get_device_service_name(char *service_name, size_t max)

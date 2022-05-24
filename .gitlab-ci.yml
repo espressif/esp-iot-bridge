@@ -21,8 +21,6 @@ variables: &global-variables
   - source $IDF_PATH/tools/ci/configure_ci_environment.sh
   - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
   - python $IDF_PATH/tools/idf_tools.py install-python-env
-
-.install_requirements: &install_requirements
   - pip install -r requirements.txt
 
 .get_gateway_priv: &get_gateway_priv
@@ -128,7 +126,6 @@ esp32_master_build:
     - *get_gateway_priv
     - git clone -b master --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *install_requirements
     - *build_gateway_esp32
 
 esp32c3_v4.4_build:
@@ -166,7 +163,6 @@ esp32c3_master_build:
     - *get_gateway_priv
     - git clone -b master --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *install_requirements
     - *build_gateway_esp32c3
 
 esp32s2_v4.4_build:
@@ -203,7 +199,6 @@ esp32s2_master_build:
     - *get_gateway_priv
     - git clone -b master --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *install_requirements
     - *build_gateway_esp32s2
 
 esp32s3_v4.4_build:
@@ -241,7 +236,6 @@ esp32s3_master_build:
     - *get_gateway_priv
     - git clone -b master --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *install_requirements
     - *build_gateway_esp32s3
 
 push_master_to_github:
