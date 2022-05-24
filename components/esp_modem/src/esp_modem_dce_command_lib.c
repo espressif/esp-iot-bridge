@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <string.h>
+#include <sys/queue.h>
 #include "esp_log.h"
 #include "esp_modem_dce_command_lib.h"
 #include "esp_modem_internal.h"

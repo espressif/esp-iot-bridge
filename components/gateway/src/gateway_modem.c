@@ -22,6 +22,7 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_modem.h"
+#include "esp_timer.h"
 #include "esp_netif_ppp.h"
 
 #include "esp_modem_dce.h"

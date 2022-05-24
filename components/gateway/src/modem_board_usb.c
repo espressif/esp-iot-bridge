@@ -20,6 +20,7 @@
 #include "esp_modem_recov_helper.h"
 #include "esp_modem_dce_common_commands.h"
 #include "esp_gateway_modem.h"
+
 #include "led_indicator.h"
 
 static const char *TAG = "usb_modem_board";
@@ -117,7 +118,7 @@ static esp_err_t my_recov(esp_modem_recov_resend_t *retry_cmd, esp_err_t err, in
         if (!ready) {
             esp_modem_dce_set_pin(dce, "1234", NULL);
         }
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
         esp_modem_dce_read_pin(dce, NULL, &ready);
         if (!ready) {
             return ESP_FAIL;

@@ -39,9 +39,10 @@
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 
-#include "esp_wifi.h"
+#include "esp_mac.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "esp_wifi.h"
 #include "esp_system.h"
 #include "esp_vfs.h"
 #include "esp_ota_ops.h"

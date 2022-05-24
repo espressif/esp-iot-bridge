@@ -17,8 +17,10 @@
 extern "C" {
 #endif
 
-#include "esp_event.h"
 #include "driver/uart.h"
+
+#include "esp_event.h"
+#include "esp_netif_types.h"
 
 /**
  * @brief Forward declare DTE and DCE objects

@@ -7,4 +7,4 @@ url: https://github.com/iot-components/tinyusb # Original repository (optional)
 dependencies:
   # Required IDF version
   idf:
-    version: "=4.4"
+    version: ">=4.4"

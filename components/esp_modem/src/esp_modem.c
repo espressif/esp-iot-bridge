@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_netif.h"
 #include "esp_modem.h"
 #include "esp_modem_dce.h"
 #include "esp_log.h"

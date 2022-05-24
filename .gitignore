@@ -71,6 +71,9 @@ dkms.conf
 **/*.bin
 dependencies.lock
 
+# IDF Components manage
+**/managed_components
+
 # node_modules
 docs/docusaurus/website/node_modules
 

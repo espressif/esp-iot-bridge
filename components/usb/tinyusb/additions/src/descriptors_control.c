@@ -16,7 +16,7 @@
 #include "descriptors_control.h"
 #include "dfu_device.h"
 
-#include "esp_wifi.h"
+#include "esp_mac.h"
 
 static const char *TAG = "tusb_desc";
 static tusb_desc_device_t s_descriptor;
