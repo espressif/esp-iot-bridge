@@ -186,7 +186,6 @@ esp32s2_v4.4_build:
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_gateway_esp32s2
-    - *build_rainmaker
 
 esp32s2_master_build:
   stage: build

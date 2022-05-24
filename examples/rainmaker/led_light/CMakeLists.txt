@@ -14,7 +14,8 @@ set(EXCLUDE_COMPONENTS "coap" "asio")
 set(EXTRA_COMPONENT_DIRS  ${RMAKER_PATH}/components
                           ${RMAKER_PATH}/components/esp-insights/components
                           "../common"
-                          "../../../components")
+                          "../../../components"
+                          "../../../managed_components")
 
 if(NOT DEFINED IDF_TARGET)
     set(IDF_TARGET "esp32")
