@@ -1,0 +1,16 @@
+diff --git a/src/core/ipv4/ip4.c b/src/core/ipv4/ip4.c
+index c616f73f..46f8bab8 100644
+--- a/src/core/ipv4/ip4.c
++++ b/src/core/ipv4/ip4.c
+@@ -383,8 +383,10 @@ ip4_forward(struct pbuf *p, struct ip_hdr *iphdr, struct netif *inp)
+
+ #if ESP_LWIP
+ #if IP_NAPT
+-  if (ip_napt_forward(p, iphdr, inp, netif) != ERR_OK)
+-    return;
++  if (!ip4_netif_exist(ip4_current_dest_addr(), ip4_current_dest_addr())) {
++    if (ip_napt_forward(p, iphdr, inp, netif) != ERR_OK)
++      return;
++  }
+ #endif
+ #endif /* ESP_LWIP */

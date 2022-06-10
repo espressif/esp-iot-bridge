@@ -29,23 +29,20 @@ variables: &global-variables
   - git checkout ${CI_BUILD_REF_NAME} || echo "Using esp-gateway default branch"
   - cd -
 
-.build_rainmaker: &build_rainmaker
-  - cd examples/rainmaker/led_light
+.build_gateway_esp32: &build_gateway_esp32
+  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y" >> sdkconfig.defaults.esp32
   - idf.py set-target esp32
   - idf.py build
 
-.build_gateway_esp32: &build_gateway_esp32
-  - idf.py set-target esp32
-  - idf.py build
-  
   - rm -rf build sdkconfig
+  - sed -i '$d' sdkconfig.defaults.esp32
   - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
   - idf.py set-target esp32
   - idf.py build
 
   - rm -rf build sdkconfig
   - sed -i '$d' sdkconfig.defaults.esp32
-  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32
+  - echo -e "\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32
   - idf.py set-target esp32
   - idf.py build
 
@@ -108,7 +105,9 @@ esp32_v4.4_build:
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_gateway_esp32
-    - *build_rainmaker
+    - cd examples/rainmaker/led_light
+    - idf.py set-target esp32
+    - idf.py build
 
 esp32_master_build:
   stage: build
@@ -145,7 +144,9 @@ esp32c3_v4.4_build:
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_gateway_esp32c3
-    - *build_rainmaker
+    - cd examples/rainmaker/led_light
+    - idf.py set-target esp32c3
+    - idf.py build
 
 esp32c3_master_build:
   stage: build
@@ -218,7 +219,9 @@ esp32s3_v4.4_build:
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_gateway_esp32s3
-    - *build_rainmaker
+    - cd examples/rainmaker/led_light
+    - idf.py set-target esp32s3
+    - idf.py build
 
 esp32s3_master_build:
   stage: build

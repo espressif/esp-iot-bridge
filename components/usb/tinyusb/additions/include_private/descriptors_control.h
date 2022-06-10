@@ -160,7 +160,6 @@ enum {
                            TUD_DFU_DESC_LEN(DFU_ALT_COUNT) * CFG_TUD_DFU
 };
 
-bool tusb_desc_set;
 void tusb_set_descriptor(tusb_desc_device_t *desc, const char **str_desc);
 void tusb_set_config_descriptor(const uint8_t *config_desc);
 tusb_desc_device_t *tusb_get_active_desc(void);
