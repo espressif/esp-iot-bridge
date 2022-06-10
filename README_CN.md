@@ -20,7 +20,7 @@
 
 乐鑫 ESP-Gateway 智能网关方案已经适配乐鑫多种芯片：
 
-| 芯片     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v5.0                                         |
+| 芯片     | ESP-IDF Release/v4.4                                         | ESP-IDF Master                                               |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 | ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
@@ -237,8 +237,23 @@ $ git clone --recursive https://github.com/espressif/esp-gateway.git
 ![data_forwarding](./doc/_static/data_forwarding.png)
 
 - 用户可选择不同的接口组合来实现相应的功能。
-- 暂时不支持同时选择多个网络数据转发接口（该功能将会在以后版本中进行支持）。
-- 开启 Enable Lite Mesh 选项后可以使能 LiteMesh 功能，详情请参考 [LiteMesh](./doc/LiteMesh.md)。
+
+- 是否支持选择多个网络数据转发接口来给不同设备提供网络功能？
+
+    | IDF Version          |          | 备注                            |
+    | -------------------- | -------- | ------------------------------- |
+    | ESP-IDF Release/v4.4 | 不支持    | 只能选择一个网络数据转发接口    |
+    | ESP-IDF Master       | **支持** | 目前不能同时选择 SDIO 和 SPI 接口 |
+
+    ```
+                                 +-- USB  <-+->  Computer
+                                 |
+    RasPi + ethsta0 +-- SPI -- ESP32 --> External WiFi（Router）
+                                 |
+                                 +-- SoftAP <-+-> Phone
+    ```
+
+- 开启 Enable LiteMesh 选项后可以使能 LiteMesh 功能，详情请参考 [LiteMesh](./doc/LiteMesh.md)。
 
 **ETH 配置项**
 

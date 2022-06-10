@@ -20,7 +20,7 @@ ESP-Gateway is a smart gateway solution offered by Espressif. This document desc
 
 ESP-Gateway is supported by various Espressif chips, as shown in the table below:
 
-| Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v5.0                                         |
+| Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Master                                               |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 | ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
@@ -237,8 +237,23 @@ $ git clone --recursive https://github.com/espressif/esp-gateway.git
 ![data_forwarding](./doc/_static/data_forwarding.png)
 
 - Users can choose a combination of different interfaces to achieve different functions.
-- Currently, it is not supported to select multiple network packet forwarding interfaces at the same time (this function will be supported in future versions).
-- The LiteMesh function can be enabled through the *Enable Lite Mesh* option. For details, please refer to [LiteMesh](./doc/LiteMesh.md).
+
+- Whether to support the selection of multiple network data forwarding interfaces to provide network functions to different devices?
+
+    | IDF Version          |             | Note                                                       |
+    | -------------------- | ----------- | ---------------------------------------------------------- |
+    | ESP-IDF Release/v4.4 | Not Support | Only one network data forwarding interface can be selected |
+    | ESP-IDF Master       | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
+
+    ```
+                                 +-- USB  <-+->  Computer
+                                 |
+    RasPi + ethsta0 +-- SPI -- ESP32 --> External WiFi（Router）
+                                 |
+                                 +-- SoftAP <-+-> Phone
+    ```
+
+- The LiteMesh function can be enabled through the *Enable LiteMesh* option. For details, please refer to [LiteMesh](./doc/LiteMesh.md).
 
 **ETH Configuration**
 
