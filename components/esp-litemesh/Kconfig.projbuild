@@ -52,7 +52,7 @@ menu "Gateway LiteMesh Configuration"
         config LITEMESH_MAXIMUM_LEVEL_ALLOWED
             int "The maximum level allowed"
             default 10
-            range 1 16
+            range 1 10
 
         config JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO
             bool "Join Mesh without configured with information"
