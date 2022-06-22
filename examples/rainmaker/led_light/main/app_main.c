@@ -13,6 +13,8 @@
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "esp_log.h"
+#include <app_wifi.h>
+#include <app_rainmaker.h>
 #if CONFIG_MESH_USE
 #include "app_mesh.h"
 #else
@@ -55,5 +57,10 @@ void app_main(void)
 #else
     app_gateway_enable();
 #endif
+
+    app_rainmaker_start();
+
+    /* Start wifi provisioning */
+    app_wifi_start(POP_TYPE_RANDOM);
 }
 
