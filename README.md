@@ -15,12 +15,13 @@ ESP-Gateway is a smart gateway solution offered by Espressif. This document desc
 - [6. Build & Flash & Monitor the Output](#6)
 - [7. Network Configuration](#7)
 - [8. Solution Highlights](#8)
+- [9. GPIO Map](#9)
 
 ## <span id = "1">1. Overview</span>
 
 ESP-Gateway is supported by various Espressif chips, as shown in the table below:
 
-| Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Master                                               |
+| Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v5.0                                         |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 | ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
@@ -240,10 +241,10 @@ $ git clone --recursive https://github.com/espressif/esp-gateway.git
 
 - Whether to support the selection of multiple network data forwarding interfaces to provide network functions to different devices?
 
-    | IDF Version          |             | Note                                                       |
-    | -------------------- | ----------- | ---------------------------------------------------------- |
-    | ESP-IDF Release/v4.4 | Not Support | Only one network data forwarding interface can be selected |
-    | ESP-IDF Master       | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
+    | IDF Version          |             | Note                                                         |
+    | -------------------- | ----------- | ------------------------------------------------------------ |
+    | ESP-IDF Release/v4.4 | Not Support | Only one network data forwarding interface can be selected   |
+    | ESP-IDF Release/v5.0 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
 
     ```
                                  +-- USB  <-+->  Computer
@@ -368,3 +369,7 @@ Since ESP32-S2 does not support Bluetooth LE, this network configuration method 
 | Wireless NIC (SPI/SDIO) | High transfer rate|
 
 **Please refer to the [ESP-Gateway Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-Gateway.**
+
+## <span id = "9">9.GPIO Map</span>
+
+![gpio_map](./doc/_static/gpio_map.png)

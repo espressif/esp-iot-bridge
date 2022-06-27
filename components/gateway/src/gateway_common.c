@@ -290,12 +290,30 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
 
 void esp_gateway_create_all_netif(void)
 {
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
-    esp_gateway_create_modem_netif(NULL, NULL, false, false);
-#endif
-
 #if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
     esp_gateway_create_softap_netif(NULL, NULL, true, true);
+#endif
+
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
+    esp_gateway_create_usb_netif(NULL, NULL, true, true);
+#endif
+
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
+    esp_gateway_create_spi_netif(NULL, NULL, true, true);
+#endif
+
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
+    esp_gateway_create_sdio_netif(NULL, NULL, true, true);
+#endif
+
+#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET)
+    esp_gateway_create_eth_netif(NULL, NULL, true, true);
+#elif defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET)
+    esp_gateway_create_eth_netif(NULL, NULL, false, false);
+#endif
+
+#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
+    esp_gateway_create_modem_netif(NULL, NULL, false, false);
 #endif
 
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
@@ -305,23 +323,5 @@ void esp_gateway_create_all_netif(void)
 #if CONFIG_LITEMESH_ENABLE
     esp_litemesh_config_t litemesh_config = ESP_LITEMESH_DEFAULT_INIT();
     esp_litemesh_init(&litemesh_config);
-#endif
-
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
-    esp_gateway_create_usb_netif(NULL, NULL, true, true);
-#endif
-
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET)
-    esp_gateway_create_eth_netif(NULL, NULL, true, true);
-#elif defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET)
-    esp_gateway_create_eth_netif(NULL, NULL, false, false);
-#endif
-
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
-    esp_gateway_create_sdio_netif(NULL, NULL, true, true);
-#endif
-
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
-    esp_gateway_create_spi_netif(NULL, NULL, true, true);
 #endif
 }

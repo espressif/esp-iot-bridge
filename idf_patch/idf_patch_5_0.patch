@@ -1,8 +1,8 @@
 diff --git a/components/hal/sdio_slave_hal.c b/components/hal/sdio_slave_hal.c
-index aa7568ee39..0500df0017 100644
+index 2e3044a28c..c63b3f60d1 100644
 --- a/components/hal/sdio_slave_hal.c
 +++ b/components/hal/sdio_slave_hal.c
-@@ -170,7 +170,7 @@ void sdio_slave_hal_init(sdio_slave_context_t *hal)
+@@ -163,7 +163,7 @@ void sdio_slave_hal_init(sdio_slave_context_t *hal)
  void sdio_slave_hal_hw_init(sdio_slave_context_t *hal)
  {
      sdio_slave_ll_init(hal->slc);

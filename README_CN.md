@@ -15,12 +15,13 @@
 - [6. 编译 & 烧录 & 监视输出](#6)
 - [7. 配网](#7)
 - [8. 方案优势](#8)
+- [9. GPIO Map](#9)
 
 ## <span id = "1">1. 概述</span>
 
 乐鑫 ESP-Gateway 智能网关方案已经适配乐鑫多种芯片：
 
-| 芯片     | ESP-IDF Release/v4.4                                         | ESP-IDF Master                                               |
+| 芯片     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v5.0                                         |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 | ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
@@ -243,7 +244,7 @@ $ git clone --recursive https://github.com/espressif/esp-gateway.git
     | IDF Version          |          | 备注                            |
     | -------------------- | -------- | ------------------------------- |
     | ESP-IDF Release/v4.4 | 不支持    | 只能选择一个网络数据转发接口    |
-    | ESP-IDF Master       | **支持** | 目前不能同时选择 SDIO 和 SPI 接口 |
+    | ESP-IDF Release/v5.0 | **支持** | 目前不能同时选择 SDIO 和 SPI 接口 |
 
     ```
                                  +-- USB  <-+->  Computer
@@ -368,3 +369,7 @@ https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"P
 | 无线网卡（SPI/SDIO） | 传输速率高 |
 
 **请参考 [ESP-Gateway 视频](https://www.bilibili.com/video/BV1wo4y1R7NG)，该视频演示了 ESP-Gateway 的部分功能。**
+
+## <span id = "9">9.GPIO Map</span>
+
+![gpio_map](./doc/_static/gpio_map.png)

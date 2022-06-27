@@ -261,7 +261,9 @@ void process_rx_pkt(interface_buffer_handle_t *buf_handle)
 
 	if (buf_handle->if_type == ESP_STA_IF) {
 		/* Forward data to lwip */
-		esp_netif_receive(network_adapter_netif, payload, payload_len, NULL);
+		if (network_adapter_netif) {
+			esp_netif_receive(network_adapter_netif, payload, payload_len, NULL);
+		}
 		// ESP_LOG_BUFFER_HEXDUMP("host -> slave", payload, payload_len, ESP_LOG_INFO);
 	} else if (buf_handle->if_type == ESP_AP_IF && softap_started) {
 		/* Forward data to wlan driver */
