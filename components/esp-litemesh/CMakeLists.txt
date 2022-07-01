@@ -1,9 +1,14 @@
 
+set(srcs)
 set(require_components "json")
 
-idf_component_register (
-    INCLUDE_DIRS include
-    REQUIRES ${require_components})
+if (CONFIG_LITEMESH_ENABLE)
+    list(APPEND srcs "src/esp_litemesh.c")
+endif()
+
+idf_component_register (SRCS "${srcs}"
+                        INCLUDE_DIRS include
+                        REQUIRES ${require_components})
 
 string(CONCAT LIBS "esp_litemesh_" "${IDF_TARGET}")
 
