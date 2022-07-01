@@ -303,7 +303,7 @@ menu "Gateway Configuration"
                 int "UART Tx GPIO number of Modem"
                 range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
                 default 32 if IDF_TARGET_ESP32
-                default 4 if IDF_TARGET_ESP32C3
+                default 8 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by uart Tx
 
@@ -311,7 +311,7 @@ menu "Gateway Configuration"
                 int "UART Rx GPIO number of Modem"
                 range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
                 default 33 if IDF_TARGET_ESP32
-                default 5 if IDF_TARGET_ESP32C3
+                default 9 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by uart Rx
 
