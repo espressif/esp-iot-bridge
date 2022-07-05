@@ -1,3 +1,17 @@
+// Copyright 2022 Espressif Systems (Shanghai) PTE LTD
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -148,15 +162,77 @@ void esp_rmaker_mesh_lite_child_info_update_and_report(void)
     xSemaphoreGive(child_info_mutex);
 }
 
+#define GROUP_MAX_NUM    10
+uint8_t group_id_array[GROUP_MAX_NUM];
+
+static void esp_rmaker_add_group_id(uint8_t group_id)
+{
+    for (uint8_t i = 0; i < GROUP_MAX_NUM; i++) {
+        if (group_id_array[i] == 0) {
+            group_id_array[i] = group_id;
+            ESP_LOGI(TAG, "successfully added");
+            return;
+        } else if (group_id_array[i] == group_id) {
+            ESP_LOGW(TAG, "Repeat to add");
+            return;
+        } else {
+            continue;
+        }
+    }
+}
+
+static void esp_rmaker_debug_group_id(void)
+{
+    printf("********************************\r\n");
+    printf("******** Group ID Debug ********\r\n");
+    printf("********************************\r\n");
+    for (uint8_t i = 0; i < GROUP_MAX_NUM; i++) {
+        if (group_id_array[i] == 0) {
+            printf("\r\n");
+            return;
+        } else {
+            printf("%d ", group_id_array[i]);
+        }
+    }
+    printf("\r\n");
+}
+
+bool esp_rmaker_is_my_group_id(uint8_t group_id)
+{
+    for (uint8_t i = 0; i < GROUP_MAX_NUM; i++) {
+        if (group_id_array[i] == 0) {
+            ESP_LOGW(TAG, "The group id[%d] does not belong to the device", group_id);
+            return false;
+        } else if (group_id_array[i] == group_id) {
+            ESP_LOGW(TAG, "The group id[%d] belongs to the device", group_id);
+            return true;
+        } else {
+            continue;
+        }
+    }
+    ESP_LOGW(TAG, "The group id[%d] does not belong to the device", group_id);
+    return false;
+}
+
 static esp_err_t esp_rmaker_mesh_service_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
         const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
 {
-    esp_err_t err = ESP_FAIL;
-    if (strcmp(esp_rmaker_param_get_type(param), ESP_RMAKER_MESH_LITE_SERVICE_MESH_GROUP) == 0) {
-        ESP_LOGI(TAG, "The room is %s\r\n", val.val.s);
+    if (ctx) {
+        ESP_LOGI(TAG, "Received write request via : %s", esp_rmaker_device_cb_src_to_str(ctx->src));
+    }
+    char *device_name = esp_rmaker_device_get_name(device);
+    char *param_name = esp_rmaker_param_get_name(param);
+    if (strcmp(param_name, ESP_RMAKER_MESH_LITE_SERVICE_MESH_GROUP) == 0) {
+        ESP_LOGI(TAG, "Received value = %d for %s - %s",
+                val.val.i, device_name, param_name);
+        esp_rmaker_add_group_id(val.val.i);
+        esp_rmaker_debug_group_id();
+    } else {
+        /* Silently ignoring invalid params */
+        return ESP_OK;
     }
     esp_rmaker_param_update_and_report(param, val);
-    return err;
+    return ESP_OK;
 }
 
 static void ip_event_handler(void *arg, esp_event_base_t event_base,
@@ -311,10 +387,11 @@ void app_rmaker_mesh_lite_service_creat(void)
         child_mac_param = esp_rmaker_param_create(ESP_RMAKER_MESH_LITE_SERVICE_CHILD_MAC, "esp.param.child_mac", esp_rmaker_array("[]"), PROP_FLAG_READ);
         esp_rmaker_device_add_param(service, child_mac_param);
 
-        mesh_group_param = esp_rmaker_param_create(ESP_RMAKER_MESH_LITE_SERVICE_MESH_GROUP, "esp.param.mesh_group", esp_rmaker_str(""), PROP_FLAG_READ | PROP_FLAG_WRITE);
+        mesh_group_param = esp_rmaker_param_create(ESP_RMAKER_MESH_LITE_SERVICE_MESH_GROUP, "esp.param.mesh_group", esp_rmaker_array("[]"), PROP_FLAG_READ | PROP_FLAG_WRITE);
         esp_rmaker_device_add_param(service, mesh_group_param);
+
+        esp_rmaker_device_add_cb(service, esp_rmaker_mesh_service_cb, NULL);
     }
-    esp_rmaker_device_add_cb(service, esp_rmaker_mesh_service_cb, NULL);
     esp_err_t err = esp_rmaker_node_add_device(esp_rmaker_get_node(), service);
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "mesh service enabled");
@@ -329,8 +406,6 @@ esp_err_t app_bridge_enable(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     esp_bridge_create_all_netif();
-    // esp_mesh_lite_set_allowed_level(1);
-    // esp_mesh_lite_set_disallowed_level(1);
 
     child_info_mutex = xSemaphoreCreateMutex();
 
@@ -342,6 +417,10 @@ esp_err_t app_bridge_enable(void)
     for (uint8_t i = 0; i < MAX_STATION; i++) {
         ip_strings[i] = (char*)malloc(IP_MAX_LEN);
         memset(ip_strings[i], 0x0, IP_MAX_LEN);
+    }
+
+    for (uint8_t i = 0; i < GROUP_MAX_NUM; i++) {
+        group_id_array[i] = 0;
     }
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, NULL, NULL));

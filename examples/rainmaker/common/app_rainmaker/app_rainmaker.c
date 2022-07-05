@@ -102,6 +102,37 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     }
 }
 
+#define ESP_RMAKER_UI_IDENTIFY_SERV_NAME "ui-identify"
+#define ESP_RMAKER_PARAM_IS_NOVA "is_nova_home"
+
+static esp_err_t esp_rmaker_app_utils_service_cb(const esp_rmaker_device_t* device, const esp_rmaker_param_t* param,
+                                                 const esp_rmaker_param_val_t val, void* priv_data, esp_rmaker_write_ctx_t* ctx)
+{
+    esp_err_t err = ESP_FAIL;
+    if (strcmp(esp_rmaker_param_get_type(param), ESP_RMAKER_PARAM_IS_NOVA) == 0) {
+        // Nothing here
+    }
+    esp_rmaker_param_update_and_report(param, val);
+    return err;
+}
+
+esp_err_t app_utils_rmaker_ui_identify_service_enable(void)
+{
+    esp_rmaker_device_t* service = esp_rmaker_service_create(ESP_RMAKER_UI_IDENTIFY_SERV_NAME, "esp.service.ui-identify", NULL);
+    if (service) {
+        esp_rmaker_param_t* param = esp_rmaker_param_create(ESP_RMAKER_PARAM_IS_NOVA, "esp.param.is_nova_home", esp_rmaker_bool(true), PROP_FLAG_READ);
+        esp_rmaker_device_add_param(service, param);
+    }
+    esp_rmaker_device_add_cb(service, esp_rmaker_app_utils_service_cb, NULL);
+    esp_err_t err = esp_rmaker_node_add_device(esp_rmaker_get_node(), service);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "ui identify service enabled");
+    } else {
+        esp_rmaker_device_delete(service);
+    }
+    return err;
+}
+
 void app_rainmaker_start(void)
 {
     /* Initialize Application specific hardware drivers and
@@ -164,4 +195,6 @@ void app_rainmaker_start(void)
 
     /* Start the ESP RainMaker Agent */
     esp_rmaker_start();
+
+    app_utils_rmaker_ui_identify_service_enable();
 }

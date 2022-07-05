@@ -1,4 +1,4 @@
-/* Mesh Internal Communication Example
+/* Rainmaker + Mesh-Lite Example
 
    This example code is in the Public Domain (or CC0 licensed, at your option.)
 
@@ -6,20 +6,13 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
-#include <string.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "esp_log.h"
-#include <app_wifi.h>
-#include <app_rainmaker.h>
-#if CONFIG_MESH_USE
-#include "app_mesh.h"
-#else
+#include "app_wifi.h"
+#include "app_rainmaker.h"
 #include "app_bridge.h"
-#endif
 
 static const char *TAG = "app_main";
 
@@ -52,17 +45,15 @@ void app_main(void)
 
     esp_storage_init();
 
-#if CONFIG_MESH_USE
-    app_mesh_start();
-#else
     app_bridge_enable();
-#endif
 
     app_rainmaker_start();
 
     /* Start wifi provisioning */
-    app_wifi_start(POP_TYPE_RANDOM);
+    app_wifi_start(POP_TYPE_MAC);
 
     app_rmaker_mesh_lite_service_creat();
+
+    app_espnow_init();
 }
 

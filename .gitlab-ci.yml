@@ -103,7 +103,9 @@ esp32_v4.4_build:
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32
-    - cd examples/rainmaker/led_light
+    - cd components/esp-rainmaker
+    - git apply ../../idf_patch/esp-rainmaker.patch
+    - cd ../../examples/rainmaker/led_light
     - idf.py set-target esp32
     - idf.py build
 
@@ -124,7 +126,9 @@ esp32_v5.0_build:
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32
-    - cd examples/rainmaker/led_light
+    - cd components/esp-rainmaker
+    - git apply ../../idf_patch/esp-rainmaker.patch
+    - cd ../../examples/rainmaker/led_light
     - idf.py set-target esp32
     - idf.py build
 
@@ -145,7 +149,9 @@ esp32c3_v4.4_build:
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32c3
-    - cd examples/rainmaker/led_light
+    - cd components/esp-rainmaker
+    - git apply ../../idf_patch/esp-rainmaker.patch
+    - cd ../../examples/rainmaker/led_light
     - idf.py set-target esp32c3
     - idf.py build
 
@@ -166,7 +172,9 @@ esp32c3_v5.0_build:
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32c3
-    - cd examples/rainmaker/led_light
+    - cd components/esp-rainmaker
+    - git apply ../../idf_patch/esp-rainmaker.patch
+    - cd ../../examples/rainmaker/led_light
     - idf.py set-target esp32c3
     - idf.py build
 
@@ -223,7 +231,9 @@ esp32s3_v4.4_build:
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32s3
-    - cd examples/rainmaker/led_light
+    - cd components/esp-rainmaker
+    - git apply ../../idf_patch/esp-rainmaker.patch
+    - cd ../../examples/rainmaker/led_light
     - idf.py set-target esp32s3
     - idf.py build
 
@@ -244,7 +254,9 @@ esp32s3_v5.0_build:
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32s3
-    - cd examples/rainmaker/led_light
+    - cd components/esp-rainmaker
+    - git apply ../../idf_patch/esp-rainmaker.patch
+    - cd ../../examples/rainmaker/led_light
     - idf.py set-target esp32s3
     - idf.py build
 
