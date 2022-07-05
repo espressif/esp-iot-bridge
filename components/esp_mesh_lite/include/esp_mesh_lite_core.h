@@ -25,6 +25,7 @@ extern "C"
 extern const char* ESP_MESH_LITE_EVENT;
 
 #define MAC_MAX_LEN                   (18)
+#define IP_MAX_LEN                    (16)
 
 /* Definitions for error constants. */
 #define ESP_ERR_DUPLICATE_ADDITION    0x110   /*!< Duplicate addition */
@@ -133,8 +134,10 @@ void esp_mesh_lite_connect(void);
  *
  * @param[in] mesh_id: Each mesh network should have a different and unique ID.
  * 
+ * @param[in] force_update_nvs: Whether to force update the value of mesh_id in nvs.
+ * 
  */
-void esp_mesh_lite_set_mesh_id(uint8_t mesh_id);
+void esp_mesh_lite_set_mesh_id(uint8_t mesh_id, bool force_update_nvs);
 
 /**
  * @brief  Set which level this node is only allowed to be
@@ -177,6 +180,16 @@ esp_err_t esp_mesh_lite_set_router_config(wifi_sta_config_t *conf);
 esp_err_t esp_mesh_lite_allow_others_to_join(bool enable);
 
 /**
+ * @brief  Set argot number.
+ * 
+ * @attention  Please make sure `esp_mesh_lite_init` is called before calling this function.
+ *
+ * @param[in]  argot
+ *
+ */
+esp_err_t esp_mesh_lite_set_argot(uint32_t argot);
+
+/**
  * @brief  Set SoftAP information.
  *
  * @param[in]  softap_ssid
@@ -201,6 +214,38 @@ uint8_t esp_mesh_lite_get_mesh_id(void);
  *      - level
  */
 uint8_t esp_mesh_lite_get_level(void);
+
+/**
+ * @brief  Erase rtc_memory store information
+ *
+ * @attention  Must be called before node factory reset.
+ *
+ */
+void esp_mesh_lite_erase_rtc_store(void);
+
+/**
+ * @brief  Get the argot number
+ *
+ * @return
+ *      - argot
+ */
+uint32_t esp_mesh_lite_get_argot(void);
+
+/**
+ * @brief  Get the allowed level
+ *
+ * @return
+ *      - allowed_level
+ */
+uint8_t esp_mesh_lite_get_allowed_level(void);
+
+/**
+ * @brief  Get the disallowed level
+ *
+ * @return
+ *      - disallowed_level
+ */
+uint8_t esp_mesh_lite_get_disallowed_level(void);
 
 
 /*****************************************************/

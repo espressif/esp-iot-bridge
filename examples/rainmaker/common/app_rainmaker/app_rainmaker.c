@@ -124,6 +124,7 @@ void app_rainmaker_start(void)
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
     }
+    esp_rmaker_node_add_attribute(node, "LiteMeshDevice", "1");
 
     /* Create a device and add the relevant parameters to it */
     light_device = esp_rmaker_lightbulb_device_create("Light", NULL, DEFAULT_POWER);
@@ -146,7 +147,7 @@ void app_rainmaker_start(void)
     esp_rmaker_ota_config_t ota_config = {
         .server_cert = ota_server_cert,
     };
-    esp_rmaker_ota_enable(&ota_config, OTA_USING_PARAMS);
+    esp_rmaker_ota_enable(&ota_config, OTA_USING_TOPICS);
 
     /* Enable timezone service which will be require for setting appropriate timezone
      * from the phone apps for scheduling to work correctly.

@@ -36,18 +36,22 @@ typedef enum {
  */
 void esp_mesh_lite_init(esp_mesh_lite_config_t* config);
 
-#if CONFIG_MESH_LITE_NODE_INFO_REPORT
 typedef struct  esp_mesh_lite_node_info {
     uint8_t level;
     char mac[MAC_MAX_LEN];
+    char ip[IP_MAX_LEN];
 } esp_mesh_lite_node_info_t;
 
+#if CONFIG_MESH_LITE_NODE_INFO_REPORT
 /**
  * @brief child nodes report mac and level information to the root node.
  * 
  */
 esp_err_t esp_mesh_lite_report_info(void);
 #endif /* CONFIG_MESH_LITE_NODE_INFO_REPORT */
+
+esp_err_t esp_mesh_lite_nvs_get_str(const char* name, char* str);
+esp_err_t esp_mesh_lite_nvs_set_str(const char* name, const char* str);
 
 #ifdef __cplusplus
 }

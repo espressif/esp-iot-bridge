@@ -62,5 +62,7 @@ void app_main(void)
 
     /* Start wifi provisioning */
     app_wifi_start(POP_TYPE_RANDOM);
+
+    app_rmaker_mesh_lite_service_creat();
 }
 
