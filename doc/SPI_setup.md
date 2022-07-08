@@ -47,8 +47,8 @@ Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
 | 21               | IO13         | MISO        |
 | 19               | IO11         | MOSI        |
 | 25               | GND          | Ground      |
-| 15               | IO02         | Handshake   |
-| 13               | IO06         | Data ready  |
+| 15               | IO2          | Handshake   |
+| 13               | IO6          | Data ready  |
 | 31               | RST          | ESP32 Reset |
 
 Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
@@ -58,12 +58,12 @@ Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
 | Raspberry-Pi Pin | ESP32-C3 Pin | Function    |
 | ---------------- | ------------ | ----------- |
 | 24               | IO10         | CS0         |
-| 23               | IO06         | SCLK        |
-| 21               | IO02         | MISO        |
-| 19               | IO07         | MOSI        |
+| 23               | IO6          | SCLK        |
+| 21               | IO2          | MISO        |
+| 19               | IO7          | MOSI        |
 | 25               | GND          | Ground      |
-| 15               | IO03         | Handshake   |
-| 13               | IO06         | Data ready  |
+| 15               | IO3          | Handshake   |
+| 13               | IO4          | Data ready  |
 | 31               | RST          | ESP32 Reset |
 
 Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
