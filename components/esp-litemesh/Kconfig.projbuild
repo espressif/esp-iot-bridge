@@ -54,6 +54,18 @@ menu "Gateway LiteMesh Configuration"
             default 10
             range 1 10
 
+        config LITEMESH_NODE_INFO_REPORT
+            bool "Enable node info report"
+            default n
+            help
+                Sub-nodes report information regularly,
+                and the root node collects and summarizes the mesh nodes information.
+
+        config LITEMESH_REPORT_INTERVAL
+            depends on LITEMESH_NODE_INFO_REPORT
+            int "Report time interval(s)"
+            default 300
+
         config JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO
             bool "Join Mesh without configured with information"
             default y

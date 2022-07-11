@@ -39,6 +39,7 @@ static esp_err_t esp_litemesh_node_id_report(void)
     if (item) {
         cJSON_AddStringToObject(item, "node_id", "Node_ID");
         ret = esp_litemesh_try_sending_msg("node_id_report", "node_id_rsq", NODE_ID_REPORT_MSG_MAX_RETRY, item, &esp_litemesh_send_msg_to_root);
+        cJSON_Delete(item);
     }
 
     return ret;
@@ -73,8 +74,30 @@ static void ip_event_handler(void *arg, esp_event_base_t event_base,
 
     if (esp_litemesh_get_level() > 1) {
         esp_litemesh_node_id_report();
+#if CONFIG_LITEMESH_NODE_INFO_REPORT
+        esp_litemesh_report_info();
+#endif
     }
 }
+
+#if CONFIG_LITEMESH_NODE_INFO_REPORT
+static void esp_litemesh_node_info_event_handler(void *arg, esp_event_base_t event_base,
+                                                 int32_t event_id, void *event_data)
+{
+    litemesh_node_info_t *event = (litemesh_node_info_t *) event_data;
+    switch(event_id) {
+        case LITEMESH_EVENT_NODE_JOIN:
+            ESP_LOGI(TAG, "[Node Info Join]  Level:%d  Mac:%s\r\n", event->level, event->mac);
+            break;
+        case LITEMESH_EVENT_NODE_LEAVE:
+            ESP_LOGI(TAG, "[Node Info Leave]  Level:%d  Mac:%s\r\n", event->level, event->mac);
+            break;
+        case LITEMESH_EVENT_NODE_CHANGE:
+            ESP_LOGI(TAG, "[Node Info change]  Level:%d  Mac:%s\r\n", event->level, event->mac);
+            break;
+    }
+}
+#endif
 
 esp_err_t app_gateway_enable(void)
 {
@@ -87,5 +110,8 @@ esp_err_t app_gateway_enable(void)
 
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, NULL));
 
+#if CONFIG_LITEMESH_NODE_INFO_REPORT
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(LITEMESH_EVENT, ESP_EVENT_ANY_ID, &esp_litemesh_node_info_event_handler, NULL, NULL));
+#endif
     return ESP_OK;
 }

@@ -64,7 +64,11 @@ static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const 
     }
 
     if (mode & WIFI_MODE_AP) {
+#if CONFIG_LITEMESH_ENABLE
+        wifi_cfg.ap.max_connection = CONFIG_LITEMESH_MAX_CONNECT_NUMBER;
+#else
         wifi_cfg.ap.max_connection = 10;
+#endif
         wifi_cfg.ap.authmode = strlen(password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
         memcpy((char *)wifi_cfg.ap.ssid, ssid, sizeof(wifi_cfg.ap.ssid));
         strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
@@ -133,18 +137,18 @@ static esp_err_t esp_gateway_wifi_init(void)
 #if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
 #ifdef CONFIG_LITEMESH_ENABLE
 static void esp_litemesh_event_ip_changed_handler(void *arg, esp_event_base_t event_base,
-                                                          int32_t event_id, void *event_data)
+                                                  int32_t event_id, void *event_data)
 {
     switch(event_id) {
-        case LITEMESH_EVENT_STARTED:
+        case LITEMESH_EVENT_CORE_STARTED:
             ESP_LOGI(TAG, "LiteMesh connecting");
             esp_litemesh_connect();
             break;
-        case LITEMESH_EVENT_INHERITED_NET_SEGMENT_CHANGED:
+        case LITEMESH_EVENT_CORE_INHERITED_NET_SEGMENT_CHANGED:
             ESP_LOGI(TAG, "netif network segment conflict check");
             esp_gateway_netif_network_segment_conflict_update(NULL);
             break;
-        case LITEMESH_EVENT_ROUTER_INFO_CHANGED:
+        case LITEMESH_EVENT_CORE_ROUTER_INFO_CHANGED:
             break;
     }
 }
@@ -192,7 +196,7 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
 {
     esp_err_t ret = ESP_FAIL;
-
+    ESP_LOGW(TAG, "SoftAP IP network segment has changed, deauth all station");
     if (esp_wifi_deauth_sta(0) == ESP_OK) {
         ret = ESP_OK;
     }
