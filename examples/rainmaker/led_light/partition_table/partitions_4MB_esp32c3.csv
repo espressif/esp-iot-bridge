@@ -1,0 +1,10 @@
+# Name,   Type, SubType, Offset,    Size,   Flags
+# Note: Firmware partition offset needs to be 64K aligned, initial 36K (9 sectors) are reserved for bootloader and partition table
+user_init,data, nvs,     0x6000,    0x3000  ,
+otadata,  data, ota,     0x9000,    0x2000, ,
+phy_init, data, phy,     ,          0x1000, ,
+sec_cert, 0x3F, ,        ,          0x3000, ,  # Never mark this as an encrypted partition
+ota_0,    app,  ota_0,   0x20000,   1600K,  ,
+ota_1,    app,  ota_1,   ,          1600K,  ,
+nvs,      data, nvs,     0x340000,  0xa000, ,
+fctry,    data, nvs,     0x34a000,  0x6000, ,

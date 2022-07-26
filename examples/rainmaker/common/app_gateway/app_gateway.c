@@ -101,8 +101,6 @@ static void esp_litemesh_node_info_event_handler(void *arg, esp_event_base_t eve
 
 esp_err_t app_gateway_enable(void)
 {
-    esp_log_level_set("*", ESP_LOG_INFO);
-
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
