@@ -138,6 +138,8 @@ void esp_litemesh_set_mesh_id(uint8_t mesh_id);
 
 /**
  * @brief  Set which level this node is only allowed to be
+ * 
+ * @attention  Please make sure `esp_litemesh_init` is called before calling this function.
  *
  * @param[in]  level: 1 ~ CONFIG_LITEMESH_MAXIMUM_LEVEL_ALLOWED, 0 is invalid.
  * 
@@ -146,6 +148,8 @@ esp_err_t esp_litemesh_set_allowed_level(uint8_t level);
 
 /**
  * @brief  Set which level this node is not allowed to be used as
+ * 
+ * @attention  Please make sure `esp_litemesh_init` is called before calling this function.
  *
  * @param[in]  level: 1 ~ CONFIG_LITEMESH_MAXIMUM_LEVEL_ALLOWED, 0 is invalid.
  *
@@ -154,6 +158,8 @@ esp_err_t esp_litemesh_set_disallowed_level(uint8_t level);
 
 /**
  * @brief  Set router information
+ * 
+ * @attention  Please make sure `esp_litemesh_init` is called before calling this function.
  *
  * @param[in]  conf
  *
@@ -162,6 +168,8 @@ esp_err_t esp_litemesh_set_router_config(wifi_sta_config_t *conf);
 
 /**
  * @brief  Whether to allow other nodes to join the mesh network.
+ * 
+ * @attention  Please make sure `esp_litemesh_init` is called before calling this function.
  *
  * @param[in]  enable: true -> allow; false -> disallow
  *
