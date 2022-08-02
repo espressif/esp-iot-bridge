@@ -10,7 +10,7 @@ set(srcs "src/esp_modem.c"
 
 set(include_dirs "include")
 set(priv_include_dirs "private_include")
-set(requires "driver" "esp_usbh_cdc")
+set(requires "driver" "esp_usbh_cdc" "esp_netif")
 
 if(CONFIG_MODEM_LEGACY_API)
         list(APPEND srcs "src/esp_modem_compat.c")
