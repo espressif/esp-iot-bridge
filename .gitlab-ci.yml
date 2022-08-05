@@ -90,7 +90,7 @@ variables: &global-variables
 
 esp32_v4.4_build:
   stage: build
-  image: $CI_DOCKER_REGISTRY/esp-env:v4.4-1
+  image: espressif/idf:release-v4.4
   tags:
     - build
 
@@ -129,7 +129,7 @@ esp32_v5.0_build:
 
 esp32c3_v4.4_build:
   stage: build
-  image: $CI_DOCKER_REGISTRY/esp-env:v4.4-1
+  image: espressif/idf:release-v4.4
   tags:
     - build
 
@@ -168,7 +168,7 @@ esp32c3_v5.0_build:
 
 esp32s2_v4.4_build:
   stage: build
-  image: $CI_DOCKER_REGISTRY/esp-env:v4.4-1
+  image: espressif/idf:release-v4.4
   tags:
     - build
 
@@ -204,7 +204,7 @@ esp32s2_v5.0_build:
 
 esp32s3_v4.4_build:
   stage: build
-  image: $CI_DOCKER_REGISTRY/esp-env:v4.4-1
+  image: espressif/idf:release-v4.4
   tags:
     - build
 

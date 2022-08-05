@@ -14,7 +14,7 @@ if(CONFIG_ESP_GATEWAY_BT_ENABLED)
     list(APPEND srcs "src/slave_bt.c")
 endif()
 
-set(requires "bt")
+set(requires "bt" "driver")
 
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "${include_dirs}"
