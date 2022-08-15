@@ -53,7 +53,7 @@ static esp_err_t esp_storage_init(void)
     return ret;
 }
 
-static void button_press_up_cb(void *arg)
+static void button_press_up_cb(void *hardware_data, void *usr_data)
 {
     ESP_LOGI(TAG, "BTN: BUTTON_PRESS_UP");
     if (button_long_press) {
@@ -62,13 +62,13 @@ static void button_press_up_cb(void *arg)
     }
 }
 
-static void button_press_repeat_cb(void *arg)
+static void button_press_repeat_cb(void *hardware_data, void *usr_data)
 {
-    uint8_t press_repeat = iot_button_get_repeat((button_handle_t)arg);
+    uint8_t press_repeat = iot_button_get_repeat((button_handle_t)hardware_data);
     ESP_LOGI(TAG, "BTN: BUTTON_PRESS_REPEAT[%d]", press_repeat);
 }
 
-static void button_long_press_start_cb(void *arg)
+static void button_long_press_start_cb(void *hardware_data, void *usr_data)
 {
     ESP_LOGI(TAG, "BTN: BUTTON_LONG_PRESS_START");
     button_long_press = true;
@@ -98,9 +98,9 @@ static void esp_gateway_create_button(void)
         },
     };
     g_btns[0] = iot_button_create(&cfg);
-    iot_button_register_cb(g_btns[0], BUTTON_PRESS_UP, button_press_up_cb);
-    iot_button_register_cb(g_btns[0], BUTTON_PRESS_REPEAT, button_press_repeat_cb);
-    iot_button_register_cb(g_btns[0], BUTTON_LONG_PRESS_START, button_long_press_start_cb);
+    iot_button_register_cb(g_btns[0], BUTTON_PRESS_UP, button_press_up_cb, 0);
+    iot_button_register_cb(g_btns[0], BUTTON_PRESS_REPEAT, button_press_repeat_cb, 0);
+    iot_button_register_cb(g_btns[0], BUTTON_LONG_PRESS_START, button_long_press_start_cb, 0);
 }
 
 void app_main(void)

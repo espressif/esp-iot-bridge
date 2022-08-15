@@ -1,6 +1,6 @@
 
 set(srcs)
-set(require_components "json")
+set(require_components "json" "esp_wifi")
 
 if (CONFIG_LITEMESH_ENABLE)
     list(APPEND srcs "src/esp_litemesh.c")

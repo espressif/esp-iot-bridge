@@ -19,6 +19,7 @@ extern "C"
 {
 #endif
 
+#include "esp_wifi_types.h"
 #include "cJSON.h"
 
 extern const char* LITEMESH_EVENT;

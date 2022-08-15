@@ -215,7 +215,7 @@ menu "Gateway Configuration"
             config GATEWAY_ETH_SPI_HOST
                 int "SPI Host Number"
                 range 0 2
-                default 2
+                default 1
                 help
                     Set the SPI host used to communicate with the SPI Ethernet Controller.
 
@@ -257,7 +257,8 @@ menu "Gateway Configuration"
             config GATEWAY_ETH_SPI_CS0_GPIO
                 int "SPI CS0 GPIO number for SPI Ethernet module #1"
                 range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
-                default 15
+                default 15 if IDF_TARGET_ESP32
+                default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
                 help
                     Set the GPIO number used by SPI CS0, i.e. Chip Select associated with the first SPI Eth module).
 

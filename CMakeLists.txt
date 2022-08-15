@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
+add_definitions(-w)
+
 if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
     set(EXTRA_COMPONENT_DIRS "components/usb/tinyusb")
 endif()
