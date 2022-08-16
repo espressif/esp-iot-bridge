@@ -35,8 +35,9 @@
 
 #define GATEWAY_EVENT_STA_CONNECTED  BIT0
 
-static EventGroupHandle_t s_wifi_event_group = NULL;
 static const char *TAG = "gateway_wifi";
+static bool esp_gateway_softap_dhcps = false;
+static EventGroupHandle_t s_wifi_event_group = NULL;
 
 #if CONFIG_LITEMESH_ENABLE
 #include "esp_litemesh.h"
@@ -100,6 +101,29 @@ static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
 
     esp_gateway_netif_network_segment_conflict_update(event->esp_netif);
     xEventGroupSetBits(s_wifi_event_group, GATEWAY_EVENT_STA_CONNECTED);
+}
+
+static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
+                                        int32_t event_id, void *event_data)
+{
+    esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
+
+    if (netif) {
+        if (esp_gateway_softap_dhcps) {
+            ESP_ERROR_CHECK(esp_netif_dhcps_stop(netif));
+            esp_netif_dns_info_t dns;
+            dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
+            dns.ip.type = IPADDR_TYPE_V4;
+            dhcps_offer_t dhcps_dns_value = OFFER_DNS;
+            ESP_ERROR_CHECK(esp_netif_dhcps_option(netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value)));
+            ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, ESP_NETIF_DNS_MAIN, &dns));
+            ESP_ERROR_CHECK(esp_netif_dhcps_start(netif));
+        }
+
+        esp_netif_ip_info_t netif_ip;
+        esp_netif_get_ip_info(netif, &netif_ip);
+        ip_napt_enable(netif_ip.ip.addr, 1);
+    }
 }
 
 static void wifi_event_ap_staconnected_handler(void *arg, esp_event_base_t event_base,
@@ -220,7 +244,6 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
 
     wifi_netif = esp_netif_create_default_wifi_ap();
 
-    ESP_ERROR_CHECK(esp_netif_dhcps_stop(wifi_netif));
     if (ip_info) {
         ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, ip_info));
     } else {
@@ -233,17 +256,10 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     ESP_LOGI(TAG, "IP Address:" IPSTR, IP2STR(&netif_ip.ip));
     esp_gateway_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
 
-    if (enable_dhcps) {
-        esp_netif_dhcps_start(wifi_netif);
-        esp_netif_dns_info_t dns;
-        dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
-        dns.ip.type = IPADDR_TYPE_V4;
-        dhcps_offer_t dhcps_dns_value = OFFER_DNS;
-        esp_netif_dhcps_option(wifi_netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value));
-        esp_netif_set_dns_info(wifi_netif, ESP_NETIF_DNS_MAIN, &dns);
-    }
+    esp_gateway_softap_dhcps = enable_dhcps;
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_START, &wifi_event_ap_start_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &wifi_event_ap_staconnected_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &wifi_event_ap_stadisconnected_handler, NULL, NULL));
 #ifdef CONFIG_LITEMESH_ENABLE
@@ -261,7 +277,6 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     snprintf(softap_ssid, sizeof(softap_ssid), "%s", ESP_GATEWAY_SOFTAP_SSID);
 #endif
     esp_gateway_wifi_set(WIFI_MODE_AP, softap_ssid, ESP_GATEWAY_SOFTAP_PASSWORD, NULL);
-    ip_napt_enable(netif_ip.ip.addr, 1);
 
     return wifi_netif;
 }

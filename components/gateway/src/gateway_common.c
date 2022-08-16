@@ -223,14 +223,7 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
             ESP_ERROR_CHECK(esp_netif_dhcps_stop(p->netif));
             esp_netif_set_ip_info(p->netif, &allocate_ip_info);
             ESP_LOGI(TAG, "ip reallocate new:" IPSTR, IP2STR(&allocate_ip_info.ip));
-
-            esp_netif_dhcps_start(p->netif);
-            esp_netif_dns_info_t dns;
-            dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
-            dns.ip.type = IPADDR_TYPE_V4;
-            dhcps_offer_t dhcps_dns_value = OFFER_DNS;
-            esp_netif_dhcps_option(p->netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value));
-            esp_netif_set_dns_info(p->netif, ESP_NETIF_DNS_MAIN, &dns);
+            ESP_ERROR_CHECK(esp_netif_dhcps_start(p->netif));
 
             esp_ip_addr_info.type = ESP_IPADDR_TYPE_V4;
             esp_ip_addr_info.u_addr.ip4.addr = allocate_ip_info.ip.addr;
