@@ -4,8 +4,9 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 add_definitions(-w)
 
+set(EXTRA_COMPONENT_DIRS "components/esp-rainmaker/components/qrcode")
 if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
-    set(EXTRA_COMPONENT_DIRS "components/usb/tinyusb")
+    list(APPEND EXTRA_COMPONENT_DIRS "components/usb/tinyusb")
 endif()
 
 string(REGEX REPLACE ".*/\(.*\)" "\\1" CURDIR ${CMAKE_CURRENT_SOURCE_DIR})
