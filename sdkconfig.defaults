@@ -1,7 +1,18 @@
 #
+# Default Chipset
+#
+CONFIG_IDF_TARGET="esp32s3"
+
+#
 # Serial flasher config
 #
-CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+
+#
+# LOG Level
+#
+CONFIG_LOG_DEFAULT_LEVEL_DEBUG=y
+CONFIG_LOG_MAXIMUM_LEVEL_VERBOSE=y
 
 #
 # Partition Table

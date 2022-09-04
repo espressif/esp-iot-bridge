@@ -127,13 +127,13 @@ esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info)
 {
     bool ip_segment_is_used = true;
 
-    for (uint8_t gateway_ip = 4; gateway_ip < 255; gateway_ip++) {
+    for (uint8_t gateway_ip = 0; gateway_ip < 255; gateway_ip++) {
         ip_segment_is_used = esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1));
 #if CONFIG_LITEMESH_ENABLE
         ip_segment_is_used |= esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1));
 #endif
         if (!ip_segment_is_used) {
-            ip_info->ip.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 1);
+            ip_info->ip.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 100);
             ip_info->gw.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 1);
             ip_info->netmask.addr = ESP_IP4TOADDR(255, 255, 255, 0);
             ESP_LOGI("ip select", "IP Address:" IPSTR, IP2STR(&ip_info->ip));

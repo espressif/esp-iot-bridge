@@ -101,6 +101,13 @@ static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
 
     esp_gateway_netif_network_segment_conflict_update(event->esp_netif);
     xEventGroupSetBits(s_wifi_event_group, GATEWAY_EVENT_STA_CONNECTED);
+
+    uint8_t protocol_bitmap = 0;
+    esp_wifi_get_protocol(ESP_IF_WIFI_AP, &protocol_bitmap);
+    if(!(protocol_bitmap & WIFI_PROTOCOL_LR)) {
+        ESP_LOGI(TAG, "Provisioning finish, reset AP to LR");
+        esp_restart();
+    }
 }
 
 static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
@@ -194,7 +201,7 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_STA;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
-
+    
 #if !CONFIG_LITEMESH_ENABLE
     wifi_sta_config_t router_config;
     /* Get WiFi Station configuration */
@@ -204,8 +211,14 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
     if (strlen((const char*)router_config.ssid)) {
         ESP_LOGI(TAG, "Found ssid %s",     (const char*) router_config.ssid);
         ESP_LOGI(TAG, "Found password %s", (const char*) router_config.password);
+        ESP_ERROR_CHECK( esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N|WIFI_PROTOCOL_LR) );
         esp_wifi_connect();
     }
+    else {
+        ESP_LOGI(TAG, "SSID not found, start as BGN");
+        ESP_ERROR_CHECK( esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N) );
+    }
+
 #endif /* CONFIG_LITEMESH_ENABLE */
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
@@ -269,13 +282,31 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     mode |= WIFI_MODE_AP;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
-#if CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
-    uint8_t softap_mac[ESP_GATEWAY_MAC_MAX_LEN];
-    esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
-    snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
-#else
-    snprintf(softap_ssid, sizeof(softap_ssid), "%s", ESP_GATEWAY_SOFTAP_SSID);
-#endif
+    esp_netif_t *wifi_sta_netif = NULL;
+    wifi_sta_netif = esp_netif_create_default_wifi_sta();
+
+    wifi_sta_config_t router_config;
+    /* Get WiFi Station configuration */
+    esp_wifi_get_config(WIFI_IF_STA, (wifi_config_t*)&router_config);
+
+    /* Get Wi-Fi Station ssid success */
+    if (strlen((const char*)router_config.ssid)) {
+        ESP_LOGI(TAG, "STA Configuration existis, starts AP on LR");
+        ESP_ERROR_CHECK( esp_wifi_set_protocol(ESP_IF_WIFI_AP, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N|WIFI_PROTOCOL_LR) );
+        
+        snprintf(softap_ssid, sizeof(softap_ssid), "%s", ESP_GATEWAY_SOFTAP_SSID);
+    }
+    else {
+        ESP_LOGI(TAG, "STA Configuration empty, starts BGN AP");
+        ESP_ERROR_CHECK( esp_wifi_set_protocol(ESP_IF_WIFI_AP, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N) );
+        
+        uint8_t softap_mac[ESP_GATEWAY_MAC_MAX_LEN];
+        esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
+        snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
+    }
+
+    esp_netif_destroy_default_wifi(wifi_sta_netif);
+
     esp_gateway_wifi_set(WIFI_MODE_AP, softap_ssid, ESP_GATEWAY_SOFTAP_PASSWORD, NULL);
 
     return wifi_netif;

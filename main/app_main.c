@@ -29,6 +29,10 @@
 #include "iot_button.h"
 #include "wifi_prov_mgr.h"
 
+#if ESP_IDF_VERSION_MAJOR != 4 && ESP_IDF_VERSION_MINOR != 4 && ESP_IDF_VERSION_PATCH != 2
+#error Only tested for ESP IDF v4.4.2
+#endif
+
 #define BUTTON_NUM            1
 #define BUTTON_SW1            CONFIG_GPIO_BUTTON_SW1
 #define BUTTON_PRESS_TIME     5000000
