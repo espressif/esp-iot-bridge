@@ -2,6 +2,7 @@
 # Default Chipset
 #
 CONFIG_IDF_TARGET="esp32s3"
+CONFIG_LWIP_LOCAL_HOSTNAME="esp-long-range-gateway"
 
 #
 # Serial flasher config
