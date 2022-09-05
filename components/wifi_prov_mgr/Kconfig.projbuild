@@ -1,4 +1,4 @@
-menu "Gateway Wi-Fi Provisoning Configuration"
+menu "Gateway Wi-Fi Provisioning Configuration"
     depends on GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE
 
     choice ESP_GATEWAY_PROV_TRANSPORT

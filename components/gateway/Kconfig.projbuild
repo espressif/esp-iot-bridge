@@ -289,15 +289,20 @@ menu "Gateway Configuration"
     menu "Modem Configuration"
         depends on GATEWAY_EXTERNAL_NETIF_MODEM
 
-        config GATEWAY_MODEM_UART
-            default y if !IDF_TARGET_ESP32S2 && !IDF_TARGET_ESP32S3
-            depends on !GATEWAY_MODEM_USB
-            bool "UART"
+        choice ESP_GATEWAY_MODEM_TYPE
+            prompt "Modem Type"
+            default GATEWAY_MODEM_USB if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default GATEWAY_MODEM_UART if !IDF_TARGET_ESP32S2 && !IDF_TARGET_ESP32S3
+            help
+                Select which kind of modem interface will be used in the ESP-Gateway.
 
-        config GATEWAY_MODEM_USB
-            default y
-            depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-            bool "USB"
+            config GATEWAY_MODEM_UART
+                bool "UART"
+
+            config GATEWAY_MODEM_USB
+                bool "USB"
+                depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+        endchoice
 
         if GATEWAY_MODEM_UART
             config ESP_GATEWAY_MODEM_TX_GPIO
