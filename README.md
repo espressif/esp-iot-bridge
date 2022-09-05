@@ -2,6 +2,14 @@
 
 ESP-Gateway is a smart gateway solution offered by Espressif, here you will find the modified version that allows espressif WiFi Long Range mode, which supports up to **1 km** of data traffic.
 
+```mermaid
+flowchart LR
+    A(esp32s3-STA) <-- 192.168.4.1 --> B(esp32s3-gateway)
+    B(esp32s3-gateway) <-- 192.168.0.1 --> C(Router)
+    C(Router) <-- 212.635.124.24 --> Internet
+    A(esp32s3-STA) <-- MQTT --> Internet
+```
+
 # Field test
 
 * The [documented](https://docs.espressif.com/projects/esp-idf/en/v4.4.2/esp32s3/api-guides/wifi.html#lr-throughput) throughput is 1/2 Mbps and 1/4 Mbps.
