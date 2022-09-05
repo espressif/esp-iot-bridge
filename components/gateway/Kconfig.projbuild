@@ -16,13 +16,6 @@ menu "Gateway Configuration"
                 default y
                 help
                     Use Wi-Fi Provisioning over Web Server.
-
-            config GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE
-                bool "Wi-Fi Provisioning over Bluetooth Low Energy."
-                depends on !IDF_TARGET_ESP32S2
-                default n
-                help
-                    Use Wi-Fi Provisioning over Bluetooth Low Energy.
         endmenu
 
         config GATEWAY_EXTERNAL_NETIF_MODEM
@@ -38,10 +31,6 @@ menu "Gateway Configuration"
         config GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
             bool "Use Wi-Fi SoftAP interface to provide network data forwarding for other devices"
             default y
-
-            menu "LITEMESH_ENABLE is enabled, please configure SoftAP in \"Gateway LiteMesh Configuration\""
-                visible if LITEMESH_ENABLE
-            endmenu
 
             menu "SoftAP Config"
                 depends on GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
@@ -62,40 +51,12 @@ menu "Gateway Configuration"
                     help
                         password of ESP-Gateway SoftAP.
 
-                config ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
-                    bool "SoftAP SSID ends with the MAC"
-                    default n if !LITEMESH_ENABLE
-                    default LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC if LITEMESH_ENABLE
-                    help
-                        Add MAC to the end of SSID
-
                 config ESP_GATEWAY_SOFTAP_MAX_CONNECT_NUMBER
                     int "Maximum number of connections per node"
-                    default 6 if !LITEMESH_ENABLE
-                    default LITEMESH_MAX_CONNECT_NUMBER if LITEMESH_ENABLE
+                    default 1
                     range 1 10
             endmenu
 
-        config GATEWAY_DATA_FORWARDING_NETIF_USB
-            bool "Use USB interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
-            default n
-            depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-            select TINYUSB
-            select TINYUSB_NET_ENABLED
-
-        config GATEWAY_DATA_FORWARDING_NETIF_ETHERNET
-            bool "Use ethernet interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
-            default n
-            depends on !GATEWAY_EXTERNAL_NETIF_ETHERNET
-
-        config GATEWAY_DATA_FORWARDING_NETIF_SPI
-            bool "Use SPI interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
-            default n
-
-        config GATEWAY_DATA_FORWARDING_NETIF_SDIO
-            bool "Use SDIO interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
-            default n
-            depends on IDF_TARGET_ESP32
     endmenu
 
     config GATEWAY_GPIO_RANGE_MIN

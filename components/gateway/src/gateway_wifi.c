@@ -302,7 +302,7 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
         
         uint8_t softap_mac[ESP_GATEWAY_MAC_MAX_LEN];
         esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
-        snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
+        snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02X%02X%02X", ESP_GATEWAY_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
     }
 
     esp_netif_destroy_default_wifi(wifi_sta_netif);
