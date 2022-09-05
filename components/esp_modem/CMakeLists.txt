@@ -17,9 +17,9 @@ if(CONFIG_MODEM_LEGACY_API)
         list(APPEND include_dirs "include_compat")
 endif()
 
-if(CONFIG_IDF_TARGET_ESP32 OR CONFIG_IDF_TARGET_ESP32C3)
+if(CONFIG_GATEWAY_MODEM_UART)
         list(APPEND srcs "src/esp_modem_dte_uart.c")
-elseif(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3)
+elseif(CONFIG_GATEWAY_MODEM_USB)
         list(APPEND srcs "src/esp_modem_dte_usb.c")
 endif()
 

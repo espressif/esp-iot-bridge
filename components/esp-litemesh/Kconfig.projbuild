@@ -35,7 +35,7 @@ menu "Gateway LiteMesh Configuration"
 
         config LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC
             bool "SoftAP SSID ends with the MAC"
-            default n
+            default y
             help
                 Add MAC to the end of SSID
 
