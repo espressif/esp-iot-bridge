@@ -110,7 +110,7 @@ static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
 
     if (netif) {
         if (esp_gateway_softap_dhcps) {
-            ESP_ERROR_CHECK(esp_netif_dhcps_stop(netif));
+            esp_netif_dhcps_stop(netif);
             esp_netif_dns_info_t dns;
             dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
             dns.ip.type = IPADDR_TYPE_V4;
@@ -244,15 +244,17 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
 
     wifi_netif = esp_netif_create_default_wifi_ap();
 
+    ESP_ERROR_CHECK(esp_netif_dhcps_stop(wifi_netif));
+
     if (ip_info) {
         ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, ip_info));
     } else {
         if (enable_dhcps) {
             esp_gateway_netif_request_ip(&allocate_ip_info);
-            esp_netif_set_ip_info(wifi_netif, &allocate_ip_info);
+            ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, &allocate_ip_info));
         }
     }
-    esp_netif_get_ip_info(wifi_netif, &netif_ip);
+    ESP_ERROR_CHECK(esp_netif_get_ip_info(wifi_netif, &netif_ip));
     ESP_LOGI(TAG, "IP Address:" IPSTR, IP2STR(&netif_ip.ip));
     esp_gateway_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
 
