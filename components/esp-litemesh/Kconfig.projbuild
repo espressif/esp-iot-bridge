@@ -52,7 +52,7 @@ menu "Gateway LiteMesh Configuration"
         config LITEMESH_MAXIMUM_LEVEL_ALLOWED
             int "The maximum level allowed"
             default 10
-            range 1 10
+            range 1 16
 
         config LITEMESH_NODE_INFO_REPORT
             bool "Enable node info report"
