@@ -9,14 +9,16 @@ This example uses the Rainmaker cloud platform to demonstrate the ESP-Gateway **
 - [Google PlayStore](https://play.google.com/store/apps/details?id=com.espressif.novahome)
 - [Apple App Store](https://apps.apple.com/us/app/nova-home/id1563728960)
 
-### 2. Flash Key
+### 2. Get Key
 
-Flash the CA&Certificate to the address corresponding to the `fctry` field in partition_table.
-The address of different chips is different. For details, please refer to the path `example/rainmaker/led_light/partition_table`
+Currently, there are two ways for a device to obtain a certificate:
 
-<font color=red>**⚠️Note**</font>：
+- Self Claiming: After the network is configured, the device directly sends an http request to pull the certificate from the server, which can only be applied on **ESP32-S3** and **ESP32-C3**. Due to the binding with the MAC, the certificate pulled by each device is the same each time.
+- Assisted Claiming: When configuring the network, the mobile APP requests a certificate from the server, and then sends it to the device through Bluetooth. It is not bound to the MAC. By default, an account has a limit of 5 applications.
 
-> Please contact sales@espressif.com for certificates
+Currently, ESP32-S3 and ESP32-C3 use Self-Claiming to obtain certificates by default, while ESP32 can only use Assisted Claiming to obtain certificates.
+
+> Nova Home's Assisted Claiming method is currently unstable. If you use ESP32 to obtain a certificate, it is recommended to use the [ESP Rainmaker](https://github.com/espressif/esp-rainmaker#phone-apps) APP for Claiming
 
 ### 3. IDF environment setup & SDK
 

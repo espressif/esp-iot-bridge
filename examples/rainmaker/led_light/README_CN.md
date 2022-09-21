@@ -10,14 +10,16 @@
 
 - [Apple App Store](https://apps.apple.com/us/app/nova-home/id1563728960)
 
-### 2. 烧录 Key
+### 2. 获取 Key
 
-烧录 CA 证书 至 partition_table 中 `fctry` 字段对应地址
-不同芯片对应地址不同，partition table 文件路径 `example/rainmaker/led_light/partition_table/`
+目前设备获取证书的方式有两种：
 
-<font color=red>**⚠️Note**</font>：
+- Self Claiming：配网后设备直接发 http 请求从服务器拉证书，只能在 ESP32-S3 和 ESP32-C3 上应用，由于与 MAC 绑定，每一台设备每次拉取的证书是一样的
+- Assisted Claiming：配网时，手机 APP 跟服务器请求证书，随后通过蓝牙发送给设备，不和 MAC 绑定，默认一个账户只有 5 次申请的限制
 
-> 请联系 sales@espressif.com 来获取证书
+目前 ESP32-S3 和 ESP32-C3 默认采用 Self-Claiming 的方式获取证书，ESP32 仅能使用 Assisted Claiming 方式获取证书。
+
+>Nova Home 目前 Assisted Claiming 方式不稳定，若使用 ESP32 获取证书建议使用 [ESP Rainmaker](https://github.com/espressif/esp-rainmaker#phone-apps) APP 进行 Claiming
 
 ### 3. 编译环境搭建 & SDK 准备
 
