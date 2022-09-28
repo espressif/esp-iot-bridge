@@ -207,9 +207,9 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
         memcpy(sta.bssid, bssid, sizeof(sta.bssid));
     }
 
-#if CONFIG_LITEMESH_ENABLE
-    ret = esp_litemesh_set_router_config(&sta);
-    esp_litemesh_connect();
+#if CONFIG_MESH_LITE_ENABLE
+    ret = esp_mesh_lite_set_router_config(&sta);
+    esp_mesh_lite_connect();
 #else
     esp_wifi_set_storage(WIFI_STORAGE_FLASH);
     ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*) &sta);
@@ -217,7 +217,7 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
     esp_wifi_disconnect();
 
     esp_wifi_connect();
-#endif /* CONFIG_LITEMESH_ENABLE */
+#endif /* CONFIG_MESH_LITE_ENABLE */
 
     if (connect_event != NULL) { // need to wait wifi connect result, now it's phone config wifi and ssid is null
         bits = xEventGroupWaitBits(connect_event,

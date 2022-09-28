@@ -17,7 +17,6 @@
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "esp_system.h"
-#include "driver/uart.h"
 #include "freertos/event_groups.h"
 
 #include "lwip/opt.h"
@@ -39,8 +38,8 @@ static const char *TAG = "bridge_wifi";
 static bool esp_bridge_softap_dhcps = false;
 static EventGroupHandle_t s_wifi_event_group = NULL;
 
-#if CONFIG_LITEMESH_ENABLE
-#include "esp_litemesh.h"
+#if CONFIG_MESH_LITE_ENABLE
+#include "esp_mesh_lite.h"
 #endif
 
 static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const char *password, const char *bssid)
@@ -48,7 +47,8 @@ static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const c
     ESP_PARAM_CHECK(ssid);
     ESP_PARAM_CHECK(password);
 
-    wifi_config_t wifi_cfg = {0};
+    wifi_config_t wifi_cfg;
+    memset(&wifi_cfg, 0x0, sizeof(wifi_config_t));
 
     if (mode & WIFI_MODE_STA) {
         memcpy((char *)wifi_cfg.sta.ssid, ssid, sizeof(wifi_cfg.sta.ssid));
@@ -65,8 +65,8 @@ static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const c
     }
 
     if (mode & WIFI_MODE_AP) {
-#if CONFIG_LITEMESH_ENABLE
-        wifi_cfg.ap.max_connection = CONFIG_LITEMESH_MAX_CONNECT_NUMBER;
+#if CONFIG_MESH_LITE_ENABLE
+        wifi_cfg.ap.max_connection = CONFIG_MESH_LITE_MAX_CONNECT_NUMBER;
 #else
         wifi_cfg.ap.max_connection = 10;
 #endif
@@ -86,7 +86,7 @@ static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const c
 static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t event_base,
                                                 int32_t event_id, void *event_data)
 {
-#if !CONFIG_LITEMESH_ENABLE
+#if !CONFIG_MESH_LITE_ENABLE
     ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
     esp_wifi_connect();
 #endif
@@ -159,20 +159,20 @@ static esp_err_t esp_bridge_wifi_init(void)
 #endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_STATION || CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP */
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
-#ifdef CONFIG_LITEMESH_ENABLE
-static void esp_litemesh_event_ip_changed_handler(void *arg, esp_event_base_t event_base,
+#ifdef CONFIG_MESH_LITE_ENABLE
+static void esp_mesh_lite_event_ip_changed_handler(void *arg, esp_event_base_t event_base,
                                                   int32_t event_id, void *event_data)
 {
     switch(event_id) {
-        case LITEMESH_EVENT_CORE_STARTED:
-            ESP_LOGI(TAG, "LiteMesh connecting");
-            esp_litemesh_connect();
+        case ESP_MESH_LITE_EVENT_CORE_STARTED:
+            ESP_LOGI(TAG, "Mesh-Lite connecting");
+            esp_mesh_lite_connect();
             break;
-        case LITEMESH_EVENT_CORE_INHERITED_NET_SEGMENT_CHANGED:
+        case ESP_MESH_LITE_EVENT_CORE_INHERITED_NET_SEGMENT_CHANGED:
             ESP_LOGI(TAG, "netif network segment conflict check");
             esp_bridge_netif_network_segment_conflict_update(NULL);
             break;
-        case LITEMESH_EVENT_CORE_ROUTER_INFO_CHANGED:
+        case ESP_MESH_LITE_EVENT_CORE_ROUTER_INFO_CHANGED:
             break;
     }
 }
@@ -195,7 +195,7 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
     mode |= WIFI_MODE_STA;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
-#if !CONFIG_LITEMESH_ENABLE
+#if !CONFIG_MESH_LITE_ENABLE
     wifi_sta_config_t router_config;
     /* Get WiFi Station configuration */
     esp_wifi_get_config(WIFI_IF_STA, (wifi_config_t*)&router_config);
@@ -206,7 +206,7 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
         ESP_LOGI(TAG, "Found password %s", (const char*) router_config.password);
         esp_wifi_connect();
     }
-#endif /* CONFIG_LITEMESH_ENABLE */
+#endif /* CONFIG_MESH_LITE_ENABLE */
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_event_sta_disconnected_handler, NULL, NULL));
@@ -264,8 +264,8 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_START, &wifi_event_ap_start_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &wifi_event_ap_staconnected_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &wifi_event_ap_stadisconnected_handler, NULL, NULL));
-#ifdef CONFIG_LITEMESH_ENABLE
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(LITEMESH_EVENT, ESP_EVENT_ANY_ID, &esp_litemesh_event_ip_changed_handler, NULL, NULL));
+#ifdef CONFIG_MESH_LITE_ENABLE
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(ESP_MESH_LITE_EVENT, ESP_EVENT_ANY_ID, &esp_mesh_lite_event_ip_changed_handler, NULL, NULL));
 #endif
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_AP;

@@ -22,23 +22,23 @@
 #include "freertos/timers.h"
 #include "freertos/FreeRTOS.h"
 
-#include "esp_litemesh.h"
+#include "esp_mesh_lite.h"
 
-#if CONFIG_LITEMESH_NODE_INFO_REPORT
+#if CONFIG_MESH_LITE_NODE_INFO_REPORT
 
 #define MAX_RETRY  5
 
 typedef struct node_info_list {
-    litemesh_node_info_t* node;
+    esp_mesh_lite_node_info_t* node;
     uint32_t ttl;
     struct node_info_list* next;
 } node_info_list_t;
 
-static const char* TAG = "LiteMesh";
+static const char* TAG = "Mesh-Lite";
 static node_info_list_t* node_info_list = NULL;
 static SemaphoreHandle_t node_info_mutex;
 
-esp_err_t esp_litemesh_report_info(void)
+esp_err_t esp_mesh_lite_report_info(void)
 {
     uint8_t mac[6];
     cJSON *item = NULL;
@@ -49,16 +49,16 @@ esp_err_t esp_litemesh_report_info(void)
 
     item = cJSON_CreateObject();
     if (item) {
-        cJSON_AddNumberToObject(item, "level", esp_litemesh_get_level());
+        cJSON_AddNumberToObject(item, "level", esp_mesh_lite_get_level());
         cJSON_AddStringToObject(item, "mac", mac_str);
-        esp_litemesh_try_sending_msg("report_info", "report_info_ack", MAX_RETRY, item, &esp_litemesh_send_msg_to_root);
+        esp_mesh_lite_try_sending_msg("report_info", "report_info_ack", MAX_RETRY, item, &esp_mesh_lite_send_msg_to_root);
         cJSON_Delete(item);
     }
 
     return ESP_OK;
 }
 
-static esp_err_t esp_litemesh_node_info_add(uint8_t level, char* mac)
+static esp_err_t esp_mesh_lite_node_info_add(uint8_t level, char* mac)
 {
     xSemaphoreTake(node_info_mutex, portMAX_DELAY);
     node_info_list_t* new = node_info_list;
@@ -67,9 +67,9 @@ static esp_err_t esp_litemesh_node_info_add(uint8_t level, char* mac)
         if (!strncmp(new->node->mac, mac, (MAC_MAX_LEN - 1))) {
             if (new->node->level != level) {
                 new->node->level = level;
-                esp_event_post(LITEMESH_EVENT, LITEMESH_EVENT_NODE_CHANGE, new->node, sizeof(litemesh_node_info_t), 0);
+                esp_event_post(ESP_MESH_LITE_EVENT, ESP_MESH_LITE_EVENT_NODE_CHANGE, new->node, sizeof(esp_mesh_lite_node_info_t), 0);
             }
-            new->ttl = (CONFIG_LITEMESH_REPORT_INTERVAL + 10);
+            new->ttl = (CONFIG_MESH_LITE_REPORT_INTERVAL + 10);
             xSemaphoreGive(node_info_mutex);
             return ESP_ERR_DUPLICATE_ADDITION;
         }
@@ -84,7 +84,7 @@ static esp_err_t esp_litemesh_node_info_add(uint8_t level, char* mac)
         return ESP_ERR_NO_MEM;
     }
 
-    new->node = (litemesh_node_info_t*)malloc(sizeof(litemesh_node_info_t));
+    new->node = (esp_mesh_lite_node_info_t*)malloc(sizeof(esp_mesh_lite_node_info_t));
     if (new->node == NULL) {
         free(new);
         ESP_LOGE(TAG, "node info add fail(no mem)");
@@ -94,12 +94,12 @@ static esp_err_t esp_litemesh_node_info_add(uint8_t level, char* mac)
 
     memcpy(new->node->mac, mac, MAC_MAX_LEN);
     new->node->level = level;
-    new->ttl = (CONFIG_LITEMESH_REPORT_INTERVAL + 10);
+    new->ttl = (CONFIG_MESH_LITE_REPORT_INTERVAL + 10);
 
     new->next = node_info_list;
     node_info_list = new;
 
-    esp_event_post(LITEMESH_EVENT, LITEMESH_EVENT_NODE_JOIN, new->node, sizeof(litemesh_node_info_t), 0);
+    esp_event_post(ESP_MESH_LITE_EVENT, ESP_MESH_LITE_EVENT_NODE_JOIN, new->node, sizeof(esp_mesh_lite_node_info_t), 0);
     xSemaphoreGive(node_info_mutex);
     return ESP_OK;
 }
@@ -112,7 +112,7 @@ static cJSON* report_info_process(cJSON *payload, uint32_t seq)
     uint8_t level = found->valueint;
     found = cJSON_GetObjectItem(payload, "mac");
 
-    esp_litemesh_node_info_add(level, found->valuestring);
+    esp_mesh_lite_node_info_add(level, found->valuestring);
     return NULL;
 }
 
@@ -121,7 +121,7 @@ static cJSON* report_info_ack_process(cJSON *payload, uint32_t seq)
     return NULL;
 }
 
-static const esp_litemesh_msg_action_t node_report_action[] = {
+static const esp_mesh_lite_msg_action_t node_report_action[] = {
     /* Report information to the root node */
     {"report_info", "report_info_ack", report_info_process},
     {"report_info_ack", NULL, report_info_ack_process},
@@ -131,7 +131,7 @@ static const esp_litemesh_msg_action_t node_report_action[] = {
 
 static void root_timer_cb(void* param)
 {
-    if (esp_litemesh_get_level() > ROOT) {
+    if (esp_mesh_lite_get_level() > ROOT) {
         return;
     }
 
@@ -144,7 +144,7 @@ static void root_timer_cb(void* param)
 
     while (current) {
         if (current->ttl == 0) {
-            esp_event_post(LITEMESH_EVENT, LITEMESH_EVENT_NODE_LEAVE, current->node, sizeof(litemesh_node_info_t), 0);
+            esp_event_post(ESP_MESH_LITE_EVENT, ESP_MESH_LITE_EVENT_NODE_LEAVE, current->node, sizeof(esp_mesh_lite_node_info_t), 0);
             if (node_info_list == current) {
                 node_info_list = current->next;
                 free(current->node);
@@ -168,25 +168,25 @@ static void root_timer_cb(void* param)
 
 static void report_timer_cb(void* param)
 {
-    if (esp_litemesh_get_level() > ROOT) {
-        esp_litemesh_report_info();
+    if (esp_mesh_lite_get_level() > ROOT) {
+        esp_mesh_lite_report_info();
     }
 }
-#endif /* LITEMESH_NODE_INFO_REPORT */
+#endif /* MESH_LITE_NODE_INFO_REPORT */
 
-void esp_litemesh_init(esp_litemesh_config_t* config)
+void esp_mesh_lite_init(esp_mesh_lite_config_t* config)
 {
-    esp_litemesh_core_init(config);
+    esp_mesh_lite_core_init(config);
 
-#if CONFIG_LITEMESH_NODE_INFO_REPORT
+#if CONFIG_MESH_LITE_NODE_INFO_REPORT
     node_info_mutex = xSemaphoreCreateMutex();
-    esp_litemesh_msg_action_list_register(node_report_action);
+    esp_mesh_lite_msg_action_list_register(node_report_action);
 
-    TimerHandle_t report_timer = xTimerCreate("report_timer", CONFIG_LITEMESH_REPORT_INTERVAL * 1000 / portTICK_PERIOD_MS, 
+    TimerHandle_t report_timer = xTimerCreate("report_timer", CONFIG_MESH_LITE_REPORT_INTERVAL * 1000 / portTICK_PERIOD_MS, 
                                               pdTRUE, NULL, report_timer_cb);
     TimerHandle_t root_timer = xTimerCreate("root_timer", 1 * 1000 / portTICK_PERIOD_MS, 
                                               pdTRUE, NULL, root_timer_cb);                                       
     xTimerStart(report_timer, portMAX_DELAY);
     xTimerStart(root_timer, portMAX_DELAY);
-#endif /* LITEMESH_NODE_INFO_REPORT */
+#endif /* MESH_LITE_NODE_INFO_REPORT */
 }

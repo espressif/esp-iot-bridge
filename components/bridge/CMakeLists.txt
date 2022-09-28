@@ -34,7 +34,7 @@ if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
     list(APPEND priv_srcs "priv_src/bridge_spi.c")
 endif()
 
-list(APPEND requires "esp-litemesh" "network_adapter" "esp_modem" "tinyusb" "led" "json" "esp_eth")
+list(APPEND requires "esp_mesh_lite" "network_adapter" "esp_modem" "tinyusb" "led" "json" "esp_eth")
 
 idf_component_register(SRCS "${srcs}" "${priv_srcs}"
                        INCLUDE_DIRS "${include_dirs}"

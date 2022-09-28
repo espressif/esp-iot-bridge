@@ -81,7 +81,7 @@ Notes:
 
 ESP-Bridge device can connect to the network by connecting to the router via Wi-Fi or by plugging the Ethernet cable into the LAN port of the router. Then other smart devices can connect to the SoftAP hotspot from the ESP-Bridge to access the Internet.
 
-- Currently, ESP-Bridge supports lightweight mesh networking — [LiteMesh](./doc/LiteMesh.md). Users can customize the hierarchical network provision.
+- Currently, ESP-Bridge supports lightweight mesh networking — [Mesh-Lite](./doc/Mesh-Lite.md). Users can customize the hierarchical network provision.
 
 - By enabling ``ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC`` in menuconfig (``Bridge Configuration`` > ``SoftAP Config``), users can add MAC information at the end of SoftAP SSID.
 
@@ -254,7 +254,7 @@ $ git clone --recursive https://github.com/espressif/esp-bridge.git
                                  +-- SoftAP <-+-> Phone
     ```
 
-- The LiteMesh function can be enabled through the *Enable LiteMesh* option. For details, please refer to [LiteMesh](./doc/LiteMesh.md).
+- The Mesh-Lite function can be enabled through the *Enable Mesh-Lite* option. For details, please refer to [Mesh-Lite](./doc/Mesh-Lite.md).
 
 **ETH Configuration**
 

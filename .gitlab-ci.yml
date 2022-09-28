@@ -26,7 +26,7 @@ variables: &global-variables
 .get_bridge_priv: &get_bridge_priv
   - git clone ${GITLAB_PRIV_SRC_URL} components/bridge/priv_src
   - cd components/bridge/priv_src
-  - git checkout ${CI_BUILD_REF_NAME} || echo "Using esp-bridge default branch"
+  - git checkout ${CI_BUILD_REF_NAME} -- || echo "Using esp-bridge default branch"
   - cd -
 
 .build_bridge_esp32: &build_bridge_esp32
@@ -36,7 +36,7 @@ variables: &global-variables
 
   - rm -rf build sdkconfig
   - sed -i '$d' sdkconfig.defaults.esp32
-  - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
+  - echo -e "\nCONFIG_MESH_LITE_ENABLE=y\nCONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32
   - idf.py set-target esp32
   - idf.py build
 
@@ -54,7 +54,7 @@ variables: &global-variables
 
   - rm -rf build sdkconfig
   - sed -i '$d' sdkconfig.defaults.esp32c3
-  - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32c3
+  - echo -e "\nCONFIG_MESH_LITE_ENABLE=y\nCONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32c3
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.esp32c3
   - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI=y" >> sdkconfig.defaults.esp32c3
   - idf.py set-target esp32c3
@@ -67,7 +67,7 @@ variables: &global-variables
 
   - rm -rf build sdkconfig
   - sed -i '$d' sdkconfig.defaults.esp32s2
-  - echo -e "\nCONFIG_LITEMESH_ENABLE=y" >> sdkconfig.defaults.esp32s2
+  - echo -e "\nCONFIG_MESH_LITE_ENABLE=y" >> sdkconfig.defaults.esp32s2
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.esp32s2
   - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s2
   - idf.py set-target esp32s2
@@ -80,7 +80,7 @@ variables: &global-variables
 
   - rm -rf build sdkconfig
   - sed -i '$d' sdkconfig.defaults.esp32s3
-  - echo -e "\nCONFIG_LITEMESH_ENABLE=y\nCONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32s3
+  - echo -e "\nCONFIG_MESH_LITE_ENABLE=y\nCONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32s3
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.esp32s3
   - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.esp32s3
   - idf.py set-target esp32s3
