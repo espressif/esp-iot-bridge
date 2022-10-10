@@ -1,5 +1,5 @@
-menu "Gateway Misc Configuration"
-    depends on GATEWAY_ENABLE
+menu "Bridge Misc Configuration"
+    depends on BRIDGE_ENABLE
 
     menu "Button Configuration"
         config GPIO_BUTTON_SW1

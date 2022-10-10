@@ -24,10 +24,10 @@
 #include "esp_system.h"
 #include "esp_event.h"
 
-#include "esp_gateway.h"
+#include "esp_bridge.h"
 #include "web_server.h"
 #include "iot_button.h"
-#if defined(CONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE)
+#if defined(CONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE)
 #include "wifi_prov_mgr.h"
 #endif
 
@@ -84,7 +84,7 @@ static void restart_timer_callback(void* arg)
     esp_restart();
 }
 
-static void esp_gateway_create_button(void)
+static void esp_bridge_create_button(void)
 {
     const esp_timer_create_args_t restart_timer_args = {
             .callback = &restart_timer_callback,
@@ -114,14 +114,14 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    esp_gateway_create_all_netif();
+    esp_bridge_create_all_netif();
 
-    esp_gateway_create_button();
+    esp_bridge_create_button();
 
-#if defined(CONFIG_GATEWAY_USE_WEB_SERVER)
+#if defined(CONFIG_BRIDGE_USE_WEB_SERVER)
     StartWebServer();
-#endif /* CONFIG_GATEWAY_USE_WEB_SERVER */
-#if defined(CONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE)
-    esp_gateway_wifi_prov_mgr();
-#endif /* CONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE */
+#endif /* CONFIG_BRIDGE_USE_WEB_SERVER */
+#if defined(CONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE)
+    esp_bridge_wifi_prov_mgr();
+#endif /* CONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE */
 }

@@ -27,23 +27,23 @@
 #include "lwip/lwip_napt.h"
 #include "dhcpserver/dhcpserver.h"
 
-#include "esp_gateway_config.h"
-#include "esp_gateway_wifi.h"
-#include "esp_gateway_internal.h"
+#include "esp_bridge_config.h"
+#include "esp_bridge_wifi.h"
+#include "esp_bridge_internal.h"
 
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION) || defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 
-#define GATEWAY_EVENT_STA_CONNECTED  BIT0
+#define BRIDGE_EVENT_STA_CONNECTED  BIT0
 
-static const char *TAG = "gateway_wifi";
-static bool esp_gateway_softap_dhcps = false;
+static const char *TAG = "bridge_wifi";
+static bool esp_bridge_softap_dhcps = false;
 static EventGroupHandle_t s_wifi_event_group = NULL;
 
 #if CONFIG_LITEMESH_ENABLE
 #include "esp_litemesh.h"
 #endif
 
-static esp_err_t esp_gateway_wifi_set(wifi_mode_t mode, const char *ssid, const char *password, const char *bssid)
+static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const char *password, const char *bssid)
 {
     ESP_PARAM_CHECK(ssid);
     ESP_PARAM_CHECK(password);
@@ -90,7 +90,7 @@ static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t even
     ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
     esp_wifi_connect();
 #endif
-    xEventGroupClearBits(s_wifi_event_group, GATEWAY_EVENT_STA_CONNECTED);
+    xEventGroupClearBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
 }
 
 static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
@@ -99,8 +99,8 @@ static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
     ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
     ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
 
-    esp_gateway_netif_network_segment_conflict_update(event->esp_netif);
-    xEventGroupSetBits(s_wifi_event_group, GATEWAY_EVENT_STA_CONNECTED);
+    esp_bridge_netif_network_segment_conflict_update(event->esp_netif);
+    xEventGroupSetBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
 }
 
 static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
@@ -109,7 +109,7 @@ static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
     esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
 
     if (netif) {
-        if (esp_gateway_softap_dhcps) {
+        if (esp_bridge_softap_dhcps) {
             esp_netif_dhcps_stop(netif);
             esp_netif_dns_info_t dns;
             dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
@@ -138,7 +138,7 @@ static void wifi_event_ap_stadisconnected_handler(void *arg, esp_event_base_t ev
     ESP_LOGE(TAG, "STA Disconnect to the AP");
 }
 
-static esp_err_t esp_gateway_wifi_init(void)
+static esp_err_t esp_bridge_wifi_init(void)
 {
     if (s_wifi_event_group) {
         return ESP_OK;
@@ -156,9 +156,9 @@ static esp_err_t esp_gateway_wifi_init(void)
 
     return ESP_OK;
 }
-#endif /* CONFIG_GATEWAY_EXTERNAL_NETIF_STATION || CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP */
+#endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_STATION || CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP */
 
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
 #ifdef CONFIG_LITEMESH_ENABLE
 static void esp_litemesh_event_ip_changed_handler(void *arg, esp_event_base_t event_base,
                                                   int32_t event_id, void *event_data)
@@ -170,7 +170,7 @@ static void esp_litemesh_event_ip_changed_handler(void *arg, esp_event_base_t ev
             break;
         case LITEMESH_EVENT_CORE_INHERITED_NET_SEGMENT_CHANGED:
             ESP_LOGI(TAG, "netif network segment conflict check");
-            esp_gateway_netif_network_segment_conflict_update(NULL);
+            esp_bridge_netif_network_segment_conflict_update(NULL);
             break;
         case LITEMESH_EVENT_CORE_ROUTER_INFO_CHANGED:
             break;
@@ -178,7 +178,7 @@ static void esp_litemesh_event_ip_changed_handler(void *arg, esp_event_base_t ev
 }
 #endif
 
-esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
+esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     esp_netif_t *wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
@@ -187,9 +187,9 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
         return wifi_netif;
     }
 
-    esp_gateway_wifi_init();
+    esp_bridge_wifi_init();
     wifi_netif = esp_netif_create_default_wifi_sta();
-    esp_gateway_netif_list_add(wifi_netif, NULL);
+    esp_bridge_netif_list_add(wifi_netif, NULL);
 
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_STA;
@@ -214,9 +214,9 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 
     return wifi_netif;
 }
-#endif /* CONFIG_GATEWAY_EXTERNAL_NETIF_STATION */
+#endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_STATION */
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
 {
     esp_err_t ret = ESP_FAIL;
@@ -228,11 +228,11 @@ static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
     return ret;
 }
 
-esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
+esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
-    char softap_ssid[ESP_GATEWAY_SSID_MAX_LEN + 1];
+    char softap_ssid[ESP_BRIDGE_SSID_MAX_LEN + 1];
     esp_netif_t *wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
 
@@ -240,7 +240,7 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
         return wifi_netif;
     }
 
-    esp_gateway_wifi_init();
+    esp_bridge_wifi_init();
 
     wifi_netif = esp_netif_create_default_wifi_ap();
 
@@ -250,15 +250,15 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
         ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, ip_info));
     } else {
         if (enable_dhcps) {
-            esp_gateway_netif_request_ip(&allocate_ip_info);
+            esp_bridge_netif_request_ip(&allocate_ip_info);
             ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, &allocate_ip_info));
         }
     }
     ESP_ERROR_CHECK(esp_netif_get_ip_info(wifi_netif, &netif_ip));
     ESP_LOGI(TAG, "IP Address:" IPSTR, IP2STR(&netif_ip.ip));
-    esp_gateway_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
+    esp_bridge_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
 
-    esp_gateway_softap_dhcps = enable_dhcps;
+    esp_bridge_softap_dhcps = enable_dhcps;
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_START, &wifi_event_ap_start_handler, NULL, NULL));
@@ -271,15 +271,15 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
     mode |= WIFI_MODE_AP;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
-#if CONFIG_ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
-    uint8_t softap_mac[ESP_GATEWAY_MAC_MAX_LEN];
+#if CONFIG_ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
+    uint8_t softap_mac[ESP_BRIDGE_MAC_MAX_LEN];
     esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
-    snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", ESP_GATEWAY_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
+    snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", ESP_BRIDGE_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
 #else
-    snprintf(softap_ssid, sizeof(softap_ssid), "%s", ESP_GATEWAY_SOFTAP_SSID);
+    snprintf(softap_ssid, sizeof(softap_ssid), "%s", ESP_BRIDGE_SOFTAP_SSID);
 #endif
-    esp_gateway_wifi_set(WIFI_MODE_AP, softap_ssid, ESP_GATEWAY_SOFTAP_PASSWORD, NULL);
+    esp_bridge_wifi_set(WIFI_MODE_AP, softap_ssid, ESP_BRIDGE_SOFTAP_PASSWORD, NULL);
 
     return wifi_netif;
 }
-#endif // CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
+#endif // CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP

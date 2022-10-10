@@ -65,7 +65,7 @@ typedef struct {
 *     - instance: create modem netif instance successfully
 *     - NULL: create modem netif instance failed because some error occurred
 */
-esp_netif_t *esp_gateway_modem_init(modem_config_t *config);
+esp_netif_t *esp_bridge_modem_init(modem_config_t *config);
 
 /**
 * @brief Force reset 4g module and development board.

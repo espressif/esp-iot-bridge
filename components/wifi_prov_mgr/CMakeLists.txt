@@ -7,7 +7,7 @@ elseif(IDF_VERSION_MAJOR STREQUAL "5")
 set(NEW_PROV_MGR "${CMAKE_CURRENT_LIST_DIR}/v5.0/manager.c")
 endif()
 
-if (CONFIG_ESP_GATEWAY_PROV_TRANSPORT)
+if (CONFIG_ESP_BRIDGE_PROV_TRANSPORT)
 list(APPEND srcs "src/wifi_prov_mgr.c")
 execute_process(COMMAND cp ${NEW_PROV_MGR} ${OLD_PROV_MGR} OUTPUT_VARIABLE info
         RESULT_VARIABLE exit_code
@@ -16,4 +16,4 @@ endif()
 
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "include"
-                       REQUIRES "wifi_provisioning" "qrcode" "gateway")
+                       REQUIRES "wifi_provisioning" "qrcode" "bridge")

@@ -17,9 +17,9 @@ if(CONFIG_MODEM_LEGACY_API)
         list(APPEND include_dirs "include_compat")
 endif()
 
-if(CONFIG_GATEWAY_MODEM_UART)
+if(CONFIG_BRIDGE_MODEM_UART)
         list(APPEND srcs "src/esp_modem_dte_uart.c")
-elseif(CONFIG_GATEWAY_MODEM_USB)
+elseif(CONFIG_BRIDGE_MODEM_USB)
         list(APPEND srcs "src/esp_modem_dte_usb.c")
 endif()
 

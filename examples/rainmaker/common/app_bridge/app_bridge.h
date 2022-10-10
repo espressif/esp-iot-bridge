@@ -9,9 +9,9 @@
 #include <stdint.h>
 #include <esp_err.h>
 
-/* Enable ESP Gateway in the application
+/* Enable ESP Bridge in the application
  *
  * @return ESP_OK on success.
  * @return error in case of failure.
  */
-esp_err_t app_gateway_enable(void);
+esp_err_t app_bridge_enable(void);

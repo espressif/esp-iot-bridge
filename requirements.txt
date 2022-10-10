@@ -1,4 +1,4 @@
-# This is a list of python packages needed for ESP-Gateway. This file is used with pip.
+# This is a list of python packages needed for ESP-Bridge. This file is used with pip.
 # Please see the Get Started section of the ESP-IDF Programming Guide for further information.
 #
 

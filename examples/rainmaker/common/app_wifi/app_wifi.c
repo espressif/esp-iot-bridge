@@ -36,7 +36,7 @@
 #include <nvs_flash.h>
 #include "app_wifi.h"
 
-#include "esp_gateway.h"
+#include "esp_bridge.h"
 
 static const char *TAG = "app_wifi";
 static const int WIFI_CONNECTED_EVENT = BIT0;

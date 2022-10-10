@@ -1,6 +1,6 @@
 # RainMaker Examples
 
-This directory contains an example project base on **Rainmaker**. The example are intended to demonstrate parts of the ESP-Gateway functionality, and to provide code that you can copy and adapt into your own projects.
+This directory contains an example project base on **Rainmaker**. The example are intended to demonstrate parts of the ESP-Bridge functionality, and to provide code that you can copy and adapt into your own projects.
 
 ## Example Layout
 
@@ -12,7 +12,7 @@ This directory contains an example project base on **Rainmaker**. The example ar
 .
 ├── _static                   /* Picture files */
 ├── common                    /* The components for example */
-│   ├── app_gateway
+│   ├── app_bridge
 │   ├── app_insights
 │   ├── app_light
 │   ├── app_rainmaker

@@ -86,14 +86,14 @@ core_freq_min=250
 
 Please reboot Raspberry-Pi after changing this file.
 
-## 2. Load ESP-Gateway Solution
+## 2. Load ESP-Bridge Solution
 
 ### 2.1 Host Software
 
-- Execute following commands in root directory of cloned ESP-Gateway repository on Raspberry-Pi
+- Execute following commands in root directory of cloned ESP-Bridge repository on Raspberry-Pi
 
 ```
-$ cd esp-gateway/examples/spi_and_sdio_host/host_driver/linux/host_control
+$ cd esp-bridge/examples/spi_and_sdio_host/host_driver/linux/host_control
 $ ./rpi_init.sh spi
 ```
 
@@ -117,10 +117,10 @@ $ . $HOME/esp/esp-idf/export.sh
 
 #### Source Compilation
 
-- In root directory of ESP-Gateway repository, execute below command
+- In root directory of ESP-Bridge repository, execute below command
 
 ```
-$ cd esp-gateway
+$ cd esp-bridge
 ```
 
 ##### Using cmake
@@ -145,7 +145,7 @@ $ idf.py set-target esp32c3
 $ idf.py menuconfig
 ```
 
-- This will open project configuration window. To select SPI transport interface, navigate to `Gateway Driver Configuration -> Transport layer -> SPI interface -> select` and exit from menuconfig.
+- This will open project configuration window. To select SPI transport interface, navigate to `Bridge Driver Configuration -> Transport layer -> SPI interface -> select` and exit from menuconfig.
 - Use below command to compile and flash the project. Replace <serial_port> with ESP peripheral's serial port.
 
 ```
@@ -181,7 +181,7 @@ $ dmesg
 After the SPI driver is loaded successfully, `ifconfig -a` command will see ethsta0, use the following command to enable ethsta0
 
 ```
-$ cd esp-gateway/examples/spi_and_sdio_host/host_driver/linux/host_control
+$ cd esp-bridge/examples/spi_and_sdio_host/host_driver/linux/host_control
 $ ./ethsta0_config.sh 12:34:56:78:9a:bc
 ```
 

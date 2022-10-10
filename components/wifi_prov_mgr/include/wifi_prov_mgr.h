@@ -17,7 +17,7 @@
  * @brief   Enable Wi-Fi Provisioning
  *
  */
-void esp_gateway_wifi_prov_mgr(void);
+void esp_bridge_wifi_prov_mgr(void);
 
 /**
  * @brief   Get Wi-Fi Provisioning Status

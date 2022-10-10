@@ -28,15 +28,15 @@
 #include "esp_modem_dce.h"
 #include "esp_modem_recov_helper.h"
 #include "esp_modem_dce_common_commands.h"
-#include "esp_gateway_modem.h"
+#include "esp_bridge_modem.h"
 #include "led_indicator.h"
 #include "sdkconfig.h"
-#if CONFIG_GATEWAY_MODEM_USB
+#if CONFIG_BRIDGE_MODEM_USB
 #include "esp_usbh_cdc.h"
 #endif
 
 #define MODULE_BOOT_TIME 8
-static const char *TAG = "gateway_modem";
+static const char *TAG = "bridge_modem";
 
 static const int CONNECT_BIT = BIT0;
 static const int DISCONNECT_BIT = BIT1;
@@ -133,28 +133,28 @@ static void on_modem_event(void *arg, esp_event_base_t event_base,
     }
 }
 
-#if CONFIG_GATEWAY_MODEM_UART
-esp_netif_t *esp_gateway_modem_init(modem_config_t *config)
+#if CONFIG_BRIDGE_MODEM_UART
+esp_netif_t *esp_bridge_modem_init(modem_config_t *config)
 {
     EventGroupHandle_t connection_events = xEventGroupCreate();
 
     // init the DTE
     esp_modem_dte_config_t dte_config = ESP_MODEM_DTE_DEFAULT_CONFIG();
-    dte_config.tx_io_num = CONFIG_ESP_GATEWAY_MODEM_TX_GPIO;
-    dte_config.rx_io_num = CONFIG_ESP_GATEWAY_MODEM_RX_GPIO;
-    dte_config.baud_rate = CONFIG_ESP_GATEWAY_MODEM_BAUD_RATE;
+    dte_config.tx_io_num = CONFIG_ESP_BRIDGE_MODEM_TX_GPIO;
+    dte_config.rx_io_num = CONFIG_ESP_BRIDGE_MODEM_RX_GPIO;
+    dte_config.baud_rate = CONFIG_ESP_BRIDGE_MODEM_BAUD_RATE;
     dte_config.event_task_stack_size = 4096;
     dte_config.rx_buffer_size = 16384;
     dte_config.tx_buffer_size = 16384;
     dte_config.event_queue_size = 256;
     dte_config.event_task_priority = 15;
-    esp_modem_dce_config_t dce_config = ESP_MODEM_DCE_DEFAULT_CONFIG(CONFIG_GATEWAY_MODEM_PPP_APN);
+    esp_modem_dce_config_t dce_config = ESP_MODEM_DCE_DEFAULT_CONFIG(CONFIG_BRIDGE_MODEM_PPP_APN);
     dce_config.populate_command_list = true;
     esp_netif_config_t ppp_netif_config = ESP_NETIF_DEFAULT_PPP();
 
     // Initialize esp-modem units, DTE, DCE, ppp-netif
     esp_modem_dte_t *dte = esp_modem_dte_new(&dte_config);
-#if defined(CONFIG_GATEWAY_MODEM_CUSTOM_BOARD)
+#if defined(CONFIG_BRIDGE_MODEM_CUSTOM_BOARD)
     esp_modem_dce_t *dce = sim7600_board_create(&dce_config);
 #else
     esp_modem_dce_t *dce = esp_modem_dce_new(&dce_config);
@@ -187,8 +187,8 @@ esp_netif_t *esp_gateway_modem_init(modem_config_t *config)
 
     return ppp_netif;
 }
-#elif CONFIG_GATEWAY_MODEM_USB
-esp_netif_t *esp_gateway_modem_init(modem_config_t *config)
+#elif CONFIG_BRIDGE_MODEM_USB
+esp_netif_t *esp_bridge_modem_init(modem_config_t *config)
 {
     led_indicator_config_t led_config = {
         .off_level = 0,
@@ -208,7 +208,7 @@ esp_netif_t *esp_gateway_modem_init(modem_config_t *config)
     dte_config.line_buffer_size = config->line_buffer_size;
     dte_config.event_task_stack_size = config->event_task_stack_size; //task to handle usb rx data
     dte_config.event_task_priority = config->event_task_priority; //task to handle usb rx data
-    esp_modem_dce_config_t dce_config = ESP_MODEM_DCE_DEFAULT_CONFIG(CONFIG_GATEWAY_MODEM_PPP_APN);
+    esp_modem_dce_config_t dce_config = ESP_MODEM_DCE_DEFAULT_CONFIG(CONFIG_BRIDGE_MODEM_PPP_APN);
     dce_config.populate_command_list = true;
     esp_netif_config_t ppp_netif_config = ESP_NETIF_DEFAULT_PPP();
 
@@ -273,13 +273,13 @@ static void modem_powerup_timer_callback(void* arg)
     ESP_LOGI(TAG, "====================================");
 
     /* Initialize modem board. Dial-up internet */
-    ppp_netif = esp_gateway_modem_init(&modem_config);
+    ppp_netif = esp_bridge_modem_init(&modem_config);
     assert(ppp_netif != NULL);
 
     ESP_ERROR_CHECK(esp_timer_delete(modem_powerup_timer));
 }
 
-esp_netif_t* esp_gateway_create_modem_netif(esp_netif_ip_info_t* custom_ip_info, uint8_t custom_mac[6], bool data_forwarding, bool enable_dhcps)
+esp_netif_t* esp_bridge_create_modem_netif(esp_netif_ip_info_t* custom_ip_info, uint8_t custom_mac[6], bool data_forwarding, bool enable_dhcps)
 {
     esp_netif_t *netif = NULL;
 
