@@ -27,7 +27,9 @@
 #include "esp_gateway.h"
 #include "web_server.h"
 #include "iot_button.h"
+#if defined(CONFIG_GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE)
 #include "wifi_prov_mgr.h"
+#endif
 
 #define BUTTON_NUM            1
 #define BUTTON_SW1            CONFIG_GPIO_BUTTON_SW1

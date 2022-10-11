@@ -15,7 +15,7 @@ menu "Gateway Wi-Fi Provisioning Configuration"
 
     choice ESP_GATEWAY_PROV_SECURITY_VERSION
         bool "Protocomm security version"
-        default ESP_GATEWAY_PROV_SECURITY_VERSION_1
+        default ESP_GATEWAY_PROV_SECURITY_VERSION_2
         help
             Wi-Fi provisioning component offers 3 security versions.
             The example offers a choice between security version 1 and 2.
