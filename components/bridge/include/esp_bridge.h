@@ -18,9 +18,9 @@
 #include "esp_litemesh.h"
 #endif
 
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
 /**
-* @brief Create modem netif for gateway.
+* @brief Create modem netif for bridge.
 *
 * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
 * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
@@ -31,12 +31,12 @@
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_gateway_create_modem_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t* esp_bridge_create_modem_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
 /**
-* @brief Create station netif for gateway.
+* @brief Create station netif for bridge.
 *
 * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
 * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
@@ -47,12 +47,12 @@ esp_netif_t* esp_gateway_create_modem_netif(esp_netif_ip_info_t* ip_info, uint8_
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
 /**
-* @brief Create eth netif for gateway.
+* @brief Create eth netif for bridge.
 *
 * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
 * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
@@ -63,12 +63,12 @@ esp_netif_t* esp_gateway_create_station_netif(esp_netif_ip_info_t* ip_info, uint
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_gateway_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 /**
-* @brief Create softap netif for gateway.
+* @brief Create softap netif for bridge.
 *
 * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
 * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
@@ -79,12 +79,12 @@ esp_netif_t* esp_gateway_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t 
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
 /**
-* @brief Create usb netif for gateway.
+* @brief Create usb netif for bridge.
 *
 * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
 * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
@@ -95,12 +95,12 @@ esp_netif_t* esp_gateway_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_gateway_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t* esp_bridge_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
 /**
-* @brief Create sdio netif for gateway.
+* @brief Create sdio netif for bridge.
 *
 * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
 * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
@@ -111,12 +111,12 @@ esp_netif_t* esp_gateway_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t 
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_gateway_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t* esp_bridge_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
 /**
-* @brief Create spi netif for gateway.
+* @brief Create spi netif for bridge.
 *
 * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
 * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
@@ -127,11 +127,11 @@ esp_netif_t* esp_gateway_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_gateway_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 /**
 * @brief Create all netif which are enabled in menuconfig, for example, station, modem, ethernet.
 *
 */
-void esp_gateway_create_all_netif(void);
+void esp_bridge_create_all_netif(void);

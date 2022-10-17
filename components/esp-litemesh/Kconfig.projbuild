@@ -1,8 +1,8 @@
-menu "Gateway LiteMesh Configuration"
+menu "Bridge LiteMesh Configuration"
     config LITEMESH_ENABLE
         bool "Enable LiteMesh"
         default n
-        depends on GATEWAY_EXTERNAL_NETIF_STATION && GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
+        depends on BRIDGE_EXTERNAL_NETIF_STATION && BRIDGE_DATA_FORWARDING_NETIF_SOFTAP
         help
             Enable LiteMesh
 
@@ -22,7 +22,7 @@ menu "Gateway LiteMesh Configuration"
 
         config LITEMESH_SOFTAP_SSID
             string "SoftAP SSID"
-            default "ESP_Gateway"
+            default "ESP_Bridge"
             help
                 SSID of ESP-LiteMesh SoftAP.
                 If enable LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC, the maximum length of ssid is 25.

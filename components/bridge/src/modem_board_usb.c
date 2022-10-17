@@ -19,7 +19,7 @@
 #include "esp_modem_dce.h"
 #include "esp_modem_recov_helper.h"
 #include "esp_modem_dce_common_commands.h"
-#include "esp_gateway_modem.h"
+#include "esp_bridge_modem.h"
 
 #include "led_indicator.h"
 

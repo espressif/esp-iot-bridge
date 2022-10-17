@@ -30,9 +30,9 @@
 #include "lwip/ip_addr.h"
 #include "dhcpserver/dhcpserver.h"
 
-#include "esp_gateway.h"
-#include "esp_gateway_wifi.h"
-#include "esp_gateway_internal.h"
+#include "esp_bridge.h"
+#include "esp_bridge_wifi.h"
+#include "esp_bridge_internal.h"
 
 #if CONFIG_LITEMESH_ENABLE
 #include "esp_litemesh.h"
@@ -41,19 +41,19 @@
 // DHCP_Server has to be enabled for this netif
 #define DHCPS_NETIF_ID(netif) (ESP_NETIF_DHCP_SERVER & esp_netif_get_flags(netif))
 
-typedef struct gateway_netif {
+typedef struct bridge_netif {
     esp_netif_t* netif;
     dhcps_change_cb_t dhcps_change_cb;
-    struct gateway_netif* next;
-} gateway_netif_t;
+    struct bridge_netif* next;
+} bridge_netif_t;
 
-static const char* TAG = "gateway_common";
-static gateway_netif_t* gateway_link = NULL;
+static const char* TAG = "bridge_common";
+static bridge_netif_t* bridge_link = NULL;
 
-esp_err_t _esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb, const char* commit_id)
+esp_err_t _esp_bridge_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb, const char* commit_id)
 {
-    gateway_netif_t* new = gateway_link;
-    gateway_netif_t* tail = NULL;
+    bridge_netif_t* new = bridge_link;
+    bridge_netif_t* tail = NULL;
 
     while (new) {
         if (new->netif == netif) {
@@ -64,7 +64,7 @@ esp_err_t _esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcp
     }
 
     // not found, create a new
-    new = (gateway_netif_t*)malloc(sizeof(gateway_netif_t));
+    new = (bridge_netif_t*)malloc(sizeof(bridge_netif_t));
     if (new == NULL) {
         ESP_LOGE(TAG, "netif list add fail");
         return ESP_ERR_NO_MEM;
@@ -75,7 +75,7 @@ esp_err_t _esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcp
     new->next = NULL;
 
     if (tail == NULL) { // the first one
-        gateway_link = new;
+        bridge_link = new;
     } else {
         tail->next = new;
     }
@@ -84,15 +84,15 @@ esp_err_t _esp_gateway_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcp
     return ESP_OK;
 }
 
-esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif)
+esp_err_t esp_bridge_netif_list_remove(esp_netif_t* netif)
 {
-    gateway_netif_t* current = gateway_link;
-    gateway_netif_t* prev = NULL;
+    bridge_netif_t* current = bridge_link;
+    bridge_netif_t* prev = NULL;
 
     while (current) {
         if (current->netif == netif) {
             if (prev == NULL) {
-                gateway_link = gateway_link->next;
+                bridge_link = bridge_link->next;
             } else {
                 prev->next = current->next;
             }
@@ -107,9 +107,9 @@ esp_err_t esp_gateway_netif_list_remove(esp_netif_t* netif)
     return ESP_OK;
 }
 
-static bool esp_gateway_netif_network_segment_is_used(uint32_t ip)
+static bool esp_bridge_netif_network_segment_is_used(uint32_t ip)
 {
-    gateway_netif_t* p = gateway_link;
+    bridge_netif_t* p = bridge_link;
     esp_netif_ip_info_t netif_ip = { 0 };
     while (p) {
         esp_netif_get_ip_info(p->netif, &netif_ip);
@@ -123,18 +123,18 @@ static bool esp_gateway_netif_network_segment_is_used(uint32_t ip)
     return false;
 }
 
-esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info)
+esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t* ip_info)
 {
     bool ip_segment_is_used = true;
 
-    for (uint8_t gateway_ip = 4; gateway_ip < 255; gateway_ip++) {
-        ip_segment_is_used = esp_gateway_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1));
+    for (uint8_t bridge_ip = 4; bridge_ip < 255; bridge_ip++) {
+        ip_segment_is_used = esp_bridge_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
 #if CONFIG_LITEMESH_ENABLE
-        ip_segment_is_used |= esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, gateway_ip, 1));
+        ip_segment_is_used |= esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
 #endif
         if (!ip_segment_is_used) {
-            ip_info->ip.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 1);
-            ip_info->gw.addr = ESP_IP4TOADDR(192, 168, gateway_ip, 1);
+            ip_info->ip.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
+            ip_info->gw.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
             ip_info->netmask.addr = ESP_IP4TOADDR(255, 255, 255, 0);
             ESP_LOGI("ip select", "IP Address:" IPSTR, IP2STR(&ip_info->ip));
             ESP_LOGI("ip select", "GW Address:" IPSTR, IP2STR(&ip_info->gw));
@@ -147,9 +147,9 @@ esp_err_t esp_gateway_netif_request_ip(esp_netif_ip_info_t* ip_info)
     return ESP_FAIL;
 }
 
-static bool esp_gateway_netif_mac_is_used(uint8_t mac[6])
+static bool esp_bridge_netif_mac_is_used(uint8_t mac[6])
 {
-    gateway_netif_t* p = gateway_link;
+    bridge_netif_t* p = bridge_link;
     uint8_t netif_mac[6] = { 0 };
 
     while (p) {
@@ -164,12 +164,12 @@ static bool esp_gateway_netif_mac_is_used(uint8_t mac[6])
     return false;
 }
 
-esp_err_t esp_gateway_netif_request_mac(uint8_t* mac)
+esp_err_t esp_bridge_netif_request_mac(uint8_t* mac)
 {
     uint8_t netif_mac[6] = { 0 };
     esp_read_mac(netif_mac, ESP_MAC_WIFI_STA);
     while (1) {
-        if (!esp_gateway_netif_mac_is_used(netif_mac)){
+        if (!esp_bridge_netif_mac_is_used(netif_mac)){
             break;
         }
 
@@ -187,9 +187,9 @@ esp_err_t esp_gateway_netif_request_mac(uint8_t* mac)
     return ESP_OK;
 }
 
-esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_netif)
+esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_netif)
 {
-    gateway_netif_t* p = gateway_link;
+    bridge_netif_t* p = bridge_link;
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
     esp_ip_addr_t esp_ip_addr_info;
@@ -215,7 +215,7 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
                 continue;
             }
 
-            if (esp_gateway_netif_request_ip(&allocate_ip_info) != ESP_OK) {
+            if (esp_bridge_netif_request_ip(&allocate_ip_info) != ESP_OK) {
                 ESP_LOGE(TAG, "ip reallocate fail");
                 break;
             }
@@ -239,7 +239,7 @@ esp_err_t esp_gateway_netif_network_segment_conflict_update(esp_netif_t* esp_net
     return ESP_OK;
 }
 
-esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_info_t* custom_ip_info, uint8_t custom_mac[6], bool enable_dhcps)
+esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_info_t* custom_ip_info, uint8_t custom_mac[6], bool enable_dhcps)
 {
     esp_netif_ip_info_t allocate_ip_info = { 0 };
     uint8_t allocate_mac[6] = { 0 };
@@ -251,7 +251,7 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
         esp_netif_set_ip_info(netif, custom_ip_info);
     } else {
         if (enable_dhcps) {
-            esp_gateway_netif_request_ip(&allocate_ip_info);
+            esp_bridge_netif_request_ip(&allocate_ip_info);
             esp_netif_set_ip_info(netif, &allocate_ip_info);
         }
     }
@@ -260,7 +260,7 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
         ESP_ERROR_CHECK(esp_netif_set_mac(netif, custom_mac));
     } else {
         if (enable_dhcps) {
-            esp_gateway_netif_request_mac(allocate_mac);
+            esp_bridge_netif_request_mac(allocate_mac);
             esp_netif_set_mac(netif, allocate_mac);
         }
     }
@@ -281,36 +281,36 @@ esp_netif_t* esp_gateway_create_netif(esp_netif_config_t* config, esp_netif_ip_i
     return netif;
 }
 
-void esp_gateway_create_all_netif(void)
+void esp_bridge_create_all_netif(void)
 {
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SOFTAP)
-    esp_gateway_create_softap_netif(NULL, NULL, true, true);
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
+    esp_bridge_create_softap_netif(NULL, NULL, true, true);
 #endif
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_USB)
-    esp_gateway_create_usb_netif(NULL, NULL, true, true);
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
+    esp_bridge_create_usb_netif(NULL, NULL, true, true);
 #endif
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SPI)
-    esp_gateway_create_spi_netif(NULL, NULL, true, true);
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
+    esp_bridge_create_spi_netif(NULL, NULL, true, true);
 #endif
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_SDIO)
-    esp_gateway_create_sdio_netif(NULL, NULL, true, true);
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
+    esp_bridge_create_sdio_netif(NULL, NULL, true, true);
 #endif
 
-#if defined(CONFIG_GATEWAY_DATA_FORWARDING_NETIF_ETHERNET)
-    esp_gateway_create_eth_netif(NULL, NULL, true, true);
-#elif defined(CONFIG_GATEWAY_EXTERNAL_NETIF_ETHERNET)
-    esp_gateway_create_eth_netif(NULL, NULL, false, false);
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
+    esp_bridge_create_eth_netif(NULL, NULL, true, true);
+#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
+    esp_bridge_create_eth_netif(NULL, NULL, false, false);
 #endif
 
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_MODEM)
-    esp_gateway_create_modem_netif(NULL, NULL, false, false);
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
+    esp_bridge_create_modem_netif(NULL, NULL, false, false);
 #endif
 
-#if defined(CONFIG_GATEWAY_EXTERNAL_NETIF_STATION)
-    esp_gateway_create_station_netif(NULL, NULL, false, false);
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
+    esp_bridge_create_station_netif(NULL, NULL, false, false);
 #endif
 
 #if CONFIG_LITEMESH_ENABLE

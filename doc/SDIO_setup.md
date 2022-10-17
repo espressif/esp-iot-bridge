@@ -32,14 +32,14 @@ dtoverlay=disable-bt
 
 Please reboot Raspberry-Pi after changing this file.
 
-## 2. Load ESP-Gateway Solution
+## 2. Load ESP-Bridge Solution
 
 ### 2.1 Host Software
 
-- Execute following commands in root directory of cloned ESP-Gateway repository on Raspberry-Pi
+- Execute following commands in root directory of cloned ESP-Bridge repository on Raspberry-Pi
 
 ```
-$ cd esp-gateway/examples/spi_and_sdio_host/host_driver/linux/host_control
+$ cd esp-bridge/examples/spi_and_sdio_host/host_driver/linux/host_control
 $ ./rpi_init.sh sdio
 ```
 
@@ -63,10 +63,10 @@ $ . $HOME/esp/esp-idf/export.sh
 
 #### Source Compilation
 
-- In root directory of ESP-Gateway repository, execute below command
+- In root directory of ESP-Bridge repository, execute below command
 
 ```
-$ cd esp-gateway
+$ cd esp-bridge
 ```
 
 ##### Using cmake
@@ -77,7 +77,7 @@ $ cd esp-gateway
 $ idf.py menuconfig
 ```
 
-- This will open project configuration window. To select SDIO transport interface, navigate to `Gateway Driver Configuration -> Transport layer -> SDIO interface -> select` and exit from menuconfig.
+- This will open project configuration window. To select SDIO transport interface, navigate to `Bridge Driver Configuration -> Transport layer -> SDIO interface -> select` and exit from menuconfig.
 - Use below command to compile and flash the project. Replace <serial_port> with ESP peripheral's serial port.
 
 ```
@@ -147,7 +147,7 @@ $ dmesg
 After the SDIO driver is loaded successfully, `ifconfig -a` command will see ethsta0, use the following command to enable ethsta0
 
 ```
-$ cd esp-gateway/example/spi_and_sdio_host/host_driver/linux/host_control
+$ cd esp-bridge/example/spi_and_sdio_host/host_driver/linux/host_control
 $ ./ethsta0_config.sh 12:34:56:78:9a:bc
 ```
 

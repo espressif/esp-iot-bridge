@@ -10,7 +10,7 @@ if(CONFIG_ESP_SPI_HOST_INTERFACE)
     list(APPEND srcs "src/spi_slave_api.c")
 endif()
 
-if(CONFIG_ESP_GATEWAY_BT_ENABLED)
+if(CONFIG_ESP_BRIDGE_BT_ENABLED)
     list(APPEND srcs "src/slave_bt.c")
 endif()
 

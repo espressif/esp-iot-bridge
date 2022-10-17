@@ -18,7 +18,7 @@
 #if CONFIG_MESH_USE
 #include "app_mesh.h"
 #else
-#include "app_gateway.h"
+#include "app_bridge.h"
 #endif
 
 static const char *TAG = "app_main";
@@ -55,7 +55,7 @@ void app_main(void)
 #if CONFIG_MESH_USE
     app_mesh_start();
 #else
-    app_gateway_enable();
+    app_bridge_enable();
 #endif
 
     app_rainmaker_start();

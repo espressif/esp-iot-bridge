@@ -1,5 +1,5 @@
-menu "Gateway Driver Configuration"
-    depends on GATEWAY_DATA_FORWARDING_NETIF_SPI || GATEWAY_DATA_FORWARDING_NETIF_SDIO
+menu "Bridge Driver Configuration"
+    depends on BRIDGE_DATA_FORWARDING_NETIF_SPI || BRIDGE_DATA_FORWARDING_NETIF_SDIO
 
     choice ESP_HOST_INTERFACE
         bool "Transport layer"
@@ -58,14 +58,14 @@ menu "Gateway Driver Configuration"
         help
             Enable/disable debug prints in wlan driver data path
 
-    config ESP_GATEWAY_BT_ENABLED
+    config ESP_BRIDGE_BT_ENABLED
         bool "Enable Bluetooth driver"
         default 0
         help
             Enable/disable debug prints in Bluetooth driver data path
 
     config ESP_BT_DEBUG
-        depends on ESP_GATEWAY_BT_ENABLED
+        depends on ESP_BRIDGE_BT_ENABLED
         bool "Debug Bluetooth driver data path"
         default 0
         help

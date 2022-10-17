@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-#ifdef CONFIG_ESP_GATEWAY_BT_ENABLED
+#ifdef CONFIG_ESP_BRIDGE_BT_ENABLED
 #include <string.h>
 #include "driver/periph_ctrl.h"
 #include "driver/gpio.h"

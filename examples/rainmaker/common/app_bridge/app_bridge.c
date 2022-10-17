@@ -11,12 +11,12 @@
 #include "esp_system.h"
 
 #include "esp_netif.h"
-#include "esp_gateway.h"
+#include "esp_bridge.h"
 #include "esp_litemesh.h"
 
 #include <app_light.h>
 
-static const char *TAG = "app_gateway";
+static const char *TAG = "app_bridge";
 
 #define NODE_ID_REPORT_MSG_MAX_RETRY  10
 
@@ -99,12 +99,12 @@ static void esp_litemesh_node_info_event_handler(void *arg, esp_event_base_t eve
 }
 #endif
 
-esp_err_t app_gateway_enable(void)
+esp_err_t app_bridge_enable(void)
 {
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    esp_gateway_create_all_netif();
+    esp_bridge_create_all_netif();
 
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, NULL));
 

@@ -1,6 +1,6 @@
 # LED Light Example(Nove Home)
 
-This example uses the Rainmaker cloud platform to demonstrate the ESP-Gateway **Wi-Fi router** function. User can configure the device through the `Nove Home` APP and successfully connect to the Rainmaker cloud. The device is connected to the cloud based on Rainmaker, It can also provide other devices with the ability to surf the Internet wirelessly, and form a network with the LiteMesh function, which greatly reduces the load on the router and expands the wireless communication range.
+This example uses the Rainmaker cloud platform to demonstrate the ESP-Bridge **Wi-Fi router** function. User can configure the device through the `Nove Home` APP and successfully connect to the Rainmaker cloud. The device is connected to the cloud based on Rainmaker, It can also provide other devices with the ability to surf the Internet wirelessly, and form a network with the LiteMesh function, which greatly reduces the load on the router and expands the wireless communication range.
 
 ## Get Start
 
@@ -26,7 +26,7 @@ Refer to [README](../../../README_EN.md)
 
 ### 4. LiteMesh function
 
-- You can choose whether to enable the LiteMesh function in the menuconfig `Gateway Configuration -> The Interface used to provide network data forwarding for other devices -> Enable Lite Mesh`. This example enables this function by default.
+- You can choose whether to enable the LiteMesh function in the menuconfig `Bridge Configuration -> The Interface used to provide network data forwarding for other devices -> Enable Lite Mesh`. This example enables this function by default.
 - If the LiteMesh function is enabled, the first networked device will connect to the target router and serve as the root node, and subsequent devices will be connected to the root node device and act as child nodes to form a LiteMesh network. For details, please refer to [LiteMesh ](../../../doc/LiteMesh.md).
 
 ### 5. Build & Flash
@@ -34,7 +34,7 @@ Refer to [README](../../../README_EN.md)
 After the ESP-IDF environment is successfully set up, you can execute the following commands to compile and burn the firmware.
 
 ```
-$ cd esp-gateway/examples/rainmaker/led_light
+$ cd esp-bridge/examples/rainmaker/led_light
 $ idf.py build
 $ idf.py flash
 ```

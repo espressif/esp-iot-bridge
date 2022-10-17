@@ -1,8 +1,8 @@
-# ESP-Gateway Smart Gateway Solution
+# ESP-Bridge Smart Bridge Solution
 
 - [中文版](README_CN.md)
 
-ESP-Gateway is a smart gateway solution offered by Espressif. This document describes how to configure and use ESP-Gateway.
+ESP-Bridge is a smart bridge solution offered by Espressif. This document describes how to configure and use ESP-Bridge(the solution was originally named ESP-Gateway, because this solution does not involve protocol proxy conversion, but only data forwarding, so it is renamed ESP-Bridge).
 
 
 # Table of Contents
@@ -19,7 +19,7 @@ ESP-Gateway is a smart gateway solution offered by Espressif. This document desc
 
 ## <span id = "1">1. Overview</span>
 
-ESP-Gateway is supported by various Espressif chips, as shown in the table below:
+ESP-Bridge is supported by various Espressif chips, as shown in the table below:
 
 | Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v5.0                                         |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -30,26 +30,26 @@ ESP-Gateway is supported by various Espressif chips, as shown in the table below
 | ESP32-H2 | TODO                                                         | TODO                                                         |
 | ESP32-C2 | *N/A*                                                        | TODO                                                         |
 
-The ESP-Gateway solution provides several network interfaces, which can be divided into two main categories:
+The ESP-Bridge solution provides several network interfaces, which can be divided into two main categories:
 
 - Interfaces for connecting to the Internet
 
 - Interfaces for forwarding network packets for other devices so that they can access the Internet
 
-Users can realize personalized smart gateway solutions through different network interface combinations to maximize the network advantages of Espressif chips.
+Users can realize personalized smart bridge solutions through different network interface combinations to maximize the network advantages of Espressif chips.
 
 
 
-![esp_gateway](./doc/_static/esp_gateway_en.png)
+![esp_bridge](./doc/_static/esp_bridge_en.png)
 
 A variety of functions can be achieved depending on the combination of interfaces, as shown in the table below:
 
 |                    | Wireless Hotspot     | Ethernet Interface | USB Interface | SPI Interface | SDIO Interface | Bluetooth LE Interface | Thread Interface          |
 | ------------------ | ------------ | ---------- | -------- | -------- | --------- | -------- | -------------------- |
-| **Wi-Fi**     | Wi-Fi Router | Wireless NIC   | Wireless NIC | Wireless NIC | Wireless NIC  | Bluetooth LE Gateway | Thread Border Router |
-| **Ethernet**         | Wi-Fi Router | Unsupported     | Wired NIC | Wired NIC | Wired NIC  | Bluetooth LE Gateway | Thread Border Router |
-| **Cat.1 4G (UART)** | 4G Hotspot      | 4G NIC    | 4G NIC  | 4G NIC  | 4G NIC   | Bluetooth LE Gateway | Thread Border Router |
-| **Cat.1 4G (USB)**  | 4G Hotspot      | 4G NIC    | Unsupported   | 4G NIC  | 4G NIC   | Bluetooth LE Gateway | Thread Border Router |
+| **Wi-Fi**     | Wi-Fi Router | Wireless NIC   | Wireless NIC | Wireless NIC | Wireless NIC  | Bluetooth LE Bridge | Thread Border Router |
+| **Ethernet**         | Wi-Fi Router | Unsupported     | Wired NIC | Wired NIC | Wired NIC  | Bluetooth LE Bridge | Thread Border Router |
+| **Cat.1 4G (UART)** | 4G Hotspot      | 4G NIC    | 4G NIC  | 4G NIC  | 4G NIC   | Bluetooth LE Bridge | Thread Border Router |
+| **Cat.1 4G (USB)**  | 4G Hotspot      | 4G NIC    | Unsupported   | 4G NIC  | 4G NIC   | Bluetooth LE Bridge | Thread Border Router |
 
 Notes:
 
@@ -58,9 +58,9 @@ Notes:
 - **The wireless hotspot, Ethernet interface, USB interface, SPI interface, SDIO interface, Bluetooth LE interface, and Thread interface in the first row are the interfaces that provide Internet access to other devices.**
 
 
-To summarize, the above table mainly involves the following application scenarios: Wi-Fi Router, 4G hotspot, 4G NIC, wireless NIC, wired NIC, Bluetooth LE gateway and Thread Border Router. The table below shows what scenarios each specific ESP chip supports:
+To summarize, the above table mainly involves the following application scenarios: Wi-Fi Router, 4G hotspot, 4G NIC, wireless NIC, wired NIC, Bluetooth LE bridge and Thread Border Router. The table below shows what scenarios each specific ESP chip supports:
 
-| ESP Chips | Wi-Fi Router                                                 | 4G Hotspot                                                      | 4G NIC                                                      | Wireless NIC                                                     | Wired NIC                                                     | Bluetooth LE Gateway | Thread Border Router |
+| ESP Chips | Wi-Fi Router                                                 | 4G Hotspot                                                      | 4G NIC                                                      | Wireless NIC                                                     | Wired NIC                                                     | Bluetooth LE Bridge | Thread Border Router |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | -------- | -------------------- |
 | ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SDIO/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SDIO/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SDIO/SPI) | TODO     | TODO                 |
 | ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/454168caab8b950c543c742ed575f11641ae9eb80be0ad511df3cb1c1b783baa/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d707265766965772d6f72616e6765)](https://camo.githubusercontent.com/454168caab8b950c543c742ed575f11641ae9eb80be0ad511df3cb1c1b783baa/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d707265766965772d6f72616e6765) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SPI) | TODO     | TODO                 |
@@ -79,15 +79,15 @@ Notes:
 
 ### 1.1 Wi-Fi Router
 
-ESP-Gateway device can connect to the network by connecting to the router via Wi-Fi or by plugging the Ethernet cable into the LAN port of the router. Then other smart devices can connect to the SoftAP hotspot from the ESP-Gateway to access the Internet.
+ESP-Bridge device can connect to the network by connecting to the router via Wi-Fi or by plugging the Ethernet cable into the LAN port of the router. Then other smart devices can connect to the SoftAP hotspot from the ESP-Bridge to access the Internet.
 
-- Currently, ESP-Gateway supports lightweight mesh networking — [LiteMesh](./doc/LiteMesh.md). Users can customize the hierarchical network provision.
+- Currently, ESP-Bridge supports lightweight mesh networking — [LiteMesh](./doc/LiteMesh.md). Users can customize the hierarchical network provision.
 
-- By enabling ``ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC`` in menuconfig (``Gateway Configuration`` > ``SoftAP Config``), users can add MAC information at the end of SoftAP SSID.
+- By enabling ``ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC`` in menuconfig (``Bridge Configuration`` > ``SoftAP Config``), users can add MAC information at the end of SoftAP SSID.
 
-- A single ESP-Gateway device supports up to 10 stations connected at the same time, and bandwidth is shared by these stations.
+- A single ESP-Bridge device supports up to 10 stations connected at the same time, and bandwidth is shared by these stations.
 
-- You need to configure your network if the ESP-Gateway device connects to the router via Wi-Fi. Currently, the following ways are supported:
+- You need to configure your network if the ESP-Bridge device connects to the router via Wi-Fi. Currently, the following ways are supported:
 
     > - [Configure the network on web page](#web)
     > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#wifi_provisioning)（ESP32-S2 not supported）
@@ -96,7 +96,7 @@ ESP-Gateway device can connect to the network by connecting to the router via Wi
 
 ### 1.2 4G Hotspot
 
-ESP-Gateway device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-Gateway device to gain Internet access.
+ESP-Bridge device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-Bridge device to gain Internet access.
 
 The table below shows modules that are compatible with 4G Cat.1.
 
@@ -112,7 +112,7 @@ The table below shows modules that are compatible with 4G Cat.1.
 
 ### 1.3 4G NIC
 
-ESP-Gateway device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface (ETH/SDIO/SPI) to gain Internet access.
+ESP-Bridge device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface (ETH/SDIO/SPI) to gain Internet access.
 
 <img src="./doc/_static/4G_dongle_en.png" alt="4G_dongle" style="zoom: 80%;" />
 
@@ -122,7 +122,7 @@ ESP-Gateway device can be equipped with a mobile network module with a SIM card.
 
 ### 1.4 Wireless NIC
 
-ESP-Gateway device can be connected to the PC or MCU through multiple network interfaces (USB/ETH/SDIO/SPI). Once connected, the PC or MCU will have an additional network card. These devices can access the Internet after configuring the network.
+ESP-Bridge device can be connected to the PC or MCU through multiple network interfaces (USB/ETH/SDIO/SPI). Once connected, the PC or MCU will have an additional network card. These devices can access the Internet after configuring the network.
 
 - Use a USB cable to connect the GPIO19/20 of ESP32-S2 or ESP32-S3 with MCU.
 
@@ -149,7 +149,7 @@ ESP-Gateway device can be connected to the PC or MCU through multiple network in
 
 ### 1.5 Wired NIC
 
-ESP-Gateway device can connect to the network by plugging the Ethernet cable into the LAN port of router. PC or MCU can connect with the ESP-Gateway device through multiple interfaces (USB/SDIO/SPI) to gain internet access.
+ESP-Bridge device can connect to the network by plugging the Ethernet cable into the LAN port of router. PC or MCU can connect with the ESP-Bridge device through multiple interfaces (USB/SDIO/SPI) to gain internet access.
 
 - Use a USB cable to connect the GPIO19/20 of ESP32-S2 or ESP32-S3 with MCU.
 
@@ -210,10 +210,10 @@ Please refer to [Standard Toolchain Setup for Linux](https://docs.espressif.com/
 $ ./components/esptool_py/esptool/esptool.py --help
 ```
 
-### 3.3 Clone ESP-Gateway Repository
+### 3.3 Clone ESP-Bridge Repository
 
 ```
-$ git clone --recursive https://github.com/espressif/esp-gateway.git
+$ git clone --recursive https://github.com/espressif/esp-bridge.git
 ```
 
 ## <span id = "4">4. Get SDK </span>
@@ -269,7 +269,7 @@ $ git clone --recursive https://github.com/espressif/esp-gateway.git
 
 ### 6.1 Build the Project
 
-Navigate to the ``esp-gateway`` directory and run the following command:
+Navigate to the ``esp-bridge`` directory and run the following command:
 
 ```
 $ idf.py menuconfig
@@ -303,7 +303,7 @@ $ idf.py monitor
 
 ### <span id = "web">7.1 Configure Network on Web Page</span>
 
-After the PC or MCU connects to the hotspot from the ESP-Gateway device and obtains the IP address successfully, it can configure the network on the web page by accessing the gateway IP.
+After the PC or MCU connects to the hotspot from the ESP-Bridge device and obtains the IP address successfully, it can configure the network on the web page by accessing the bridge IP.
 
 <img src="./doc/_static/web_server_en.png" alt="web_server" style="zoom: 67%;" />
 
@@ -349,7 +349,7 @@ I (1632) NimBLE:
   ▀▀▀▀▀▀▀ ▀▀ ▀ ▀▀▀▀▀ ▀  ▀▀▀ ▀▀   ▀
 
 
-I (1798) esp_gateway_wifi_prov_mgr: If QR code is not visible, copy paste the below URL in a browser.
+I (1798) esp_bridge_wifi_prov_mgr: If QR code is not visible, copy paste the below URL in a browser.
 https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"PROV_806314","pop":"abcd1234","transport":"ble"}
 ```
 
@@ -368,7 +368,7 @@ Since ESP32-S2 does not support Bluetooth LE, this network configuration method 
 | Wireless NIC (USB) | Driver-free; hot-swappable; easy to use; low development cost|
 | Wireless NIC (SPI/SDIO) | High transfer rate|
 
-**Please refer to the [ESP-Gateway Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-Gateway.**
+**Please refer to the [ESP-Bridge Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-Bridge.**
 
 ## <span id = "9">9.GPIO Map</span>
 

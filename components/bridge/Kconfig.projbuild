@@ -1,23 +1,23 @@
-menu "Gateway Configuration"
-    config GATEWAY_ENABLE
-        bool "Gateway Enable"
+menu "Bridge Configuration"
+    config BRIDGE_ENABLE
+        bool "Bridge Enable"
         default y
 
     menu "The interface used to connect to the external network"
-        config GATEWAY_EXTERNAL_NETIF_STATION
+        config BRIDGE_EXTERNAL_NETIF_STATION
             bool "Use Wi-Fi station interface to connect to the external network"
             default y
 
         menu "Network Distribution"
-            depends on GATEWAY_EXTERNAL_NETIF_STATION
+            depends on BRIDGE_EXTERNAL_NETIF_STATION
 
-            config GATEWAY_USE_WEB_SERVER
+            config BRIDGE_USE_WEB_SERVER
                 bool "Wi-Fi Provisioning over Web Server"
                 default y
                 help
                     Use Wi-Fi Provisioning over Web Server.
 
-            config GATEWAY_USE_WIFI_PROVISIONING_OVER_BLE
+            config BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE
                 bool "Wi-Fi Provisioning over Bluetooth Low Energy."
                 depends on !IDF_TARGET_ESP32S2
                 default n
@@ -25,84 +25,84 @@ menu "Gateway Configuration"
                     Use Wi-Fi Provisioning over Bluetooth Low Energy.
         endmenu
 
-        config GATEWAY_EXTERNAL_NETIF_MODEM
+        config BRIDGE_EXTERNAL_NETIF_MODEM
             bool "Use 4G modem interface to connect to the external network"
             default n
 
-        config GATEWAY_EXTERNAL_NETIF_ETHERNET
+        config BRIDGE_EXTERNAL_NETIF_ETHERNET
             bool "Use ethernet interface to connect to the external network (Please contact sales@espressif.com to apply for it)"
             default n
     endmenu
 
     menu "The interface used to provide network data forwarding for other devices"
-        config GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
+        config BRIDGE_DATA_FORWARDING_NETIF_SOFTAP
             bool "Use Wi-Fi SoftAP interface to provide network data forwarding for other devices"
             default y
 
-            menu "LITEMESH_ENABLE is enabled, please configure SoftAP in \"Gateway LiteMesh Configuration\""
+            menu "LITEMESH_ENABLE is enabled, please configure SoftAP in \"Bridge LiteMesh Configuration\""
                 visible if LITEMESH_ENABLE
             endmenu
 
             menu "SoftAP Config"
-                depends on GATEWAY_DATA_FORWARDING_NETIF_SOFTAP
+                depends on BRIDGE_DATA_FORWARDING_NETIF_SOFTAP
                 visible if !LITEMESH_ENABLE
 
-                config ESP_GATEWAY_SOFTAP_SSID
+                config ESP_BRIDGE_SOFTAP_SSID
                     string
                     prompt "SoftAP SSID"
-                    default "ESP_Gateway" if !LITEMESH_ENABLE
+                    default "ESP_Bridge" if !LITEMESH_ENABLE
                     default LITEMESH_SOFTAP_SSID if LITEMESH_ENABLE
                     help
-                        SSID of ESP-Gateway SoftAP.
+                        SSID of ESP-Bridge SoftAP.
 
-                config ESP_GATEWAY_SOFTAP_PASSWORD
+                config ESP_BRIDGE_SOFTAP_PASSWORD
                     string "SoftAP Password"
                     default "12345678" if !LITEMESH_ENABLE
                     default LITEMESH_SOFTAP_PASSWORD if LITEMESH_ENABLE
                     help
-                        password of ESP-Gateway SoftAP.
+                        password of ESP-Bridge SoftAP.
 
-                config ESP_GATEWAY_SOFTAP_SSID_END_WITH_THE_MAC
+                config ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
                     bool "SoftAP SSID ends with the MAC"
                     default n if !LITEMESH_ENABLE
                     default LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC if LITEMESH_ENABLE
                     help
                         Add MAC to the end of SSID
 
-                config ESP_GATEWAY_SOFTAP_MAX_CONNECT_NUMBER
+                config ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER
                     int "Maximum number of connections per node"
                     default 6 if !LITEMESH_ENABLE
                     default LITEMESH_MAX_CONNECT_NUMBER if LITEMESH_ENABLE
                     range 1 10
             endmenu
 
-        config GATEWAY_DATA_FORWARDING_NETIF_USB
+        config BRIDGE_DATA_FORWARDING_NETIF_USB
             bool "Use USB interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
             default n
             depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
             select TINYUSB
             select TINYUSB_NET_ENABLED
 
-        config GATEWAY_DATA_FORWARDING_NETIF_ETHERNET
+        config BRIDGE_DATA_FORWARDING_NETIF_ETHERNET
             bool "Use ethernet interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
             default n
-            depends on !GATEWAY_EXTERNAL_NETIF_ETHERNET
+            depends on !BRIDGE_EXTERNAL_NETIF_ETHERNET
 
-        config GATEWAY_DATA_FORWARDING_NETIF_SPI
+        config BRIDGE_DATA_FORWARDING_NETIF_SPI
             bool "Use SPI interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
             default n
 
-        config GATEWAY_DATA_FORWARDING_NETIF_SDIO
+        config BRIDGE_DATA_FORWARDING_NETIF_SDIO
             bool "Use SDIO interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
             default n
             depends on IDF_TARGET_ESP32
     endmenu
 
-    config GATEWAY_GPIO_RANGE_MIN
+    config BRIDGE_GPIO_RANGE_MIN
         int
         default 0
 
-    config GATEWAY_GPIO_RANGE_MAX
+    config BRIDGE_GPIO_RANGE_MAX
         int
         default 33 if IDF_TARGET_ESP32
         default 46 if IDF_TARGET_ESP32S2
@@ -110,46 +110,46 @@ menu "Gateway Configuration"
         default 48 if IDF_TARGET_ESP32S3
 
     menu "ETH Configuration"
-        depends on GATEWAY_EXTERNAL_NETIF_ETHERNET || GATEWAY_DATA_FORWARDING_NETIF_ETHERNET
+        depends on BRIDGE_EXTERNAL_NETIF_ETHERNET || BRIDGE_DATA_FORWARDING_NETIF_ETHERNET
 
-        choice ESP_GATEWAY_ETHERNET_TYPE
+        choice ESP_BRIDGE_ETHERNET_TYPE
             prompt "Ethernet Type"
-            default GATEWAY_USE_INTERNAL_ETHERNET if IDF_TARGET_ESP32
-            default GATEWAY_USE_SPI_ETHERNET if !IDF_TARGET_ESP32
+            default BRIDGE_USE_INTERNAL_ETHERNET if IDF_TARGET_ESP32
+            default BRIDGE_USE_SPI_ETHERNET if !IDF_TARGET_ESP32
             help
-                Select which kind of Ethernet will be used in the ESP-Gateway.
+                Select which kind of Ethernet will be used in the ESP-Bridge.
 
-            config GATEWAY_USE_INTERNAL_ETHERNET
+            config BRIDGE_USE_INTERNAL_ETHERNET
                 depends on IDF_TARGET_ESP32
                 select ETH_USE_ESP32_EMAC
                 bool "Internal EMAC"
                 help
                     Use internal Ethernet MAC controller.
 
-            config GATEWAY_USE_SPI_ETHERNET
+            config BRIDGE_USE_SPI_ETHERNET
                 bool "SPI Ethernet"
                 select ETH_USE_SPI_ETHERNET
                 help
                     Use external SPI-Ethernet module(s).
         endchoice
 
-        if GATEWAY_USE_INTERNAL_ETHERNET
-            menu "Gateway ETH PHY Model"
-                config GATEWAY_ETH_PHY_IP101
+        if BRIDGE_USE_INTERNAL_ETHERNET
+            menu "Bridge ETH PHY Model"
+                config BRIDGE_ETH_PHY_IP101
                     bool "IP101"
                     default y
                     help
                         IP101 is a single port 10/100 MII/RMII/TP/Fiber Fast Ethernet Transceiver.
                         Goto http://www.icplus.com.tw/pp-IP101G.html for more information about it.
 
-                config GATEWAY_ETH_PHY_RTL8201
+                config BRIDGE_ETH_PHY_RTL8201
                     bool "RTL8201/SR8201"
                     default y
                     help
                         RTL8201F/SR8201F is a single port 10/100Mb Ethernet Transceiver with auto MDIX.
                         Goto http://www.corechip-sz.com/productsview.asp?id=22 for more information about it.
 
-                config GATEWAY_ETH_PHY_LAN87XX
+                config BRIDGE_ETH_PHY_LAN87XX
                     bool "LAN87xx"
                     default y
                     help
@@ -163,14 +163,14 @@ menu "Gateway Configuration"
                             flexPWR® Technology.
                         Goto https://www.microchip.com for more information about them.
 
-                config GATEWAY_ETH_PHY_DP83848
+                config BRIDGE_ETH_PHY_DP83848
                     bool "DP83848"
                     default y
                     help
                         DP83848 is a single port 10/100Mb/s Ethernet Physical Layer Transceiver.
                         Goto http://www.ti.com/product/DP83848J for more information about it.
 
-                config GATEWAY_ETH_PHY_KSZ80XX
+                config BRIDGE_ETH_PHY_KSZ80XX
                     bool "KSZ80xx"
                     default y
                     help
@@ -181,72 +181,72 @@ menu "Gateway Configuration"
                         Goto https://www.microchip.com for more information about them.
             endmenu
 
-            config GATEWAY_ETH_MDC_GPIO
+            config BRIDGE_ETH_MDC_GPIO
                 int "SMI MDC GPIO number"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 23
                 help
                     Set the GPIO number used by SMI MDC.
 
-            config GATEWAY_ETH_MDIO_GPIO
+            config BRIDGE_ETH_MDIO_GPIO
                 int "SMI MDIO GPIO number"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 18
                 help
                     Set the GPIO number used by SMI MDIO.
 
-            config GATEWAY_ETH_PHY_RST_GPIO
+            config BRIDGE_ETH_PHY_RST_GPIO
                 int "PHY Reset GPIO number"
-                range -1 GATEWAY_GPIO_RANGE_MAX
+                range -1 BRIDGE_GPIO_RANGE_MAX
                 default 5
                 help
                     Set the GPIO number used to reset PHY chip.
                     Set to -1 to disable PHY chip hardware reset.
 
-            config GATEWAY_ETH_PHY_ADDR
+            config BRIDGE_ETH_PHY_ADDR
                 int "PHY Address"
                 range 0 31
                 default 1
                 help
                     Set PHY address according your board schematic.
-        endif # GATEWAY_USE_INTERNAL_ETHERNET
+        endif # BRIDGE_USE_INTERNAL_ETHERNET
 
-        if GATEWAY_USE_SPI_ETHERNET
-            config GATEWAY_ETH_SPI_HOST
+        if BRIDGE_USE_SPI_ETHERNET
+            config BRIDGE_ETH_SPI_HOST
                 int "SPI Host Number"
                 range 0 2
                 default 1
                 help
                     Set the SPI host used to communicate with the SPI Ethernet Controller.
 
-            config GATEWAY_ETH_SPI_SCLK_GPIO
+            config BRIDGE_ETH_SPI_SCLK_GPIO
                 int "SPI SCLK GPIO number"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 14 if IDF_TARGET_ESP32
                 default 17 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
                 default 6 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI SCLK.
 
-            config GATEWAY_ETH_SPI_MOSI_GPIO
+            config BRIDGE_ETH_SPI_MOSI_GPIO
                 int "SPI MOSI GPIO number"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 13 if IDF_TARGET_ESP32
                 default 16 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
                 default 7 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI MOSI.
 
-            config GATEWAY_ETH_SPI_MISO_GPIO
+            config BRIDGE_ETH_SPI_MISO_GPIO
                 int "SPI MISO GPIO number"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 12 if IDF_TARGET_ESP32
                 default 18 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
                 default 2 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI MISO.
 
-            config GATEWAY_ETH_SPI_CLOCK_MHZ
+            config BRIDGE_ETH_SPI_CLOCK_MHZ
                 int "SPI clock speed (MHz)"
                 range 5 80
                 default 12 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32C3
@@ -254,80 +254,80 @@ menu "Gateway Configuration"
                 help
                     Set the clock speed (MHz) of SPI interface.
 
-            config GATEWAY_ETH_SPI_CS0_GPIO
+            config BRIDGE_ETH_SPI_CS0_GPIO
                 int "SPI CS0 GPIO number for SPI Ethernet module #1"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 15 if IDF_TARGET_ESP32
                 default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
                 help
                     Set the GPIO number used by SPI CS0, i.e. Chip Select associated with the first SPI Eth module).
 
-            config GATEWAY_ETH_SPI_INT0_GPIO
+            config BRIDGE_ETH_SPI_INT0_GPIO
                 int "Interrupt GPIO number SPI Ethernet module #1"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 4 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
                 help
                     Set the GPIO number used by the first SPI Ethernet module interrupt line.
 
-            config GATEWAY_ETH_SPI_PHY_RST0_GPIO
+            config BRIDGE_ETH_SPI_PHY_RST0_GPIO
                 int "PHY Reset GPIO number of SPI Ethernet Module #1"
-                range -1 GATEWAY_GPIO_RANGE_MAX
+                range -1 BRIDGE_GPIO_RANGE_MAX
                 default -1
                 help
                     Set the GPIO number used to reset PHY chip on the first SPI Ethernet module.
                     Set to -1 to disable PHY chip hardware reset.
 
-            config GATEWAY_ETH_SPI_PHY_ADDR0
+            config BRIDGE_ETH_SPI_PHY_ADDR0
                 int "PHY Address of SPI Ethernet Module #1"
                 range 0 31
                 default 1
                 help
                     Set the first SPI Ethernet module PHY address according your board schematic.
-        endif # GATEWAY_USE_SPI_ETHERNET
+        endif # BRIDGE_USE_SPI_ETHERNET
     endmenu
 
     menu "Modem Configuration"
-        depends on GATEWAY_EXTERNAL_NETIF_MODEM
+        depends on BRIDGE_EXTERNAL_NETIF_MODEM
 
-        choice ESP_GATEWAY_MODEM_TYPE
+        choice ESP_BRIDGE_MODEM_TYPE
             prompt "Modem Type"
-            default GATEWAY_MODEM_USB if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-            default GATEWAY_MODEM_UART if !IDF_TARGET_ESP32S2 && !IDF_TARGET_ESP32S3
+            default BRIDGE_MODEM_USB if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default BRIDGE_MODEM_UART if !IDF_TARGET_ESP32S2 && !IDF_TARGET_ESP32S3
             help
-                Select which kind of modem interface will be used in the ESP-Gateway.
+                Select which kind of modem interface will be used in the ESP-Bridge.
 
-            config GATEWAY_MODEM_UART
+            config BRIDGE_MODEM_UART
                 bool "UART"
 
-            config GATEWAY_MODEM_USB
+            config BRIDGE_MODEM_USB
                 bool "USB"
                 depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
         endchoice
 
-        if GATEWAY_MODEM_UART
-            config ESP_GATEWAY_MODEM_TX_GPIO
+        if BRIDGE_MODEM_UART
+            config ESP_BRIDGE_MODEM_TX_GPIO
                 int "UART Tx GPIO number of Modem"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 32 if IDF_TARGET_ESP32
                 default 8 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by uart Tx
 
-            config ESP_GATEWAY_MODEM_RX_GPIO
+            config ESP_BRIDGE_MODEM_RX_GPIO
                 int "UART Rx GPIO number of Modem"
-                range GATEWAY_GPIO_RANGE_MIN GATEWAY_GPIO_RANGE_MAX
+                range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 33 if IDF_TARGET_ESP32
                 default 9 if IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by uart Rx
 
-            config ESP_GATEWAY_MODEM_BAUD_RATE
+            config ESP_BRIDGE_MODEM_BAUD_RATE
                 int "UART baud rate of Modem"
                 default 115200
                 help
                     Set the baud rate of uart
 
-            config GATEWAY_MODEM_CUSTOM_BOARD
+            config BRIDGE_MODEM_CUSTOM_BOARD
                 bool "Use extended DCE object"
                 default n
                 help
@@ -358,7 +358,7 @@ menu "Gateway Configuration"
             help
                 Set retry times waitting for modem link with carrier base station
 
-        config GATEWAY_MODEM_PPP_APN
+        config BRIDGE_MODEM_PPP_APN
             string "Set MODEM APN"
             default "internet"
             help
