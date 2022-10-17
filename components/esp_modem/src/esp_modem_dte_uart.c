@@ -431,10 +431,10 @@ esp_modem_dte_t *esp_modem_dte_new(const esp_modem_dte_config_t *config)
         .data_bits = config->data_bits,
         .parity = config->parity,
         .stop_bits = config->stop_bits,
-#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S3
-        .source_clk = UART_SCLK_RTC,
-#else
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
         .source_clk = UART_SCLK_REF_TICK,
+#else
+        .source_clk = UART_SCLK_XTAL,
 #endif
         .flow_ctrl = (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW) ? UART_HW_FLOWCTRL_CTS_RTS : UART_HW_FLOWCTRL_DISABLE
     };
