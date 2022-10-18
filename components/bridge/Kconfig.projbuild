@@ -39,40 +39,40 @@ menu "Bridge Configuration"
             bool "Use Wi-Fi SoftAP interface to provide network data forwarding for other devices"
             default y
 
-            menu "LITEMESH_ENABLE is enabled, please configure SoftAP in \"Bridge LiteMesh Configuration\""
-                visible if LITEMESH_ENABLE
+            menu "MESH_LITE_ENABLE is enabled, please configure SoftAP in \"Bridge Mesh-Lite Configuration\""
+                visible if MESH_LITE_ENABLE
             endmenu
 
             menu "SoftAP Config"
                 depends on BRIDGE_DATA_FORWARDING_NETIF_SOFTAP
-                visible if !LITEMESH_ENABLE
+                visible if !MESH_LITE_ENABLE
 
                 config ESP_BRIDGE_SOFTAP_SSID
                     string
                     prompt "SoftAP SSID"
-                    default "ESP_Bridge" if !LITEMESH_ENABLE
-                    default LITEMESH_SOFTAP_SSID if LITEMESH_ENABLE
+                    default "ESP_Bridge" if !MESH_LITE_ENABLE
+                    default MESH_LITE_SOFTAP_SSID if MESH_LITE_ENABLE
                     help
                         SSID of ESP-Bridge SoftAP.
 
                 config ESP_BRIDGE_SOFTAP_PASSWORD
                     string "SoftAP Password"
-                    default "12345678" if !LITEMESH_ENABLE
-                    default LITEMESH_SOFTAP_PASSWORD if LITEMESH_ENABLE
+                    default "12345678" if !MESH_LITE_ENABLE
+                    default MESH_LITE_SOFTAP_PASSWORD if MESH_LITE_ENABLE
                     help
                         password of ESP-Bridge SoftAP.
 
                 config ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
                     bool "SoftAP SSID ends with the MAC"
-                    default n if !LITEMESH_ENABLE
-                    default LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC if LITEMESH_ENABLE
+                    default n if !MESH_LITE_ENABLE
+                    default MESH_LITE_SOFTAP_SSID_END_WITH_THE_MAC if MESH_LITE_ENABLE
                     help
                         Add MAC to the end of SSID
 
                 config ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER
                     int "Maximum number of connections per node"
-                    default 6 if !LITEMESH_ENABLE
-                    default LITEMESH_MAX_CONNECT_NUMBER if LITEMESH_ENABLE
+                    default 6 if !MESH_LITE_ENABLE
+                    default MESH_LITE_MAX_CONNECT_NUMBER if MESH_LITE_ENABLE
                     range 1 10
             endmenu
 

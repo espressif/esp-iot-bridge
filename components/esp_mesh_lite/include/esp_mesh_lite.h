@@ -19,35 +19,35 @@ extern "C"
 {
 #endif
 
-#include "esp_litemesh_core.h"
+#include "esp_mesh_lite_core.h"
 
 #define ROOT    (1)
 
 typedef enum {
-    LITEMESH_EVENT_NODE_JOIN = LITEMESH_EVENT_CORE_MAX,
-    LITEMESH_EVENT_NODE_LEAVE,
-    LITEMESH_EVENT_NODE_CHANGE,
-    LITEMESH_EVENT_MAX,
-} litemesh_event_node_info_t;
+    ESP_MESH_LITE_EVENT_NODE_JOIN = ESP_MESH_LITE_EVENT_CORE_MAX,
+    ESP_MESH_LITE_EVENT_NODE_LEAVE,
+    ESP_MESH_LITE_EVENT_NODE_CHANGE,
+    ESP_MESH_LITE_EVENT_MAX,
+} esp_mesh_lite_event_node_info_t;
 
 /**
- * @brief Initialization LiteMesh.
+ * @brief Initialization Mesh-Lite.
  * 
  */
-void esp_litemesh_init(esp_litemesh_config_t* config);
+void esp_mesh_lite_init(esp_mesh_lite_config_t* config);
 
-#if CONFIG_LITEMESH_NODE_INFO_REPORT
-typedef struct  litemesh_node_info {
+#if CONFIG_MESH_LITE_NODE_INFO_REPORT
+typedef struct  esp_mesh_lite_node_info {
     uint8_t level;
     char mac[MAC_MAX_LEN];
-} litemesh_node_info_t;
+} esp_mesh_lite_node_info_t;
 
 /**
  * @brief child nodes report mac and level information to the root node.
  * 
  */
-esp_err_t esp_litemesh_report_info(void);
-#endif /* CONFIG_LITEMESH_NODE_INFO_REPORT */
+esp_err_t esp_mesh_lite_report_info(void);
+#endif /* CONFIG_MESH_LITE_NODE_INFO_REPORT */
 
 #ifdef __cplusplus
 }

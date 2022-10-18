@@ -1,68 +1,68 @@
-menu "Bridge LiteMesh Configuration"
-    config LITEMESH_ENABLE
-        bool "Enable LiteMesh"
+menu "ESP Wi-Fi Mesh Lite"
+    config MESH_LITE_ENABLE
+        bool "Enable Mesh-Lite"
         default n
         depends on BRIDGE_EXTERNAL_NETIF_STATION && BRIDGE_DATA_FORWARDING_NETIF_SOFTAP
         help
-            Enable LiteMesh
+            Enable Mesh-Lite
 
-    menu "LiteMesh info configuration"
-        depends on LITEMESH_ENABLE
-        config LITEMESH_VENDOR_ID_0
-            int "VENDOR_ID_0 for LiteMesh"
+    menu "Mesh-Lite info configuration"
+        depends on MESH_LITE_ENABLE
+        config MESH_LITE_VENDOR_ID_0
+            int "VENDOR_ID_0 for Mesh-Lite"
             default 71
 
-        config LITEMESH_VENDOR_ID_1
-            int "VENDOR_ID_1 for LiteMesh"
+        config MESH_LITE_VENDOR_ID_1
+            int "VENDOR_ID_1 for Mesh-Lite"
             default 87
 
-        config MESH_ID
-            int "MESH_ID for LiteMesh"
+        config MESH_LITE_ID
+            int "MESH_ID for Mesh-Lite"
             default 77
 
-        config LITEMESH_SOFTAP_SSID
+        config MESH_LITE_SOFTAP_SSID
             string "SoftAP SSID"
             default "ESP_Bridge"
             help
-                SSID of ESP-LiteMesh SoftAP.
-                If enable LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC, the maximum length of ssid is 25.
+                SSID of ESP-Mesh-Lite SoftAP.
+                If enable MESH_LITE_SOFTAP_SSID_END_WITH_THE_MAC, the maximum length of ssid is 25.
 
-        config LITEMESH_SOFTAP_PASSWORD
+        config MESH_LITE_SOFTAP_PASSWORD
             string "SoftAP Password"
             default "12345678"
             help
-                password of ESP-LiteMesh SoftAP.
+                password of ESP-Mesh-Lite SoftAP.
 
-        config LITEMESH_SOFTAP_SSID_END_WITH_THE_MAC
+        config MESH_LITE_SOFTAP_SSID_END_WITH_THE_MAC
             bool "SoftAP SSID ends with the MAC"
             default y
             help
                 Add MAC to the end of SSID
 
-        config LITEMESH_MAX_CONNECT_NUMBER
+        config MESH_LITE_MAX_CONNECT_NUMBER
             int "Maximum number of connections per node"
             default 8
             range 1 10
 
-        config LITEMESH_MAX_ROUTER_NUMBER
+        config MESH_LITE_MAX_ROUTER_NUMBER
             int "Maximum number of trace router number"
             default 3
             range 1 5
 
-        config LITEMESH_MAXIMUM_LEVEL_ALLOWED
+        config MESH_LITE_MAXIMUM_LEVEL_ALLOWED
             int "The maximum level allowed"
             default 10
             range 1 16
 
-        config LITEMESH_NODE_INFO_REPORT
+        config MESH_LITE_NODE_INFO_REPORT
             bool "Enable node info report"
             default n
             help
                 Sub-nodes report information regularly,
                 and the root node collects and summarizes the mesh nodes information.
 
-        config LITEMESH_REPORT_INTERVAL
-            depends on LITEMESH_NODE_INFO_REPORT
+        config MESH_LITE_REPORT_INTERVAL
+            depends on MESH_LITE_NODE_INFO_REPORT
             int "Report time interval(s)"
             default 300
 

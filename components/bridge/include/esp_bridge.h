@@ -14,8 +14,8 @@
 
 #pragma once
 
-#ifdef CONFIG_LITEMESH_ENABLE
-#include "esp_litemesh.h"
+#ifdef CONFIG_MESH_LITE_ENABLE
+#include "esp_mesh_lite.h"
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)

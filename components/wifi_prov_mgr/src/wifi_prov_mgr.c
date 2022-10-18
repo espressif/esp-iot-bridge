@@ -154,9 +154,9 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                          "\n\tSSID     : %s\n\tPassword : %s",
                          (const char *) wifi_sta_cfg->ssid,
                          (const char *) wifi_sta_cfg->password);
-#if CONFIG_LITEMESH_ENABLE
-                esp_litemesh_set_router_config(wifi_sta_cfg);
-                esp_litemesh_connect();
+#if CONFIG_MESH_LITE_ENABLE
+                esp_mesh_lite_set_router_config(wifi_sta_cfg);
+                esp_mesh_lite_connect();
 #else
                 esp_wifi_set_storage(WIFI_STORAGE_FLASH);
                 esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*)wifi_sta_cfg);
@@ -164,7 +164,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 
                 esp_wifi_disconnect();
                 esp_wifi_connect();
-#endif /* CONFIG_LITEMESH_ENABLE */
+#endif /* CONFIG_MESH_LITE_ENABLE */
                 break;
             }
             case WIFI_PROV_CRED_FAIL: {

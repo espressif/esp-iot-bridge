@@ -81,7 +81,7 @@ ESP-Bridge 方案提供多个网络接口，不同的网络接口可以分为两
 
 ESP-Bridge 设备通过 Wi-Fi 或者有线以太网网口连接至路由器，智能设备通过连接至 ESP-Bridge 设备的 SoftAP 热点进行上网。
 
-- ESP-Bridge 当前支持轻量化的 Mesh 组网功能 —— [LiteMesh](./doc/LiteMesh.md)，用户可以通过自定义方式，灵活实现网络组网、层级分布。
+- ESP-Bridge 当前支持轻量化的 Mesh 组网功能 —— [Mesh-Lite](./doc/Mesh-Lite.md)，用户可以通过自定义方式，灵活实现网络组网、层级分布。
 
 - 通过在 menuconfig（``Bridge Configuration`` > ``SoftAP Config``）中启用 ``ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC``，可在 SoftAP SSID 末尾增加 MAC 信息。
 
@@ -254,7 +254,7 @@ $ git clone --recursive https://github.com/espressif/esp-bridge.git
                                  +-- SoftAP <-+-> Phone
     ```
 
-- 开启 Enable LiteMesh 选项后可以使能 LiteMesh 功能，详情请参考 [LiteMesh](./doc/LiteMesh.md)。
+- 开启 Enable Mesh-Lite 选项后可以使能 Mesh-Lite 功能，详情请参考 [Mesh-Lite](./doc/Mesh-Lite.md)。
 
 **ETH 配置项**
 

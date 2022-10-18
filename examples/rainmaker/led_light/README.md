@@ -1,6 +1,6 @@
 # LED Light Example(Nove Home)
 
-This example uses the Rainmaker cloud platform to demonstrate the ESP-Bridge **Wi-Fi router** function. User can configure the device through the `Nove Home` APP and successfully connect to the Rainmaker cloud. The device is connected to the cloud based on Rainmaker, It can also provide other devices with the ability to surf the Internet wirelessly, and form a network with the LiteMesh function, which greatly reduces the load on the router and expands the wireless communication range.
+This example uses the Rainmaker cloud platform to demonstrate the ESP-Bridge **Wi-Fi router** function. User can configure the device through the `Nove Home` APP and successfully connect to the Rainmaker cloud. The device is connected to the cloud based on Rainmaker, It can also provide other devices with the ability to surf the Internet wirelessly, and form a network with the Mesh-Lite function, which greatly reduces the load on the router and expands the wireless communication range.
 
 ## Get Start
 
@@ -24,10 +24,10 @@ Currently, ESP32-S3 and ESP32-C3 use Self-Claiming to obtain certificates by def
 
 Refer to [README](../../../README_EN.md)
 
-### 4. LiteMesh function
+### 4. Mesh-Lite function
 
-- You can choose whether to enable the LiteMesh function in the menuconfig `Bridge Configuration -> The Interface used to provide network data forwarding for other devices -> Enable Lite Mesh`. This example enables this function by default.
-- If the LiteMesh function is enabled, the first networked device will connect to the target router and serve as the root node, and subsequent devices will be connected to the root node device and act as child nodes to form a LiteMesh network. For details, please refer to [LiteMesh ](../../../doc/LiteMesh.md).
+- You can choose whether to enable the Mesh-Lite function in the menuconfig `Bridge Configuration -> The Interface used to provide network data forwarding for other devices -> Enable Lite Mesh`. This example enables this function by default.
+- If the Mesh-Lite function is enabled, the first networked device will connect to the target router and serve as the root node, and subsequent devices will be connected to the root node device and act as child nodes to form a Mesh-Lite network. For details, please refer to [Mesh-Lite](../../../doc/Mesh-Lite.md).
 
 ### 5. Build & Flash
 

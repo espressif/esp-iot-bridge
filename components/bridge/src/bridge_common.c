@@ -34,8 +34,8 @@
 #include "esp_bridge_wifi.h"
 #include "esp_bridge_internal.h"
 
-#if CONFIG_LITEMESH_ENABLE
-#include "esp_litemesh.h"
+#if CONFIG_MESH_LITE_ENABLE
+#include "esp_mesh_lite.h"
 #endif
 
 // DHCP_Server has to be enabled for this netif
@@ -129,8 +129,8 @@ esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t* ip_info)
 
     for (uint8_t bridge_ip = 4; bridge_ip < 255; bridge_ip++) {
         ip_segment_is_used = esp_bridge_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
-#if CONFIG_LITEMESH_ENABLE
-        ip_segment_is_used |= esp_litemesh_network_segment_is_used(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
+#if CONFIG_MESH_LITE_ENABLE
+        ip_segment_is_used |= esp_mesh_lite_network_segment_is_used(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
 #endif
         if (!ip_segment_is_used) {
             ip_info->ip.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
@@ -205,8 +205,8 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_neti
             }
             esp_netif_get_ip_info(p->netif, &netif_ip);
 
-#if CONFIG_LITEMESH_ENABLE
-            ip_segment_is_used = esp_litemesh_network_segment_is_used(netif_ip.ip.addr);
+#if CONFIG_MESH_LITE_ENABLE
+            ip_segment_is_used = esp_mesh_lite_network_segment_is_used(netif_ip.ip.addr);
 #endif
             /* The checked network segment does not conflict with the external netif */
             /* And the same ip net segment is not be used by other external netifs */
@@ -313,8 +313,8 @@ void esp_bridge_create_all_netif(void)
     esp_bridge_create_station_netif(NULL, NULL, false, false);
 #endif
 
-#if CONFIG_LITEMESH_ENABLE
-    esp_litemesh_config_t litemesh_config = ESP_LITEMESH_DEFAULT_INIT();
-    esp_litemesh_init(&litemesh_config);
+#if CONFIG_MESH_LITE_ENABLE
+    esp_mesh_lite_config_t mesh_lite_config = ESP_MESH_LITE_DEFAULT_INIT();
+    esp_mesh_lite_init(&mesh_lite_config);
 #endif
 }
