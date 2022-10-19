@@ -23,13 +23,13 @@ variables: &global-variables
   - python $IDF_PATH/tools/idf_tools.py install-python-env
   - pip install -r requirements.txt
 
-.get_bridge_priv: &get_bridge_priv
+.get_iot_bridge_priv: &get_iot_bridge_priv
   - git clone ${GITLAB_PRIV_SRC_URL} components/bridge/priv_src
   - cd components/bridge/priv_src
-  - git checkout ${CI_BUILD_REF_NAME} -- || echo "Using esp-bridge default branch"
+  - git checkout ${CI_BUILD_REF_NAME} -- || echo "Using esp-iot-bridge default branch"
   - cd -
 
-.build_bridge_esp32: &build_bridge_esp32
+.build_iot_bridge_esp32: &build_iot_bridge_esp32
   - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.esp32
   - idf.py set-target esp32
   - idf.py build
@@ -47,7 +47,7 @@ variables: &global-variables
   - idf.py set-target esp32
   - idf.py build
 
-.build_bridge_esp32c3: &build_bridge_esp32c3
+.build_iot_bridge_esp32c3: &build_iot_bridge_esp32c3
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.esp32c3
   - idf.py set-target esp32c3
   - idf.py build
@@ -60,7 +60,7 @@ variables: &global-variables
   - idf.py set-target esp32c3
   - idf.py build
 
-.build_bridge_esp32s2: &build_bridge_esp32s2
+.build_iot_bridge_esp32s2: &build_iot_bridge_esp32s2
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.esp32s2
   - idf.py set-target esp32s2
   - idf.py build
@@ -73,7 +73,7 @@ variables: &global-variables
   - idf.py set-target esp32s2
   - idf.py build
 
-.build_bridge_esp32s3: &build_bridge_esp32s3
+.build_iot_bridge_esp32s3: &build_iot_bridge_esp32s3
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.esp32s3
   - idf.py set-target esp32s3
   - idf.py build
@@ -99,10 +99,10 @@ esp32_v4.4_build:
     - *before_script_preparation
 
   script:
-    - *get_bridge_priv
+    - *get_iot_bridge_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_bridge_esp32
+    - *build_iot_bridge_esp32
     - cd examples/rainmaker/led_light
     - idf.py set-target esp32
     - idf.py build
@@ -120,10 +120,10 @@ esp32_v5.0_build:
     - *before_script_preparation
 
   script:
-    - *get_bridge_priv
+    - *get_iot_bridge_priv
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_bridge_esp32
+    - *build_iot_bridge_esp32
 
 esp32c3_v4.4_build:
   stage: build
@@ -138,10 +138,10 @@ esp32c3_v4.4_build:
     - *before_script_preparation
 
   script:
-    - *get_bridge_priv
+    - *get_iot_bridge_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_bridge_esp32c3
+    - *build_iot_bridge_esp32c3
     - cd examples/rainmaker/led_light
     - idf.py set-target esp32c3
     - idf.py build
@@ -159,10 +159,10 @@ esp32c3_v5.0_build:
     - *before_script_preparation
 
   script:
-    - *get_bridge_priv
+    - *get_iot_bridge_priv
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_bridge_esp32c3
+    - *build_iot_bridge_esp32c3
 
 esp32s2_v4.4_build:
   stage: build
@@ -177,10 +177,10 @@ esp32s2_v4.4_build:
     - *before_script_preparation
 
   script:
-    - *get_bridge_priv
+    - *get_iot_bridge_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_bridge_esp32s2
+    - *build_iot_bridge_esp32s2
 
 esp32s2_v5.0_build:
   stage: build
@@ -195,10 +195,10 @@ esp32s2_v5.0_build:
     - *before_script_preparation
 
   script:
-    - *get_bridge_priv
+    - *get_iot_bridge_priv
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_bridge_esp32s2
+    - *build_iot_bridge_esp32s2
 
 esp32s3_v4.4_build:
   stage: build
@@ -213,10 +213,10 @@ esp32s3_v4.4_build:
     - *before_script_preparation
 
   script:
-    - *get_bridge_priv
+    - *get_iot_bridge_priv
     - git clone -b release/v4.4 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_bridge_esp32s3
+    - *build_iot_bridge_esp32s3
     - cd examples/rainmaker/led_light
     - idf.py set-target esp32s3
     - idf.py build
@@ -234,10 +234,10 @@ esp32s3_v5.0_build:
     - *before_script_preparation
 
   script:
-    - *get_bridge_priv
+    - *get_iot_bridge_priv
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
-    - *build_bridge_esp32s3
+    - *build_iot_bridge_esp32s3
 
 push_master_to_github:
   stage: deploy
@@ -258,5 +258,5 @@ push_master_to_github:
     - chmod 600 ~/.ssh/id_rsa
     - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
     - if [ -d "components/bridge/priv_src" ]; then exit 1; fi
-    - git remote add github git@github.com:espressif/esp-bridge.git
+    - git remote add github git@github.com:espressif/esp-iot-bridge.git
     - eval $(git for-each-ref --shell bash --format 'if [ $CI_BUILD_REF == %(objectname) ]; then git checkout -B %(refname:strip=3); git push --follow-tags github %(refname:strip=3); fi;' $GITHUB_PUSH_REFS)
