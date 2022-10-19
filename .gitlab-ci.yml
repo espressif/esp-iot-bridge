@@ -24,8 +24,8 @@ variables: &global-variables
   - pip install -r requirements.txt
 
 .get_iot_bridge_priv: &get_iot_bridge_priv
-  - git clone ${GITLAB_PRIV_SRC_URL} components/bridge/priv_src
-  - cd components/bridge/priv_src
+  - git clone ${GITLAB_PRIV_SRC_URL} components/iot_bridge/priv_src
+  - cd components/iot_bridge/priv_src
   - git checkout ${CI_BUILD_REF_NAME} -- || echo "Using esp-iot-bridge default branch"
   - cd -
 
@@ -257,6 +257,6 @@ push_master_to_github:
     - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-    - if [ -d "components/bridge/priv_src" ]; then exit 1; fi
+    - if [ -d "components/iot_bridge/priv_src" ]; then exit 1; fi
     - git remote add github git@github.com:espressif/esp-iot-bridge.git
     - eval $(git for-each-ref --shell bash --format 'if [ $CI_BUILD_REF == %(objectname) ]; then git checkout -B %(refname:strip=3); git push --follow-tags github %(refname:strip=3); fi;' $GITHUB_PUSH_REFS)

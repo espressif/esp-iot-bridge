@@ -1,8 +1,8 @@
-# ESP-Bridge Smart Bridge Solution
+# ESP-IOT-Bridge Smart Gateway Solution
 
 - [中文版](README_CN.md)
 
-ESP-Bridge is a smart bridge solution offered by Espressif. This document describes how to configure and use ESP-Bridge(the solution was originally named ESP-Gateway, because this solution does not involve protocol proxy conversion, but only data forwarding, so it is renamed ESP-Bridge).
+ESP-IOT-Bridge smart gateway solution is mainly aimed at bridging between various network interfaces in iot application scenarios, such as SPI, SDIO, USB, Wi-Fi, Ethernet and other network interfaces. ESP-IOT-Bridge is a smart gateway solution offered by Espressif. This document describes how to configure and use ESP-IOT-Bridge(the solution was originally named ESP-Gateway, because this solution does not involve protocol proxy conversion, but only data forwarding, so it is renamed ESP-IOT-Bridge).
 
 
 # Table of Contents
@@ -19,7 +19,7 @@ ESP-Bridge is a smart bridge solution offered by Espressif. This document descri
 
 ## <span id = "1">1. Overview</span>
 
-ESP-Bridge is supported by various Espressif chips, as shown in the table below:
+ESP-IOT-Bridge is supported by various Espressif chips, as shown in the table below:
 
 | Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v5.0                                         |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -30,7 +30,7 @@ ESP-Bridge is supported by various Espressif chips, as shown in the table below:
 | ESP32-H2 | TODO                                                         | TODO                                                         |
 | ESP32-C2 | *N/A*                                                        | TODO                                                         |
 
-The ESP-Bridge solution provides several network interfaces, which can be divided into two main categories:
+The ESP-IOT-Bridge solution provides several network interfaces, which can be divided into two main categories:
 
 - Interfaces for connecting to the Internet
 
@@ -40,7 +40,7 @@ Users can realize personalized smart bridge solutions through different network 
 
 
 
-![esp_bridge](./doc/_static/esp_bridge_en.png)
+![esp_iot_bridge](./doc/_static/esp_iot_bridge_en.png)
 
 A variety of functions can be achieved depending on the combination of interfaces, as shown in the table below:
 
@@ -79,15 +79,15 @@ Notes:
 
 ### 1.1 Wi-Fi Router
 
-ESP-Bridge device can connect to the network by connecting to the router via Wi-Fi or by plugging the Ethernet cable into the LAN port of the router. Then other smart devices can connect to the SoftAP hotspot from the ESP-Bridge to access the Internet.
+ESP-IOT-Bridge device can connect to the network by connecting to the router via Wi-Fi or by plugging the Ethernet cable into the LAN port of the router. Then other smart devices can connect to the SoftAP hotspot from the ESP-IOT-Bridge to access the Internet.
 
-- Currently, ESP-Bridge supports lightweight mesh networking — [Mesh-Lite](./doc/Mesh-Lite.md). Users can customize the hierarchical network provision.
+- Currently, ESP-IOT-Bridge supports lightweight mesh networking — [Mesh-Lite](./doc/Mesh-Lite.md). Users can customize the hierarchical network provision.
 
 - By enabling ``ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC`` in menuconfig (``Bridge Configuration`` > ``SoftAP Config``), users can add MAC information at the end of SoftAP SSID.
 
-- A single ESP-Bridge device supports up to 10 stations connected at the same time, and bandwidth is shared by these stations.
+- A single ESP-IOT-Bridge device supports up to 10 stations connected at the same time, and bandwidth is shared by these stations.
 
-- You need to configure your network if the ESP-Bridge device connects to the router via Wi-Fi. Currently, the following ways are supported:
+- You need to configure your network if the ESP-IOT-Bridge device connects to the router via Wi-Fi. Currently, the following ways are supported:
 
     > - [Configure the network on web page](#web)
     > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#wifi_provisioning)（ESP32-S2 not supported）
@@ -96,7 +96,7 @@ ESP-Bridge device can connect to the network by connecting to the router via Wi-
 
 ### 1.2 4G Hotspot
 
-ESP-Bridge device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-Bridge device to gain Internet access.
+ESP-IOT-Bridge device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-IOT-Bridge device to gain Internet access.
 
 The table below shows modules that are compatible with 4G Cat.1.
 
@@ -112,7 +112,7 @@ The table below shows modules that are compatible with 4G Cat.1.
 
 ### 1.3 4G NIC
 
-ESP-Bridge device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface (ETH/SDIO/SPI) to gain Internet access.
+ESP-IOT-Bridge device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface (ETH/SDIO/SPI) to gain Internet access.
 
 <img src="./doc/_static/4G_dongle_en.png" alt="4G_dongle" style="zoom: 80%;" />
 
@@ -122,7 +122,7 @@ ESP-Bridge device can be equipped with a mobile network module with a SIM card. 
 
 ### 1.4 Wireless NIC
 
-ESP-Bridge device can be connected to the PC or MCU through multiple network interfaces (USB/ETH/SDIO/SPI). Once connected, the PC or MCU will have an additional network card. These devices can access the Internet after configuring the network.
+ESP-IOT-Bridge device can be connected to the PC or MCU through multiple network interfaces (USB/ETH/SDIO/SPI). Once connected, the PC or MCU will have an additional network card. These devices can access the Internet after configuring the network.
 
 - Use a USB cable to connect the GPIO19/20 of ESP32-S2 or ESP32-S3 with MCU.
 
@@ -149,7 +149,7 @@ ESP-Bridge device can be connected to the PC or MCU through multiple network int
 
 ### 1.5 Wired NIC
 
-ESP-Bridge device can connect to the network by plugging the Ethernet cable into the LAN port of router. PC or MCU can connect with the ESP-Bridge device through multiple interfaces (USB/SDIO/SPI) to gain internet access.
+ESP-IOT-Bridge device can connect to the network by plugging the Ethernet cable into the LAN port of router. PC or MCU can connect with the ESP-IOT-Bridge device through multiple interfaces (USB/SDIO/SPI) to gain internet access.
 
 - Use a USB cable to connect the GPIO19/20 of ESP32-S2 or ESP32-S3 with MCU.
 
@@ -210,10 +210,10 @@ Please refer to [Standard Toolchain Setup for Linux](https://docs.espressif.com/
 $ ./components/esptool_py/esptool/esptool.py --help
 ```
 
-### 3.3 Clone ESP-Bridge Repository
+### 3.3 Clone ESP-IOT-Bridge Repository
 
 ```
-$ git clone --recursive https://github.com/espressif/esp-bridge.git
+$ git clone --recursive https://github.com/espressif/esp-iot-bridge.git
 ```
 
 ## <span id = "4">4. Get SDK </span>
@@ -269,7 +269,7 @@ $ git clone --recursive https://github.com/espressif/esp-bridge.git
 
 ### 6.1 Build the Project
 
-Navigate to the ``esp-bridge`` directory and run the following command:
+Navigate to the ``esp-iot-bridge`` directory and run the following command:
 
 ```
 $ idf.py menuconfig
@@ -303,7 +303,7 @@ $ idf.py monitor
 
 ### <span id = "web">7.1 Configure Network on Web Page</span>
 
-After the PC or MCU connects to the hotspot from the ESP-Bridge device and obtains the IP address successfully, it can configure the network on the web page by accessing the bridge IP.
+After the PC or MCU connects to the hotspot from the ESP-IOT-Bridge device and obtains the IP address successfully, it can configure the network on the web page by accessing the gateway IP.
 
 <img src="./doc/_static/web_server_en.png" alt="web_server" style="zoom: 67%;" />
 
@@ -368,7 +368,7 @@ Since ESP32-S2 does not support Bluetooth LE, this network configuration method 
 | Wireless NIC (USB) | Driver-free; hot-swappable; easy to use; low development cost|
 | Wireless NIC (SPI/SDIO) | High transfer rate|
 
-**Please refer to the [ESP-Bridge Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-Bridge.**
+**Please refer to the [ESP-IOT-Bridge Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-IOT-Bridge.**
 
 ## <span id = "9">9.GPIO Map</span>
 

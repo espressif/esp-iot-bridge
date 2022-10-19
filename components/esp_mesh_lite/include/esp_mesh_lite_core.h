@@ -265,7 +265,7 @@ esp_err_t esp_mesh_lite_try_sending_msg(char* send_msg,
 /**
  * @brief Register custom message reception and recovery logic
  * 
- * @attention  Please refer to esp-bridge/examples/rainmaker/common/app_bridge/app_bridge.c
+ * @attention  Please refer to examples/rainmaker/common/app_bridge/app_bridge.c
  *
  * @param[in] msg_action
  * 
@@ -275,7 +275,7 @@ esp_err_t esp_mesh_lite_msg_action_list_register(const esp_mesh_lite_msg_action_
 /**
  * @brief Register custom message reception and recovery logic
  * 
- * @attention  Please refer to esp-bridge/examples/rainmaker/common/app_bridge/app_bridge.c
+ * @attention  Please refer to examples/rainmaker/common/app_bridge/app_bridge.c
  *
  * @param[in] msg_action
  * 

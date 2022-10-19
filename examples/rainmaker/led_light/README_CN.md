@@ -36,7 +36,7 @@
 ESP-IDF 环境搭建成功后，即可执行以下命令进行固件编译和烧录。
 
 ```
-$ cd esp-bridge/examples/rainmaker/led_light
+$ cd esp-iot-bridge/examples/rainmaker/led_light
 $ idf.py build
 $ idf.py flash
 ```
