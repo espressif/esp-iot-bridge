@@ -34,7 +34,7 @@ Refer to [README](../../../README_EN.md)
 After the ESP-IDF environment is successfully set up, you can execute the following commands to compile and burn the firmware.
 
 ```
-$ cd esp-bridge/examples/rainmaker/led_light
+$ cd esp-iot-bridge/examples/rainmaker/led_light
 $ idf.py build
 $ idf.py flash
 ```

@@ -32,14 +32,14 @@ dtoverlay=disable-bt
 
 Please reboot Raspberry-Pi after changing this file.
 
-## 2. Load ESP-Bridge Solution
+## 2. Load ESP-IOT-Bridge Solution
 
 ### 2.1 Host Software
 
-- Execute following commands in root directory of cloned ESP-Bridge repository on Raspberry-Pi
+- Execute following commands in root directory of cloned ESP-IOT-Bridge repository on Raspberry-Pi
 
 ```
-$ cd esp-bridge/examples/spi_and_sdio_host/host_driver/linux/host_control
+$ cd esp-iot-bridge/examples/spi_and_sdio_host/host_driver/linux/host_control
 $ ./rpi_init.sh sdio
 ```
 
@@ -63,10 +63,10 @@ $ . $HOME/esp/esp-idf/export.sh
 
 #### Source Compilation
 
-- In root directory of ESP-Bridge repository, execute below command
+- In root directory of ESP-IOT-Bridge repository, execute below command
 
 ```
-$ cd esp-bridge
+$ cd esp-iot-bridge
 ```
 
 ##### Using cmake
@@ -147,7 +147,7 @@ $ dmesg
 After the SDIO driver is loaded successfully, `ifconfig -a` command will see ethsta0, use the following command to enable ethsta0
 
 ```
-$ cd esp-bridge/example/spi_and_sdio_host/host_driver/linux/host_control
+$ cd esp-iot-bridge/example/spi_and_sdio_host/host_driver/linux/host_control
 $ ./ethsta0_config.sh 12:34:56:78:9a:bc
 ```
 

@@ -1,9 +1,8 @@
-# ESP-Bridge 智能网关方案
+# ESP-IOT-Bridge 智能网关方案
 
 - [English Version](README.md)
 
-本文档将介绍 ESP-Bridge 智能网关方案的配置流程和使用方法（该方案原名为 ESP-Gateway，因为本方案不涉及到协议的代理转换，仅仅为数据的转发，所以更改为 ESP-Bridge）。
-
+ESP-IOT-Bridge 智能网关方案主要针对 iot 应用场景下的各种网络接口之间的桥接，如 SPI、SDIO、USB、Wi-Fi、以太网等网络接口之间的相互桥接，本文档将介绍 ESP-IOT-Bridge 智能网关方案的配置流程和使用方法（该方案原名为 ESP-Gateway，因为本方案不涉及到协议的代理转换，仅仅为数据的转发，所以更改为 ESP-IOT-Bridge）。
 
 # 目录
 
@@ -19,7 +18,7 @@
 
 ## <span id = "1">1. 概述</span>
 
-乐鑫 ESP-Bridge 智能网关方案已经适配乐鑫多种芯片：
+乐鑫 ESP-IOT-Bridge 智能网关方案已经适配乐鑫多种芯片：
 
 | 芯片     | ESP-IDF Release/v4.4                                         | ESP-IDF Release/v5.0                                         |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -30,7 +29,7 @@
 | ESP32-H2 | TODO                                                         | TODO                                                         |
 | ESP32-C2 | *N/A*                                                        | TODO                                                         |
 
-ESP-Bridge 方案提供多个网络接口，不同的网络接口可以分为两大类：
+ESP-IOT-Bridge 方案提供多个网络接口，不同的网络接口可以分为两大类：
 
 - 用于连接互联网的接口
 
@@ -40,7 +39,7 @@ ESP-Bridge 方案提供多个网络接口，不同的网络接口可以分为两
 
 
 
-![esp_bridge](./doc/_static/esp_bridge.png)
+![esp_iot_bridge](./doc/_static/esp_iot_bridge.png)
 
 根据接口的不同组合可以实现多种功能，如下表：
 
@@ -79,15 +78,15 @@ ESP-Bridge 方案提供多个网络接口，不同的网络接口可以分为两
 
 ### 1.1 Wi-Fi 路由器
 
-ESP-Bridge 设备通过 Wi-Fi 或者有线以太网网口连接至路由器，智能设备通过连接至 ESP-Bridge 设备的 SoftAP 热点进行上网。
+ESP-IOT-Bridge 设备通过 Wi-Fi 或者有线以太网网口连接至路由器，智能设备通过连接至 ESP-IOT-Bridge 设备的 SoftAP 热点进行上网。
 
-- ESP-Bridge 当前支持轻量化的 Mesh 组网功能 —— [Mesh-Lite](./doc/Mesh-Lite.md)，用户可以通过自定义方式，灵活实现网络组网、层级分布。
+- ESP-IOT-Bridge 当前支持轻量化的 Mesh 组网功能 —— [Mesh-Lite](./doc/Mesh-Lite.md)，用户可以通过自定义方式，灵活实现网络组网、层级分布。
 
 - 通过在 menuconfig（``Bridge Configuration`` > ``SoftAP Config``）中启用 ``ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC``，可在 SoftAP SSID 末尾增加 MAC 信息。
 
 - 单个 Bridge 设备最多支持 10 个 Station 同时连接，多个 Station 设备共享带宽。
 
-- 若 ESP-Bridge 设备通过 Wi-Fi 连接至路由器，则需要进行配网操作，目前支持以下两种配网方式：
+- 若 ESP-IOT-Bridge 设备通过 Wi-Fi 连接至路由器，则需要进行配网操作，目前支持以下两种配网方式：
 
     > - [网页配网](#web)
     > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wifi_provisioning)（不支持 ESP32-S2）
@@ -96,7 +95,7 @@ ESP-Bridge 设备通过 Wi-Fi 或者有线以太网网口连接至路由器，�
 
 ### 1.2 4G 热点
 
-ESP-Bridge 设备在搭载插有 SIM 卡的移动网络模块后可将蜂窝网络转换为 Wi-Fi 信号，周围的智能设备连接其开启的热点后即可联网。
+ESP-IOT-Bridge 设备在搭载插有 SIM 卡的移动网络模块后可将蜂窝网络转换为 Wi-Fi 信号，周围的智能设备连接其开启的热点后即可联网。
 
 以下模块已适配 **4G Cat.1**：
 
@@ -112,7 +111,7 @@ ESP-Bridge 设备在搭载插有 SIM 卡的移动网络模块后可将蜂窝网�
 
 ### 1.3 4G 网卡
 
-ESP-Bridge 设备可搭载插有 SIM 卡的移动网络模块，网络模块联网后，可通过多个网络接口（ETH/SDIO/SPI）接入 PC 或 MCU，为设备提供上网能力。
+ESP-IOT-Bridge 设备可搭载插有 SIM 卡的移动网络模块，网络模块联网后，可通过多个网络接口（ETH/SDIO/SPI）接入 PC 或 MCU，为设备提供上网能力。
 
 <img src="./doc/_static/4G_dongle.png" alt="4G_dongle" style="zoom: 80%;" />
 
@@ -122,7 +121,7 @@ ESP-Bridge 设备可搭载插有 SIM 卡的移动网络模块，网络模块联�
 
 ### 1.4 无线网卡
 
-ESP-Bridge 设备可通过多个网络接口（USB/ETH/SDIO/SPI）接入 PC 或 MCU，在连接成功后，PC 或 MCU 等设备会新增一个网卡。待配网成功后，即可为设备提供上网能力。
+ESP-IOT-Bridge 设备可通过多个网络接口（USB/ETH/SDIO/SPI）接入 PC 或 MCU，在连接成功后，PC 或 MCU 等设备会新增一个网卡。待配网成功后，即可为设备提供上网能力。
 
 - USB 线一端连接至 ESP32-S2/ESP32-S2S3 的 GPIO19/20，一端连接至 MCU
 
@@ -149,7 +148,7 @@ ESP-Bridge 设备可通过多个网络接口（USB/ETH/SDIO/SPI）接入 PC 或 
 
 ### 1.5 有线网卡
 
-ESP-Bridge 设备可通过将以太网网线插入路由器 LAN 口连接网络，并通过多个网络接口（USB/SDIO/SPI）接入 PC 或 MCU，为设备提供上网能力。
+ESP-IOT-Bridge 设备可通过将以太网网线插入路由器 LAN 口连接网络，并通过多个网络接口（USB/SDIO/SPI）接入 PC 或 MCU，为设备提供上网能力。
 
 - USB 线一端连接至 ESP32-S2/ESP32-S3 的 GPIO19/20，一端连接至 MCU
 
@@ -210,10 +209,10 @@ USB 线主要是用于连接 PC 和 ESP 设备、烧写/下载程序以及查看
 $ ./components/esptool_py/esptool/esptool.py --help
 ```
 
-### 3.3 ESP-Bridge 仓库获取
+### 3.3 ESP-IOT-Bridge 仓库获取
 
 ```
-$ git clone --recursive https://github.com/espressif/esp-bridge.git
+$ git clone --recursive https://github.com/espressif/esp-iot-bridge.git
 ```
 
 ## <span id = "4">4. SDK 准备</span>
@@ -269,7 +268,7 @@ $ git clone --recursive https://github.com/espressif/esp-bridge.git
 
 ### 6.1 编译
 
-在 esp-bridge 目录下执行：
+在 esp-iot-bridge 目录下执行：
 
 ```
 $ idf.py menuconfig
@@ -303,7 +302,7 @@ $ idf.py monitor
 
 ### <span id = "web">7.1 网页配网</span>
 
-PC 或 MCU 连接至 ESP-Bridge 设备热点并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页配网。
+PC 或 MCU 连接至 ESP-IOT-Bridge 设备热点并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页配网。
 
 <img src="./doc/_static/web_server.png" alt="web_server" style="zoom: 67%;" />
 
@@ -368,7 +367,7 @@ https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"P
 | 无线网卡（USB） | 免驱动、可热插拔、使用简便，开发成本低 |
 | 无线网卡（SPI/SDIO） | 传输速率高 |
 
-**请参考 [ESP-Bridge 视频](https://www.bilibili.com/video/BV1wo4y1R7NG)，该视频演示了 ESP-Bridge 的部分功能。**
+**请参考 [ESP-IOT-Bridge 视频](https://www.bilibili.com/video/BV1wo4y1R7NG)，该视频演示了 ESP-IOT-Bridge 的部分功能。**
 
 ## <span id = "9">9.GPIO Map</span>
 

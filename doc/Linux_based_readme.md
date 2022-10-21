@@ -40,7 +40,7 @@ Make sure that Raspberry-Pi is equipped with following:
 
 ### 2.1 Linux Host: Development Environment Setup
 
-- This section list downs environment setup and tools needed to make ESP-Bridge solution work with Linux based host.
+- This section list downs environment setup and tools needed to make ESP-IOT-Bridge solution work with Linux based host.
 - If you are using Raspberry-Pi as a Linux host, both [section 2.1.1](#2.1.1) and [section 2.1.2](#2.1.2) are applicable.
 - If you are using other Linux platform, skip to [section 2.1.2](#2.1.2)
 
@@ -94,4 +94,4 @@ This section identifies Raspberry-Pi specific setup requirements.
 - Install following tools on Linux Host machine.
 
     - Git
-    - Python 2.x or 3.x: We have tested ESP-Bridge solution with python 2.7.13 and 3.5.3
+    - Python 2.x or 3.x: We have tested ESP-IOT-Bridge solution with python 2.7.13 and 3.5.3

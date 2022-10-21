@@ -10,12 +10,12 @@ You can apply the patch by entering the following command on the command line / 
 
     ```
     cd $IDF_PATH
-    git apply /path/to/esp-bridge/idf_patch/idf_patch_x_x.patch
+    git apply /path/to/esp-iot-bridge/idf_patch/idf_patch_x_x.patch
     ```
 
 - If you need to communicate between different data forwarding interfaces **(ESP-IDF Release/v5.0)**, you need to apply `ip4_forward.patch`.
 
     ```
     cd $IDF_PATH/components/lwip/lwip
-    git apply /path/to/esp-bridge/idf_patch/ip4_forward.patch
+    git apply /path/to/esp-iot-bridge/idf_patch/ip4_forward.patch
     ```
