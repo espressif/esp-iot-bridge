@@ -373,7 +373,6 @@ static hcd_port_handle_t _usb_port_init(void *context, hcd_port_callback_t callb
         .target = USB_PHY_TARGET_INT,
         .otg_mode = USB_OTG_MODE_HOST,
         .otg_speed = USB_PHY_SPEED_UNDEFINED,   //In Host mode, the speed is determined by the connected device
-        .gpio_conf = NULL,
     };
     ret = usb_new_phy(&phy_config, &s_phy_handle);
     CDC_CHECK(ESP_OK == ret, "USB PHY init failed", NULL);

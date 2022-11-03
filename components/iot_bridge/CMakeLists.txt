@@ -34,7 +34,11 @@ if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
     list(APPEND priv_srcs "priv_src/bridge_spi.c")
 endif()
 
-list(APPEND requires "esp_mesh_lite" "network_adapter" "esp_modem" "tinyusb" "led" "json" "esp_eth")
+if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
+    list(APPEND requires "usb_device")
+endif()
+
+list(APPEND requires "esp_mesh_lite" "network_adapter" "esp_modem" "led" "json" "esp_eth")
 
 idf_component_register(SRCS "${srcs}" "${priv_srcs}"
                        INCLUDE_DIRS "${include_dirs}"

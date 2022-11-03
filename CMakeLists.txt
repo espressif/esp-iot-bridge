@@ -7,7 +7,7 @@ add_definitions(-w)
 add_compile_options("-DIP_PORTMAP_MAX=255")
 set(EXTRA_COMPONENT_DIRS "components/esp-rainmaker/components/qrcode")
 if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
-    list(APPEND EXTRA_COMPONENT_DIRS "components/usb/tinyusb")
+    list(APPEND EXTRA_COMPONENT_DIRS "components/usb/usb_device")
 endif()
 
 string(REGEX REPLACE ".*/\(.*\)" "\\1" CURDIR ${CMAKE_CURRENT_SOURCE_DIR})
