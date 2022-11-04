@@ -124,6 +124,9 @@ esp32_v5.0_build:
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32
+    - cd examples/rainmaker/led_light
+    - idf.py set-target esp32
+    - idf.py build
 
 esp32c3_v4.4_build:
   stage: build
@@ -163,6 +166,9 @@ esp32c3_v5.0_build:
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32c3
+    - cd examples/rainmaker/led_light
+    - idf.py set-target esp32c3
+    - idf.py build
 
 esp32s2_v4.4_build:
   stage: build
@@ -238,6 +244,9 @@ esp32s3_v5.0_build:
     - git clone -b release/v5.0 --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
     - *setup_tools
     - *build_iot_bridge_esp32s3
+    - cd examples/rainmaker/led_light
+    - idf.py set-target esp32s3
+    - idf.py build
 
 push_master_to_github:
   stage: deploy

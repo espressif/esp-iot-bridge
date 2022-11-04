@@ -5,6 +5,14 @@ set(includes_public)
 set(includes_private)
 set(compile_options)
 
+if(target STREQUAL "esp32s2" OR target STREQUAL "esp32s3")
+
+if(IDF_VERSION_MAJOR STREQUAL "4")
+    set(tinyusb_dir "${IDF_PATH}/components/tinyusb/tinyusb")
+elseif(IDF_VERSION_MAJOR STREQUAL "5")
+    set(tinyusb_dir "../../../managed_components/espressif__esp_tinyusb")
+endif()
+
 if(CONFIG_TINYUSB)
     if(target STREQUAL "esp32s3")
         set(tusb_mcu "OPT_MCU_ESP32S3")
@@ -27,15 +35,15 @@ if(CONFIG_TINYUSB)
     idf_component_get_property(freertos_component_dir freertos COMPONENT_DIR)
 
     list(APPEND includes_private
-        "${IDF_PATH}/components/tinyusb/tinyusb/hw/bsp/"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/device"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/class/bth"
+        "${tinyusb_dir}/hw/bsp/"
+        "${tinyusb_dir}/src/"
+        "${tinyusb_dir}/src/device"
+        "${tinyusb_dir}/src/class/bth"
         #"additions/include_private"
         )
 
     list(APPEND includes_public
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/"
+        "${tinyusb_dir}/src/"
         "additions/include"
         "additions/include_private"
         "additions/tusb/src/lib/networking"
@@ -56,15 +64,15 @@ if(CONFIG_TINYUSB)
     endif()
 
     list(APPEND srcs
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/portable/espressif/${tusb_family}/dcd_${tusb_family}.c"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/class/cdc/cdc_device.c"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/class/hid/hid_device.c"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/class/midi/midi_device.c"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/class/msc/msc_device.c"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/class/vendor/vendor_device.c"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/common/tusb_fifo.c"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/device/usbd_control.c"
-        "${IDF_PATH}/components/tinyusb/tinyusb/src/tusb.c"
+        "${tinyusb_dir}/src/portable/espressif/${tusb_family}/dcd_${tusb_family}.c"
+        "${tinyusb_dir}/src/class/cdc/cdc_device.c"
+        "${tinyusb_dir}/src/class/hid/hid_device.c"
+        "${tinyusb_dir}/src/class/midi/midi_device.c"
+        "${tinyusb_dir}/src/class/msc/msc_device.c"
+        "${tinyusb_dir}/src/class/vendor/vendor_device.c"
+        "${tinyusb_dir}/src/common/tusb_fifo.c"
+        "${tinyusb_dir}/src/device/usbd_control.c"
+        "${tinyusb_dir}/src/tusb.c"
         "additions/src/descriptors_control.c"
         "additions/src/tinyusb.c"
         "additions/src/tusb_tasks.c"
@@ -103,7 +111,7 @@ if(CONFIG_TINYUSB)
     if(CONFIG_TINYUSB_BTH_ENABLED)
       list(APPEND srcs
           "additions/src/tusb_bth.c"
-          "${IDF_PATH}/components/tinyusb/tinyusb/src/class/bth/bth_device.c")
+          "${tinyusb_dir}/src/class/bth/bth_device.c")
     endif()
 
     if(CONFIG_TINYUSB_DFU_ENABLED)
@@ -118,6 +126,8 @@ if(CONFIG_TINYUSB)
         "additions/tusb/src/class/vendor/vendor_device.c")
     endif()
 endif() # CONFIG_TINYUSB
+
+endif()
 
 idf_component_register(SRCS ${srcs}
                        INCLUDE_DIRS ${includes_public}

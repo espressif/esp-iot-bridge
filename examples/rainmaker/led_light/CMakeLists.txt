@@ -2,6 +2,7 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.5)
 
+add_definitions(-w)
 add_compile_options(-fdiagnostics-color=always)
 
 if(DEFINED ENV{RMAKER_PATH})
@@ -15,6 +16,10 @@ set(EXTRA_COMPONENT_DIRS  ${RMAKER_PATH}/components
                           ${RMAKER_PATH}/components/esp-insights/components
                           "../common"
                           "../../../components")
+
+if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
+    list(APPEND EXTRA_COMPONENT_DIRS "../../../components/usb/usb_device")
+endif()
 
 if(NOT DEFINED IDF_TARGET)
     set(IDF_TARGET "esp32")

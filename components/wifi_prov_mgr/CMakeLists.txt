@@ -9,10 +9,11 @@ endif()
 
 if (CONFIG_ESP_BRIDGE_PROV_TRANSPORT)
 list(APPEND srcs "src/wifi_prov_mgr.c")
+endif()
+
 execute_process(COMMAND cp ${NEW_PROV_MGR} ${OLD_PROV_MGR} OUTPUT_VARIABLE info
         RESULT_VARIABLE exit_code
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
 
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "include"
