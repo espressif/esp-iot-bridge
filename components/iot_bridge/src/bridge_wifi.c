@@ -65,18 +65,35 @@ static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const c
     }
 
     if (mode & WIFI_MODE_AP) {
+        uint8_t nvs_softap[32];
+        char softap_ssid[ESP_BRIDGE_SSID_MAX_LEN + 1];
 #if CONFIG_MESH_LITE_ENABLE
         wifi_cfg.ap.max_connection = CONFIG_MESH_LITE_MAX_CONNECT_NUMBER;
 #else
         wifi_cfg.ap.max_connection = 10;
 #endif
-        wifi_cfg.ap.authmode = strlen(password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
-        memcpy((char *)wifi_cfg.ap.ssid, ssid, sizeof(wifi_cfg.ap.ssid));
-        strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
 
+        if (esp_mesh_lite_nvs_get_str("softap_ssid", (char *)nvs_softap) != ESP_OK) {
+            snprintf(softap_ssid, sizeof(softap_ssid), "%s", ssid);
+        } else {
+            snprintf(softap_ssid, sizeof(softap_ssid), "%s", nvs_softap);
+        }
+
+#if CONFIG_ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
+        uint8_t softap_mac[ESP_BRIDGE_MAC_MAX_LEN];
+        esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
+        snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", softap_ssid, softap_mac[3], softap_mac[4], softap_mac[5]);
+#endif
+        memcpy((char *)wifi_cfg.ap.ssid, softap_ssid, sizeof(wifi_cfg.ap.ssid));
+
+        if (esp_mesh_lite_nvs_get_str("softap_psw", (char *)wifi_cfg.ap.password) != ESP_OK) {
+            strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
+        }
+
+        wifi_cfg.ap.authmode = strlen((char *)wifi_cfg.ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
 
-        ESP_LOGI(TAG, "softap ssid: %s password: %s", ssid, password);
+        ESP_LOGI(TAG, "softap ssid: %s password: %s", (char *)wifi_cfg.ap.ssid, (char *)wifi_cfg.ap.password);
     }
 
     return ESP_OK;
@@ -232,7 +249,6 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_
 {
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
-    char softap_ssid[ESP_BRIDGE_SSID_MAX_LEN + 1];
     esp_netif_t *wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
 
@@ -271,14 +287,7 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_
     mode |= WIFI_MODE_AP;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
-#if CONFIG_ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
-    uint8_t softap_mac[ESP_BRIDGE_MAC_MAX_LEN];
-    esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
-    snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", ESP_BRIDGE_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
-#else
-    snprintf(softap_ssid, sizeof(softap_ssid), "%s", ESP_BRIDGE_SOFTAP_SSID);
-#endif
-    esp_bridge_wifi_set(WIFI_MODE_AP, softap_ssid, ESP_BRIDGE_SOFTAP_PASSWORD, NULL);
+    esp_bridge_wifi_set(WIFI_MODE_AP, ESP_BRIDGE_SOFTAP_SSID, ESP_BRIDGE_SOFTAP_PASSWORD, NULL);
 
     return wifi_netif;
 }

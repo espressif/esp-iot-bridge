@@ -31,6 +31,7 @@ static void wifi_reset_indicate(void *arg)
 
 static void factory_reset_trigger(void *arg)
 {
+    esp_mesh_lite_erase_rtc_store();
     esp_rmaker_factory_reset(0, REBOOT_DELAY);
 }
 

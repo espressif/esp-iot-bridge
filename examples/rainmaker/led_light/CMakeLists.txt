@@ -25,6 +25,16 @@ if(NOT DEFINED IDF_TARGET)
     set(IDF_TARGET "esp32")
 endif()
 
+# Add git describe to version
+EXECUTE_PROCESS(
+    COMMAND git describe --always --dirty
+    OUTPUT_VARIABLE MAGE_VERSION_GIT_HEAD_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_VARIABLE GET_GIT_VERSION_FAILED
+)
+string(CONCAT PROJECT_V "v1.0.0" "-beta_" ${MAGE_VERSION_GIT_HEAD_VERSION})
+set(PROJECT_VER ${PROJECT_V})
+
 set(SDKCONFIG_DEFAULTS ${CMAKE_CURRENT_LIST_DIR}/sdkconfig_defaults/sdkconfig.defaults.${IDF_TARGET})
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

@@ -80,6 +80,7 @@ static void button_long_press_start_cb(void *hardware_data, void *usr_data)
 static void restart_timer_callback(void* arg)
 {
     ESP_LOGI(TAG, "Restore factory settings");
+    esp_mesh_lite_erase_rtc_store();
     nvs_flash_erase();
     esp_restart();
 }

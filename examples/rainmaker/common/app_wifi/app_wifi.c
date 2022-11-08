@@ -166,13 +166,13 @@ static esp_err_t app_wifi_network_connect(void)
         ESP_LOGE(TAG, "Failed to get stored Password");
         password_len = 0;
     }
-    
+
     wifi_config_t wifi_cfg_old;
     memset(&wifi_cfg_old, 0, sizeof(wifi_config_t));
     memcpy(wifi_cfg_old.sta.ssid, ssid, ssid_len);
     if (password_len)
         memcpy(wifi_cfg_old.sta.password, password, password_len);
-    
+
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_cfg_old));
     ESP_ERROR_CHECK(esp_wifi_start());
 
@@ -200,7 +200,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 if (strlen((const char *) wifi_sta_cfg->password)) {
                     app_wifi_keystore_set(KEYSTORE_NAMESPACE, KEY_STA_PASSWORD, wifi_sta_cfg->password, strlen((const char *) wifi_sta_cfg->password));
                 }
-                
 #if CONFIG_MESH_LITE_ENABLE
                 esp_mesh_lite_set_router_config(wifi_sta_cfg);
                 esp_mesh_lite_connect();
@@ -255,6 +254,72 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     }
 }
 
+static esp_err_t rainmaker_mesh_lite_handler(uint32_t session_id, const uint8_t *inbuf, ssize_t inlen,
+                                             uint8_t **outbuf, ssize_t *outlen, void *priv_data)
+{
+    if (inbuf == NULL) {
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG, "Received data from APP: %.*s", inlen, (char *)inbuf);
+    cJSON *root = cJSON_Parse((const char*)inbuf);
+    cJSON *item = NULL;
+    uint8_t mesh_id = 0;
+    uint32_t argot = 0;
+    wifi_ap_config_t config;
+    memset(&config, 0x0, sizeof(config));
+
+    item = cJSON_GetObjectItem(root, "meshId");
+    if (item) {
+        mesh_id = item->valueint;
+        esp_mesh_lite_set_mesh_id(mesh_id, true);
+        ESP_LOGI(TAG, "[MeshID]: %d\r\n", mesh_id);
+    }
+
+    item = cJSON_GetObjectItem(root, "random");
+    if (item) {
+        argot = item->valuedouble;
+        esp_mesh_lite_set_argot(argot);
+        ESP_LOGI(TAG, "[random]: %u\r\n", argot);
+    }
+
+    item = cJSON_GetObjectItem(root, "password");
+    if (item) {
+        strlcpy((char *)config.password, item->valuestring, sizeof(config.password));
+        esp_mesh_lite_nvs_set_str("softap_psw", (char *)config.password);
+        ESP_LOGI(TAG, "[SoftAP psw]: %s\r\n", config.password);
+    }
+
+    item = cJSON_GetObjectItem(root, "ssid");
+    if (item) {
+        esp_mesh_lite_nvs_set_str("softap_ssid", item->valuestring);
+        esp_mesh_lite_set_softap_info(item->valuestring, (char*)config.password, true);
+
+        char softap_ssid[33];
+        uint8_t mac[6];
+        esp_wifi_get_mac(WIFI_IF_AP, mac);
+        snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", item->valuestring, mac[3], mac[4], mac[5]);
+        memcpy((char *)config.ssid, softap_ssid, sizeof(config.ssid));
+        ESP_LOGI(TAG, "[SoftAP ssid]: %s\r\n", (char *)config.ssid);
+    }
+
+    config.max_connection = CONFIG_MESH_LITE_MAX_CONNECT_NUMBER;
+    config.authmode = strlen((char*)config.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, (wifi_config_t*)&config));
+
+    char response[] = "SUCCESS";
+    *outbuf = (uint8_t *)strdup(response);
+    if (*outbuf == NULL) {
+        ESP_LOGE(TAG, "System out of memory");
+        return ESP_ERR_NO_MEM;
+    }
+    *outlen = strlen(response) + 1; /* +1 for NULL terminating byte */
+
+    ESP_LOGW("heap", "free heap %d, minimum %d", esp_get_free_heap_size(), esp_get_minimum_free_heap_size());
+
+    return ESP_OK;
+}
+
 /* Free random_bytes after use only if function returns ESP_OK */
 static esp_err_t read_random_bytes_from_nvs(uint8_t **random_bytes, size_t *len)
 {
@@ -301,7 +366,24 @@ static esp_err_t get_device_service_name(char *service_name, size_t max)
         free(nvs_random);
     }
 
-    uint8_t mfg[] = { 0xe5, 0x02, 'N', 'o', 'v', 'a', 0x00, 0x01, 0x00, 0x05, 0x01, 0x00 };
+    // Nova Home
+    uint8_t mfg[13] = { 0xe5, 0x02, 'N', 'o', 'v', 'c', 0x00, 0x01, 0x00, 0x05, 0x01, 0x00 };
+#if CONFIG_MESH_LITE_ENABLE
+    mfg[12] |= 0x08;
+    uint8_t allowed_level = esp_mesh_lite_get_allowed_level();
+    uint8_t disallowed_level = esp_mesh_lite_get_disallowed_level();
+
+    if (allowed_level == 1) {
+        mfg[12] |= 0x04;
+    } else if (disallowed_level == 1) {
+        mfg[12] |= 0x02;
+    } else {
+        mfg[12] |= 0x06;
+    }
+#else
+    mfg[12] &= 0xF7;
+#endif
+    ESP_LOGI(TAG, "reserve0 %d [Mesh-Lite Enable]:%d [root]:%d [child]:%d", mfg[12], ((mfg[12] >> 3) & 0x01), ((mfg[12] >> 2) & 0x01), ((mfg[12] >> 1) & 0x01));
     esp_err_t err = wifi_prov_scheme_ble_set_mfg_data(mfg, sizeof(mfg));
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "wifi_prov_scheme_ble_set_mfg_data failed %d", err);
@@ -309,7 +391,6 @@ static esp_err_t get_device_service_name(char *service_name, size_t max)
     }
     return ESP_OK;
 }
-
 
 static esp_err_t get_device_pop(char *pop, size_t max, app_wifi_pop_type_t pop_type)
 {
@@ -444,9 +525,10 @@ esp_err_t app_wifi_start(app_wifi_pop_type_t pop_type)
             return err;
         }
 #endif /* CONFIG_APP_WIFI_PROV_TRANSPORT_BLE */
-
+        wifi_prov_mgr_endpoint_create("rainmaker-litemesh");
         /* Start provisioning service */
         ESP_ERROR_CHECK(wifi_prov_mgr_start_provisioning(security, NULL, service_name, service_key));
+        wifi_prov_mgr_endpoint_register("rainmaker-litemesh", rainmaker_mesh_lite_handler, NULL);
         /* Print QR code for provisioning */
 #ifdef CONFIG_APP_WIFI_PROV_TRANSPORT_BLE
         app_wifi_print_qr(service_name, pop, PROV_TRANSPORT_BLE);
