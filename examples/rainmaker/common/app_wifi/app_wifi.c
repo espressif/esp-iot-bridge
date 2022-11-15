@@ -273,21 +273,21 @@ static esp_err_t rainmaker_mesh_lite_handler(uint32_t session_id, const uint8_t 
     if (item) {
         mesh_id = item->valueint;
         esp_mesh_lite_set_mesh_id(mesh_id, true);
-        ESP_LOGI(TAG, "[MeshID]: %d\r\n", mesh_id);
+        ESP_LOGI(TAG, "[MeshID]: %d", mesh_id);
     }
 
     item = cJSON_GetObjectItem(root, "random");
     if (item) {
         argot = item->valuedouble;
         esp_mesh_lite_set_argot(argot);
-        ESP_LOGI(TAG, "[random]: %u\r\n", argot);
+        ESP_LOGI(TAG, "[random]: %u", argot);
     }
 
     item = cJSON_GetObjectItem(root, "password");
     if (item) {
         strlcpy((char *)config.password, item->valuestring, sizeof(config.password));
         esp_mesh_lite_nvs_set_str("softap_psw", (char *)config.password);
-        ESP_LOGI(TAG, "[SoftAP psw]: %s\r\n", config.password);
+        ESP_LOGI(TAG, "[SoftAP psw]: %s", config.password);
     }
 
     item = cJSON_GetObjectItem(root, "ssid");
@@ -300,7 +300,7 @@ static esp_err_t rainmaker_mesh_lite_handler(uint32_t session_id, const uint8_t 
         esp_wifi_get_mac(WIFI_IF_AP, mac);
         snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", item->valuestring, mac[3], mac[4], mac[5]);
         memcpy((char *)config.ssid, softap_ssid, sizeof(config.ssid));
-        ESP_LOGI(TAG, "[SoftAP ssid]: %s\r\n", (char *)config.ssid);
+        ESP_LOGI(TAG, "[SoftAP ssid]: %s", (char *)config.ssid);
     }
 
     config.max_connection = CONFIG_MESH_LITE_MAX_CONNECT_NUMBER;

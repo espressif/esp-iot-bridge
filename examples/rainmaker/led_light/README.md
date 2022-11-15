@@ -24,12 +24,19 @@ Currently, ESP32-S3 and ESP32-C3 use Self-Claiming to obtain certificates by def
 
 Refer to [README](../../../README_EN.md)
 
-### 4. Mesh-Lite function
+### 4. Add esp-rainmaker patch
+
+```
+cd esp-iot-bridge/components/esp-rainmaker
+git apply ../../idf_patch/esp-rainmaker.patch
+```
+
+### 5. Mesh-Lite function
 
 - You can choose whether to enable the Mesh-Lite function in the menuconfig `Bridge Configuration -> The Interface used to provide network data forwarding for other devices -> Enable Lite Mesh`. This example enables this function by default.
 - If the Mesh-Lite function is enabled, the first networked device will connect to the target router and serve as the root node, and subsequent devices will be connected to the root node device and act as child nodes to form a Mesh-Lite network. For details, please refer to [Mesh-Lite](../../../doc/Mesh-Lite.md).
 
-### 5. Build & Flash
+### 6. Build & Flash
 
 After the ESP-IDF environment is successfully set up, you can execute the following commands to compile and burn the firmware.
 
@@ -39,7 +46,7 @@ $ idf.py build
 $ idf.py flash
 ```
 
-### 6. Add devices to Nove Home
+### 7. Add devices to Nove Home
 
 - Open `Nove Home`, the APP will automatically search for the device to be configured
 
@@ -65,6 +72,6 @@ $ idf.py flash
 
 <img src="../_static/control.jpg" alt="control" width="25%" div align=center />
 
-### 7. Precautions
+### 8. Precautions
 
 - Currently `Nove Home` only supports Wi-Fi Provisioning over Bluetooth Low Energy, so this example does not support ESP32-S2 chip currently.
