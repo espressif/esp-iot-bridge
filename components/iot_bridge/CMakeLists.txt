@@ -38,7 +38,7 @@ if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
     list(APPEND requires "usb_device")
 endif()
 
-list(APPEND requires "esp_mesh_lite" "network_adapter" "esp_modem" "led" "json" "esp_eth")
+list(APPEND requires "network_adapter" "esp_modem" "led" "json" "esp_eth")
 
 idf_component_register(SRCS "${srcs}" "${priv_srcs}"
                        INCLUDE_DIRS "${include_dirs}"
