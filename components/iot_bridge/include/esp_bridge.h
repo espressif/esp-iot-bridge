@@ -14,8 +14,13 @@
 
 #pragma once
 
-#ifdef CONFIG_MESH_LITE_ENABLE
-#include "esp_mesh_lite.h"
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
+#include "esp_wifi_types.h"
+
+esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
+                              const char *ssid,
+                              const char *password,
+                              const char *bssid);
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
@@ -135,3 +140,6 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 *
 */
 void esp_bridge_create_all_netif(void);
+
+
+bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t ip));

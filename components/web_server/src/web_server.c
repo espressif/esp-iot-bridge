@@ -180,6 +180,17 @@ static uint8_t esp_web_get_mac_match_len(uint8_t *mac1, uint8_t *mac2, uint8_t m
     return match_len;
 }
 
+esp_err_t __attribute__((weak)) esp_web_wifi_connect(wifi_sta_config_t *conf)
+{
+    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+    esp_err_t ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*)conf);
+    esp_wifi_set_storage(WIFI_STORAGE_RAM);
+    esp_wifi_disconnect();
+    esp_wifi_connect();
+
+    return ret;
+}
+
 /**
  * @brief Apply ssid、password、bssid to Wi-Fi config and start connect.
  *
@@ -207,17 +218,7 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
         memcpy(sta.bssid, bssid, sizeof(sta.bssid));
     }
 
-#if CONFIG_MESH_LITE_ENABLE
-    ret = esp_mesh_lite_set_router_config(&sta);
-    esp_mesh_lite_connect();
-#else
-    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
-    ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*) &sta);
-    esp_wifi_set_storage(WIFI_STORAGE_RAM);
-    esp_wifi_disconnect();
-
-    esp_wifi_connect();
-#endif /* CONFIG_MESH_LITE_ENABLE */
+    ret = esp_web_wifi_connect(&sta);
 
     if (connect_event != NULL) { // need to wait wifi connect result, now it's phone config wifi and ssid is null
         bits = xEventGroupWaitBits(connect_event,
@@ -228,15 +229,16 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
 
         if (bits & ESP_BRIDGE_WEB_WIFI_CONNECTED_BIT) {
             ESP_LOGI(TAG, "connected to ap SSID:%s", temp_ssid);
-        } else if (bits & ESP_BRIDGE_WEB_WIFI_FAIL_BIT) {
+        }
+        
+        if (bits & ESP_BRIDGE_WEB_WIFI_FAIL_BIT) {
             ESP_LOGI(TAG, "connecting to SSID:%s, reconnect timeout", temp_ssid);
             ret = ESP_ERR_TIMEOUT;
-        } else if (bits == 0) { // timeout expeird
+        }
+        
+        if (bits == 0) { // timeout expeird
             ESP_LOGI(TAG, "try connected to ap SSID:%s timeout", temp_ssid);
             ret = ESP_FAIL;
-        } else {
-            ESP_LOGE(TAG, "UNEXPECTED EVENT");
-            ret = ESP_ERR_INVALID_STATE;
         }
     } else { // don't need to wait wifi connect result
         printf("connect config finish\r\n");

@@ -38,11 +38,10 @@ static const char *TAG = "bridge_wifi";
 static bool esp_bridge_softap_dhcps = false;
 static EventGroupHandle_t s_wifi_event_group = NULL;
 
-#if CONFIG_MESH_LITE_ENABLE
-#include "esp_mesh_lite.h"
-#endif
-
-static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const char *password, const char *bssid)
+esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
+                              const char *ssid,
+                              const char *password,
+                              const char *bssid)
 {
     ESP_PARAM_CHECK(ssid);
     ESP_PARAM_CHECK(password);
@@ -65,31 +64,18 @@ static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const c
     }
 
     if (mode & WIFI_MODE_AP) {
-        uint8_t nvs_softap[32];
         char softap_ssid[ESP_BRIDGE_SSID_MAX_LEN + 1];
-#if CONFIG_MESH_LITE_ENABLE
-        wifi_cfg.ap.max_connection = CONFIG_MESH_LITE_MAX_CONNECT_NUMBER;
-#else
-        wifi_cfg.ap.max_connection = 10;
-#endif
-
-        if (esp_mesh_lite_nvs_get_str("softap_ssid", (char *)nvs_softap) != ESP_OK) {
-            snprintf(softap_ssid, sizeof(softap_ssid), "%s", ssid);
-        } else {
-            snprintf(softap_ssid, sizeof(softap_ssid), "%s", nvs_softap);
-        }
-
+        memcpy(softap_ssid, ssid, sizeof(softap_ssid));
 #if CONFIG_ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
         uint8_t softap_mac[ESP_BRIDGE_MAC_MAX_LEN];
+        char suffix[8];
         esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
-        snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x", softap_ssid, softap_mac[3], softap_mac[4], softap_mac[5]);
+        snprintf(suffix, sizeof(suffix), "_%02x%02x%02x", softap_mac[3], softap_mac[4], softap_mac[5]);
+        strcat(softap_ssid, suffix);
 #endif
         memcpy((char *)wifi_cfg.ap.ssid, softap_ssid, sizeof(wifi_cfg.ap.ssid));
-
-        if (esp_mesh_lite_nvs_get_str("softap_psw", (char *)wifi_cfg.ap.password) != ESP_OK) {
-            strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
-        }
-
+        strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
+        wifi_cfg.ap.max_connection = CONFIG_ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER;
         wifi_cfg.ap.authmode = strlen((char *)wifi_cfg.ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
 
@@ -103,7 +89,7 @@ static esp_err_t esp_bridge_wifi_set(wifi_mode_t mode, const char *ssid, const c
 static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t event_base,
                                                 int32_t event_id, void *event_data)
 {
-#if !CONFIG_MESH_LITE_ENABLE
+#if !CONFIG_BRIDGE_STATION_CANCEL_AUTO_CONNECT_WHEN_DISCONNECTED
     ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
     esp_wifi_connect();
 #endif
@@ -176,24 +162,6 @@ static esp_err_t esp_bridge_wifi_init(void)
 #endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_STATION || CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP */
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
-#ifdef CONFIG_MESH_LITE_ENABLE
-static void esp_mesh_lite_event_ip_changed_handler(void *arg, esp_event_base_t event_base,
-                                                  int32_t event_id, void *event_data)
-{
-    switch(event_id) {
-        case ESP_MESH_LITE_EVENT_CORE_STARTED:
-            ESP_LOGI(TAG, "Mesh-Lite connecting");
-            esp_mesh_lite_connect();
-            break;
-        case ESP_MESH_LITE_EVENT_CORE_INHERITED_NET_SEGMENT_CHANGED:
-            ESP_LOGI(TAG, "netif network segment conflict check");
-            esp_bridge_netif_network_segment_conflict_update(NULL);
-            break;
-        case ESP_MESH_LITE_EVENT_CORE_ROUTER_INFO_CHANGED:
-            break;
-    }
-}
-#endif
 
 esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
@@ -212,7 +180,6 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
     mode |= WIFI_MODE_STA;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
-#if !CONFIG_MESH_LITE_ENABLE
     wifi_sta_config_t router_config;
     /* Get WiFi Station configuration */
     esp_wifi_get_config(WIFI_IF_STA, (wifi_config_t*)&router_config);
@@ -221,9 +188,7 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
     if (strlen((const char*)router_config.ssid)) {
         ESP_LOGI(TAG, "Found ssid %s",     (const char*) router_config.ssid);
         ESP_LOGI(TAG, "Found password %s", (const char*) router_config.password);
-        esp_wifi_connect();
     }
-#endif /* CONFIG_MESH_LITE_ENABLE */
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_event_sta_disconnected_handler, NULL, NULL));
@@ -280,14 +245,10 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_START, &wifi_event_ap_start_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &wifi_event_ap_staconnected_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &wifi_event_ap_stadisconnected_handler, NULL, NULL));
-#ifdef CONFIG_MESH_LITE_ENABLE
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(ESP_MESH_LITE_EVENT, ESP_EVENT_ANY_ID, &esp_mesh_lite_event_ip_changed_handler, NULL, NULL));
-#endif
+
     esp_wifi_get_mode(&mode);
     mode |= WIFI_MODE_AP;
     ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
-
-    esp_bridge_wifi_set(WIFI_MODE_AP, ESP_BRIDGE_SOFTAP_SSID, ESP_BRIDGE_SOFTAP_PASSWORD, NULL);
 
     return wifi_netif;
 }

@@ -80,7 +80,6 @@ static void button_long_press_start_cb(void *hardware_data, void *usr_data)
 static void restart_timer_callback(void* arg)
 {
     ESP_LOGI(TAG, "Restore factory settings");
-    esp_mesh_lite_erase_rtc_store();
     nvs_flash_erase();
     esp_restart();
 }
@@ -117,6 +116,12 @@ void app_main(void)
 
     esp_bridge_create_all_netif();
 
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
+    esp_bridge_wifi_set(WIFI_MODE_AP, CONFIG_ESP_BRIDGE_SOFTAP_SSID, CONFIG_ESP_BRIDGE_SOFTAP_PASSWORD, NULL);
+#endif
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
+    esp_wifi_connect();
+#endif
     esp_bridge_create_button();
 
 #if defined(CONFIG_BRIDGE_USE_WEB_SERVER)

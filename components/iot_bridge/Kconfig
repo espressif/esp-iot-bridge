@@ -10,6 +10,9 @@ menu "Bridge Configuration"
 
         menu "Network Distribution"
             depends on BRIDGE_EXTERNAL_NETIF_STATION
+            config BRIDGE_STATION_CANCEL_AUTO_CONNECT_WHEN_DISCONNECTED
+                bool "Wi-Fi station do not automatically connect Wi-Fi when disconnected"
+                default n
 
             config BRIDGE_USE_WEB_SERVER
                 bool "Wi-Fi Provisioning over Web Server"
@@ -39,40 +42,40 @@ menu "Bridge Configuration"
             bool "Use Wi-Fi SoftAP interface to provide network data forwarding for other devices"
             default y
 
-            menu "MESH_LITE_ENABLE is enabled, please configure SoftAP in \"Bridge Mesh-Lite Configuration\""
-                visible if MESH_LITE_ENABLE
+            menu "BRIDGE_CUSTOM_SOFTAP is enabled, please configure SoftAP in \"By custom SoftAP menu\""
+                visible if BRIDGE_CUSTOM_SOFTAP
             endmenu
 
             menu "SoftAP Config"
                 depends on BRIDGE_DATA_FORWARDING_NETIF_SOFTAP
-                visible if !MESH_LITE_ENABLE
+                visible if !BRIDGE_CUSTOM_SOFTAP
 
                 config ESP_BRIDGE_SOFTAP_SSID
                     string
                     prompt "SoftAP SSID"
-                    default "ESP_Bridge" if !MESH_LITE_ENABLE
-                    default MESH_LITE_SOFTAP_SSID if MESH_LITE_ENABLE
+                    default "ESP_Bridge" if !BRIDGE_CUSTOM_SOFTAP
+                    default BRIDGE_CUSTOM_SOFTAP_SSID if BRIDGE_CUSTOM_SOFTAP
                     help
                         SSID of ESP-Bridge SoftAP.
 
                 config ESP_BRIDGE_SOFTAP_PASSWORD
                     string "SoftAP Password"
-                    default "12345678" if !MESH_LITE_ENABLE
-                    default MESH_LITE_SOFTAP_PASSWORD if MESH_LITE_ENABLE
+                    default "12345678" if !BRIDGE_CUSTOM_SOFTAP
+                    default BRIDGE_CUSTOM_SOFTAP_PASSWORD if BRIDGE_CUSTOM_SOFTAP
                     help
                         password of ESP-Bridge SoftAP.
 
                 config ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
                     bool "SoftAP SSID ends with the MAC"
-                    default n if !MESH_LITE_ENABLE
-                    default MESH_LITE_SOFTAP_SSID_END_WITH_THE_MAC if MESH_LITE_ENABLE
+                    default n if !BRIDGE_CUSTOM_SOFTAP
+                    default BRIDGE_CUSTOM_SOFTAP_SSID_END_WITH_THE_MAC if BRIDGE_CUSTOM_SOFTAP
                     help
                         Add MAC to the end of SSID
 
                 config ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER
                     int "Maximum number of connections per node"
-                    default 6 if !MESH_LITE_ENABLE
-                    default MESH_LITE_MAX_CONNECT_NUMBER if MESH_LITE_ENABLE
+                    default 6 if !BRIDGE_CUSTOM_SOFTAP
+                    default BRIDGE_CUSTOM_MAX_CONNECT_NUMBER if BRIDGE_CUSTOM_SOFTAP
                     range 1 10
             endmenu
 
@@ -333,7 +336,7 @@ menu "Bridge Configuration"
                 help
                     This settings extends the default DCE object provided by esp-modem
                     to implement board specific features, using GPIO's to reset/restart
-                    the modem and retry/resend strategy if certain AT command fails    
+                    the modem and retry/resend strategy if certain AT command fails
         endif    
 
         config LED_RED_SYSTEM_GPIO
@@ -363,5 +366,102 @@ menu "Bridge Configuration"
             default "internet"
             help
                 Set APN (Access Point Name), a logical name to choose data network
+    endmenu
+
+    menu "Bridge Wi-Fi Provisioning Configuration"
+        depends on BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE
+
+        choice ESP_BRIDGE_PROV_TRANSPORT
+            bool "Provisioning Transport"
+            default ESP_BRIDGE_PROV_TRANSPORT_BLE
+            help
+                Wi-Fi provisioning component offers both, SoftAP and BLE transports. Choose any one.
+
+            config ESP_BRIDGE_PROV_TRANSPORT_BLE
+                bool "BLE"
+                select BT_ENABLED
+                depends on !IDF_TARGET_ESP32S2
+        endchoice
+
+        choice ESP_BRIDGE_PROV_SECURITY_VERSION
+            bool "Protocomm security version"
+            default ESP_BRIDGE_PROV_SECURITY_VERSION_2
+            help
+                Wi-Fi provisioning component offers 3 security versions.
+                The example offers a choice between security version 1 and 2.
+
+            config ESP_BRIDGE_PROV_SECURITY_VERSION_1
+                bool "Security version 1"
+                select ESP_PROTOCOMM_SUPPORT_SECURITY_VERSION_1
+
+            config ESP_BRIDGE_PROV_SECURITY_VERSION_2
+                bool "Security version 2"
+                select ESP_PROTOCOMM_SUPPORT_SECURITY_VERSION_2
+        endchoice
+
+        choice ESP_BRIDGE_PROV_MODE
+            bool "Security version 2 mode"
+            depends on ESP_BRIDGE_PROV_SECURITY_VERSION_2
+            default ESP_BRIDGE_PROV_SEC2_DEV_MODE
+
+            config ESP_BRIDGE_PROV_SEC2_DEV_MODE
+                bool "Security version 2 development mode"
+                depends on ESP_BRIDGE_PROV_SECURITY_VERSION_2
+                help
+                    This enables the development mode for
+                    security version 2.
+                    Please note that this mode is NOT recommended for production purpose.
+
+            config ESP_BRIDGE_PROV_SEC2_PROD_MODE
+                bool "Security version 2 production mode"
+                depends on ESP_BRIDGE_PROV_SECURITY_VERSION_2
+                help
+                    This enables the production mode for
+                    security version 2.
+        endchoice
+
+        config ESP_BRIDGE_PROV_TRANSPORT
+            int
+            default 1 if ESP_BRIDGE_PROV_TRANSPORT_BLE
+
+        config ESP_BRIDGE_RESET_PROVISIONED
+            bool
+            default n
+            prompt "Reset provisioned status of the device"
+            help
+                This erases the NVS to reset provisioned status of the device on every reboot.
+                Provisioned status is determined by the Wi-Fi STA configuration, saved on the NVS.
+
+        config ESP_BRIDGE_RESET_PROV_MGR_ON_FAILURE
+            bool
+            default y
+            prompt "Reset provisioned credentials and state machine after session failure"
+            help
+                Enable reseting provisioned credentials and state machine after session failure.
+                This will restart the provisioning service after retries are exhausted.
+
+        config ESP_BRIDGE_PROV_MGR_MAX_RETRY_CNT
+            int
+            default 5
+            prompt "Max retries before reseting provisioning state machine"
+            depends on ESP_BRIDGE_RESET_PROV_MGR_ON_FAILURE
+            help
+                Set the Maximum retry to avoid reconnecting to an inexistent AP or if credentials
+                are misconfigured. Provisioned credentials are erased and internal state machine
+                is reset after this threshold is reached.
+
+        config ESP_BRIDGE_PROV_SHOW_QR
+            bool "Show provisioning QR code"
+            default y
+            help
+                Show the QR code for provisioning.
+
+        config ESP_BRIDGE_PROV_USING_BLUEDROID
+            bool
+            depends on (BT_BLUEDROID_ENABLED && (IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3))
+            select BT_BLE_42_FEATURES_SUPPORTED
+            default y
+            help
+                This enables BLE 4.2 features for Bluedroid.
     endmenu
 endmenu

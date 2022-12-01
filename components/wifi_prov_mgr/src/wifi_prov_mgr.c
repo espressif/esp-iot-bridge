@@ -35,8 +35,6 @@
 #endif /* CONFIG_ESP_BRIDGE_PROV_TRANSPORT_SOFTAP */
 #include "qrcode.h"
 
-#include "esp_bridge.h"
-
 static const char *TAG = "esp_bridge_wifi_prov_mgr";
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
@@ -126,6 +124,17 @@ bool wifi_provision_in_progress(void)
     return wifi_prov_status;
 }
 
+esp_err_t __attribute__((weak)) wifi_prov_wifi_connect(wifi_sta_config_t *conf)
+{
+    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+    esp_err_t ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*)conf);
+    esp_wifi_set_storage(WIFI_STORAGE_RAM);
+    esp_wifi_disconnect();
+    esp_wifi_connect();
+
+    return ret;
+}
+
 static void deinit_wifi_prov_mgr_timer_callback(void* arg)
 {
     ESP_LOGW(TAG, "Provisioning timed out. Please reboot device to restart provisioning.");
@@ -154,17 +163,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                          "\n\tSSID     : %s\n\tPassword : %s",
                          (const char *) wifi_sta_cfg->ssid,
                          (const char *) wifi_sta_cfg->password);
-#if CONFIG_MESH_LITE_ENABLE
-                esp_mesh_lite_set_router_config(wifi_sta_cfg);
-                esp_mesh_lite_connect();
-#else
-                esp_wifi_set_storage(WIFI_STORAGE_FLASH);
-                esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*)wifi_sta_cfg);
-                esp_wifi_set_storage(WIFI_STORAGE_RAM);
-
-                esp_wifi_disconnect();
-                esp_wifi_connect();
-#endif /* CONFIG_MESH_LITE_ENABLE */
+                wifi_prov_wifi_connect(wifi_sta_cfg);
                 break;
             }
             case WIFI_PROV_CRED_FAIL: {

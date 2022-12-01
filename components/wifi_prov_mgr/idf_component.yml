@@ -1,0 +1,6 @@
+## IDF Component Manager Manifest File
+dependencies:
+  espressif/qrcode: "^0.1.0"
+  ## Required IDF version
+  idf:
+    version: ">=4.3.0"

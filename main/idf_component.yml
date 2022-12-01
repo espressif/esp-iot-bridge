@@ -1,5 +1,6 @@
 ## IDF Component Manager Manifest File
 dependencies:
+  espressif/qrcode: "^0.1.0"
   espressif/button: "==2.2.0"
   ## Required IDF version
   idf:
