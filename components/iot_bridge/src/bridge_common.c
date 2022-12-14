@@ -136,6 +136,8 @@ bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t 
         list->next = custom_check_list;
         custom_check_list = list;
     }
+
+    return true;
 }
 
 esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t* ip_info)

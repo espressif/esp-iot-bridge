@@ -143,3 +143,14 @@ void esp_bridge_create_all_netif(void);
 
 
 bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t ip));
+
+/**
+ * @brief  Check whether the other data-forwarding netif IP network segment conflicts with this one.
+ *         If yes, it will update the data-forwarding netif to a new IP network segment, otherwise, do nothing.
+ *
+ * @param[in]  esp_netif the netif information
+ *
+ * @return
+ *     - ESP_OK
+ */
+esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_netif);
