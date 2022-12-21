@@ -14,6 +14,11 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /**
  * @brief Maximum MAC size
  *
@@ -45,3 +50,7 @@ enum {
 #endif
     ESP_BRIDGE_EXTERNAL_NETIF_MAX
 };
+
+#ifdef __cplusplus
+}
+#endif

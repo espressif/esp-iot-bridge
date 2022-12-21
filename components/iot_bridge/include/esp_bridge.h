@@ -14,6 +14,11 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 #include "esp_wifi_types.h"
 
@@ -141,7 +146,14 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 */
 void esp_bridge_create_all_netif(void);
 
-
+/**
+ * @brief  Registered users check network segment conflict interface.
+ *
+ * @param[in]  custom_check_cb check network segment callback
+ *
+ * @return
+ *     - True: Registration success
+ */
 bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t ip));
 
 /**
@@ -154,3 +166,7 @@ bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t 
  *     - ESP_OK
  */
 esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_netif);
+
+#ifdef __cplusplus
+}
+#endif

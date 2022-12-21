@@ -36,8 +36,8 @@ endif()
 
 list(APPEND requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer")
 
-if (DEFINED ENV{ESP_BRIDGE_COMPLATION_WORKAROUND})
-if ($ENV{ESP_BRIDGE_COMPLATION_WORKAROUND} STREQUAL "ON")
+if (DEFINED ENV{ESP_BRIDGE_COMPILATION_WORKAROUND})
+if ($ENV{ESP_BRIDGE_COMPILATION_WORKAROUND} STREQUAL "ON")
     list(APPEND requires "esp_modem" "led")
 
 if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
