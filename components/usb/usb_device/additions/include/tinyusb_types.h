@@ -21,7 +21,7 @@ extern "C" {
 #define USB_ESPRESSIF_VID 0x303A
 #define USB_STRING_DESCRIPTOR_ARRAY_SIZE 8
 
-typedef enum{
+typedef enum {
     TINYUSB_USBDEV_0,
 } tinyusb_usbdev_t;
 

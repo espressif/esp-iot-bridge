@@ -20,7 +20,10 @@
 
 tusb_desc_strarray_device_t descriptor_str_tinyusb = {
     // array of pointer to string descriptors
-    (char[]){0x09, 0x04}, // 0: is supported language is English (0x0409)
+    (char[])
+    {
+        0x09, 0x04
+    }, // 0: is supported language is English (0x0409)
     "TinyUSB",            // 1: Manufacturer
     "TinyUSB Device",     // 2: Product
     "123456",             // 3: Serials, should use chip ID
@@ -82,7 +85,10 @@ tusb_desc_device_t descriptor_kconfig = {
 
 tusb_desc_strarray_device_t descriptor_str_kconfig = {
     // array of pointer to string descriptors
-    (char[]){0x09, 0x04},                    // 0: is supported language is English (0x0409)
+    (char[])
+    {
+        0x09, 0x04
+    },                    // 0: is supported language is English (0x0409)
     CONFIG_TINYUSB_DESC_MANUFACTURER_STRING, // 1: Manufacturer
     CONFIG_TINYUSB_DESC_PRODUCT_STRING,      // 2: Product
     CONFIG_TINYUSB_DESC_SERIAL_STRING,       // 3: Serials, should use chip ID

@@ -23,7 +23,7 @@ static uint8_t s_pdrv = 0;
 static int s_disk_block_size = 0;
 
 #define LOGICAL_DISK_NUM 1
-static bool ejected[LOGICAL_DISK_NUM] = {true};
+static bool ejected[LOGICAL_DISK_NUM] = { true };
 
 esp_err_t tusb_msc_init(const tinyusb_config_msc_t *cfg)
 {
@@ -174,7 +174,7 @@ bool tud_msc_is_writable_cb(uint8_t lun)
 bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
 {
     ESP_LOGI(__func__, "");
-    (void) power_condition;
+    (void)power_condition;
 
     if (lun >= LOGICAL_DISK_NUM) {
         ESP_LOGE(__func__, "invalid lun number %u", lun);
@@ -228,7 +228,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *buffer, uint32_t bufsize)
 {
     ESP_LOGD(__func__, "");
-    (void) offset;
+    (void)offset;
 
     if (lun >= LOGICAL_DISK_NUM) {
         ESP_LOGE(__func__, "invalid lun number %u", lun);
@@ -260,18 +260,18 @@ int32_t tud_msc_scsi_cb(uint8_t lun, uint8_t const scsi_cmd[16], void *buffer, u
     bool in_xfer = true;
 
     switch (scsi_cmd[0]) {
-        case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
-            // Host is about to read/write etc ... better not to disconnect disk
-            resplen = 0;
-            break;
+    case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
+        // Host is about to read/write etc ... better not to disconnect disk
+        resplen = 0;
+        break;
 
-        default:
-            // Set Sense = Invalid Command Operation
-            tud_msc_set_sense(lun, SCSI_SENSE_ILLEGAL_REQUEST, 0x20, 0x00);
+    default:
+        // Set Sense = Invalid Command Operation
+        tud_msc_set_sense(lun, SCSI_SENSE_ILLEGAL_REQUEST, 0x20, 0x00);
 
-            // negative means error -> tinyusb could stall and/or response with failed status
-            resplen = -1;
-            break;
+        // negative means error -> tinyusb could stall and/or response with failed status
+        resplen = -1;
+        break;
     }
 
     // return resplen must not larger than bufsize

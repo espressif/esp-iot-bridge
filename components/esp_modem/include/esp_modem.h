@@ -41,8 +41,8 @@ ESP_EVENT_DECLARE_BASE(ESP_MODEM_EVENT);
  */
 typedef enum {
     ESP_MODEM_EVENT_PPP_START = 0,       /*!< ESP Modem Start PPP Session */
-    ESP_MODEM_EVENT_PPP_STOP  = 3,       /*!< ESP Modem Stop PPP Session*/
-    ESP_MODEM_EVENT_UNKNOWN   = 4        /*!< ESP Modem Unknown Response */
+    ESP_MODEM_EVENT_PPP_STOP = 3,       /*!< ESP Modem Stop PPP Session*/
+    ESP_MODEM_EVENT_UNKNOWN = 4        /*!< ESP Modem Unknown Response */
 } esp_modem_event_t;
 
 /**
@@ -95,22 +95,22 @@ typedef struct {
 #define ESP_MODEM_DTE_DEFAULT_CONFIG()          \
     {                                           \
         .port_num = UART_NUM_1,                 \
-        .data_bits = UART_DATA_8_BITS,          \
-        .stop_bits = UART_STOP_BITS_1,          \
-        .parity = UART_PARITY_DISABLE,          \
-        .baud_rate = 115200,                    \
-        .flow_control = ESP_MODEM_FLOW_CONTROL_NONE,\
-        .tx_io_num = 25,                        \
-        .rx_io_num = 26,                        \
-        .rts_io_num = 27,                       \
-        .cts_io_num = 23,                       \
-        .rx_buffer_size = 1024,                 \
-        .tx_buffer_size = 512,                  \
-        .pattern_queue_size = 20,               \
-        .event_queue_size = 30,                 \
-        .event_task_stack_size = 2048,          \
-        .event_task_priority = 5,               \
-        .line_buffer_size = 512                 \
+                    .data_bits = UART_DATA_8_BITS,          \
+                                 .stop_bits = UART_STOP_BITS_1,          \
+                                              .parity = UART_PARITY_DISABLE,          \
+                                                      .baud_rate = 115200,                    \
+                                                              .flow_control = ESP_MODEM_FLOW_CONTROL_NONE,\
+                                                                      .tx_io_num = 25,                        \
+                                                                              .rx_io_num = 26,                        \
+                                                                                      .rts_io_num = 27,                       \
+                                                                                              .cts_io_num = 23,                       \
+                                                                                                      .rx_buffer_size = 1024,                 \
+                                                                                                              .tx_buffer_size = 512,                  \
+                                                                                                                      .pattern_queue_size = 20,               \
+                                                                                                                              .event_queue_size = 30,                 \
+                                                                                                                                      .event_task_stack_size = 2048,          \
+                                                                                                                                              .event_task_priority = 5,               \
+                                                                                                                                                      .line_buffer_size = 512                 \
     }
 
 /**
@@ -154,8 +154,8 @@ typedef enum esp_modem_dce_device_e {
 typedef struct esp_modem_dce_config_s {
     esp_modem_dce_pdp_ctx_t pdp_context;    /*!<  modem PDP context including APN */
     bool populate_command_list;             /*!<  use command list interface: Setting this to true creates
-                                                  a list of supported AT commands enabling sending
-                                                  these commands, but will occupy data memory */
+                                                      a list of supported AT commands enabling sending
+                                                      these commands, but will occupy data memory */
     esp_modem_dce_device_t device;          /*!<  predefined device enum that the DCE will initialise as */
 } esp_modem_dce_config_t;
 
@@ -166,11 +166,11 @@ typedef struct esp_modem_dce_config_s {
 #define ESP_MODEM_DCE_DEFAULT_CONFIG(APN) \
     {                                  \
         .pdp_context = {               \
-            .cid = 1,                  \
-            .type = "IP",              \
-            .apn = APN },              \
-        .populate_command_list = false,\
-        .device = ESP_MODEM_DEVICE_UNSPECIFIED   \
+                                       .cid = 1,                  \
+                                       .type = "IP",              \
+                                       .apn = APN },              \
+                       .populate_command_list = false,\
+                                                .device = ESP_MODEM_DEVICE_UNSPECIFIED   \
     }
 
 /**
@@ -310,7 +310,7 @@ esp_err_t esp_modem_default_start(esp_modem_dte_t *dte);
  *      - ESP_OK on success
  *      - ESP_FAIL on error
  */
-esp_err_t esp_modem_default_attach(esp_modem_dte_t *dte, esp_modem_dce_t *dce, esp_netif_t* ppp_netif);
+esp_err_t esp_modem_default_attach(esp_modem_dte_t *dte, esp_modem_dce_t *dce, esp_netif_t *ppp_netif);
 
 /**
  * @brief Basic destroy operation of the modem DTE and all the sub-elements bound to it

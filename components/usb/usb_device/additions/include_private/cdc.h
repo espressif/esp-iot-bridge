@@ -29,7 +29,7 @@ extern "C" {
 /* CDC classification
    ********************************************************************* */
 typedef enum {
-    TINYUSB_CDC_DATA =          0x00,
+    TINYUSB_CDC_DATA = 0x00,
 } cdc_data_sublcass_type_t; // CDC120 specification
 
 /* Note:other classification is represented in the file components\tinyusb\tinyusb\src\class\cdc\cdc.h */

@@ -6,7 +6,7 @@
  *      You may obtain a copy of the License at
  *
  *               http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *      Unless required by applicable law or agreed to in writing, software
  *      distributed under the License is distributed on an "AS IS" BASIS,
  *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,9 +30,10 @@
 
 static const char *TAG = "tusb_bth";
 static uint16_t acl_buf_size_max = 0;
-uint8_t * p_acl_buf = NULL;
+uint8_t *p_acl_buf = NULL;
 
-void ble_controller_init(void) {
+void ble_controller_init(void)
+{
     esp_err_t ret;
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
 
@@ -69,19 +70,20 @@ static int host_rcv_pkt(uint8_t *data, uint16_t len)
 {
     uint16_t act_len = len - 1;
 
-    if(data[0] == HCIT_TYPE_EVENT) { // event data from controller
+    if (data[0] == HCIT_TYPE_EVENT) { // event data from controller
         uint8_t *hci_buf = (uint8_t *)malloc(len);
-        memcpy(hci_buf, data +1 , act_len);
+        memcpy(hci_buf, data + 1, act_len);
         ESP_LOGI(TAG, "evt_data from controller, evt_data_length: %d :", act_len);
         tud_bt_event_send(hci_buf, act_len);
         free(hci_buf);
-    } else if(data[0] == HCIT_TYPE_ACL_DATA) { // acl data from controller
+    } else if (data[0] == HCIT_TYPE_ACL_DATA) { // acl data from controller
         uint8_t *hci_acl_buf_contr = (uint8_t *)malloc(len);
-        memcpy(hci_acl_buf_contr, data +1 , act_len);
+        memcpy(hci_acl_buf_contr, data + 1, act_len);
         ESP_LOGI(TAG, "acl_data from controller, acl_data_length: %d :", act_len);
         tud_bt_acl_data_send(hci_acl_buf_contr, act_len);
         free(hci_acl_buf_contr);
     }
+
     return 0;
 }
 
@@ -90,20 +92,23 @@ static esp_vhci_host_callback_t vhci_host_cb = {
     host_rcv_pkt
 };
 
-static int host_rcv_pkt_test (uint8_t *data, uint16_t len) {
-    
+static int host_rcv_pkt_test(uint8_t *data, uint16_t len)
+{
+
     ESP_LOGI(TAG, "host_rcv_pkt_test evt_data_length: %d :", len);
-    if(data[1] == 0x0e && data[2] == 0x07 
-        && data[4] == 0x02 && data[5] == 0x20) {
+
+    if (data[1] == 0x0e && data[2] == 0x07
+            && data[4] == 0x02 && data[5] == 0x20) {
         // LE Read Buffer size command complete event
-        uint16_t* size_p = NULL;
+        uint16_t *size_p = NULL;
         uint16_t cmd_value;
-        size_p = (uint8_t*)(&cmd_value);
+        size_p = (uint8_t *)(&cmd_value);
         *size_p = data[7];
-        *(size_p+1) = data[8];
+        *(size_p + 1) = data[8];
         acl_buf_size_max = *size_p;
         ESP_LOGI(TAG, "acl_buf_size_max: %d", acl_buf_size_max);
     }
+
     if (!acl_buf_size_max) {
         acl_buf_size_max = BUFFER_SIZE_MAX;
     }
@@ -115,9 +120,9 @@ static int host_rcv_pkt_test (uint8_t *data, uint16_t len) {
 
 uint16_t make_cmd_le_read_buff_size(uint8_t *buf)
 {
-    UINT8_TO_STREAM (buf, HCIT_TYPE_COMMAND);
-    UINT16_TO_STREAM (buf, LE_READ_BUFF_SIZE);
-    UINT8_TO_STREAM (buf, 0);
+    UINT8_TO_STREAM(buf, HCIT_TYPE_COMMAND);
+    UINT16_TO_STREAM(buf, LE_READ_BUFF_SIZE);
+    UINT8_TO_STREAM(buf, 0);
     return HCI_H4_CMD_PREAMBLE_SIZE;
 }
 
@@ -150,8 +155,8 @@ void tud_bt_hci_cmd_cb(void *hci_cmd, size_t cmd_len)
     uint8_t *hci_cmd_buf = (uint8_t *)malloc(cmd_len + 1);
 
     hci_cmd_buf[0] = HCIT_TYPE_COMMAND;
-    memcpy(hci_cmd_buf+1, hci_cmd, cmd_len);
-    esp_vhci_host_send_packet(hci_cmd_buf, cmd_len +1);
+    memcpy(hci_cmd_buf + 1, hci_cmd, cmd_len);
+    esp_vhci_host_send_packet(hci_cmd_buf, cmd_len + 1);
 
     free(hci_cmd_buf);
 }
@@ -168,10 +173,11 @@ void tud_bt_acl_data_received_cb(void *acl_data, uint16_t data_len)
 {
 
     // if acl_data is long data
-    if(!prepare_write) {
+    if (!prepare_write) {
         // first get acl_data_length
-        acl_data_length = *(((uint16_t * )acl_data) + 1);
-        if(acl_data_length > data_len) {
+        acl_data_length = *(((uint16_t *)acl_data) + 1);
+
+        if (acl_data_length > data_len) {
             prepare_write = true;
             p_acl_buf[0] = HCIT_TYPE_ACL_DATA;
             memcpy(p_acl_buf + 1, acl_data, data_len);
@@ -185,14 +191,17 @@ void tud_bt_acl_data_received_cb(void *acl_data, uint16_t data_len)
     } else {
         memcpy(p_acl_buf + write_offset, acl_data, data_len);
         write_offset += data_len;
-        if(acl_data_length > write_offset) {
+
+        if (acl_data_length > write_offset) {
             ESP_LOGI(TAG, "Remaining bytes: %d", (acl_data_length - write_offset));
             return;
         }
+
         ESP_LOGI(TAG, "long acl_data from host, will send to controller, length: %d", (data_len + 1));
         prepare_write = false;
         esp_vhci_host_send_packet(p_acl_buf, data_len + write_offset);
     }
+
     //free(hci_data_buf);
 }
 

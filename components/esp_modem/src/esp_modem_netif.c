@@ -26,15 +26,16 @@ static const char *TAG = "esp-modem-netif";
  */
 struct esp_modem_netif_driver_s {
     esp_netif_driver_base_t base;           /*!< base structure reserved as esp-netif driver */
-    esp_modem_dte_t        *dte;            /*!< ptr to the esp_modem objects (DTE) */
+    esp_modem_dte_t *dte;            /*!< ptr to the esp_modem objects (DTE) */
 };
 
 static void on_ppp_changed(void *arg, esp_event_base_t event_base,
                            int32_t event_id, void *event_data)
 {
     esp_modem_dte_t *dte = arg;
+
     if (event_id < NETIF_PP_PHASE_OFFSET) {
-        ESP_LOGI(TAG, "PPP state changed event %d", event_id);
+        ESP_LOGI(TAG, "PPP state changed event %d", (int)event_id);
         // only notify the modem on state/error events, ignoring phase transitions
         esp_modem_notify_ppp_netif_closed(dte);
     }
@@ -54,9 +55,11 @@ static void on_ppp_changed(void *arg, esp_event_base_t event_base,
 static esp_err_t esp_modem_dte_transmit(void *h, void *buffer, size_t len)
 {
     esp_modem_dte_t *dte = h;
+
     if (dte->send_data(dte, (const char *)buffer, len) > 0) {
         return ESP_OK;
     }
+
     return ESP_FAIL;
 }
 
@@ -70,22 +73,22 @@ static esp_err_t esp_modem_dte_transmit(void *h, void *buffer, size_t len)
  *
  * @return ESP_OK on success, modem-start error code if starting failed
  */
-static esp_err_t esp_modem_post_attach_init(esp_netif_t * esp_netif, void * args)
+static esp_err_t esp_modem_post_attach_init(esp_netif_t *esp_netif, void *args)
 {
     esp_modem_netif_driver_t *driver = args;
     esp_modem_dte_t *dte = driver->dte;
     const esp_netif_driver_ifconfig_t driver_ifconfig = {
-            .driver_free_rx_buffer = NULL,
-            .transmit = esp_modem_dte_transmit,
-            .handle = dte
+        .driver_free_rx_buffer = NULL,
+        .transmit = esp_modem_dte_transmit,
+        .handle = dte
     };
     driver->base.netif = esp_netif;
     ESP_ERROR_CHECK(esp_netif_set_driver_config(esp_netif, &driver_ifconfig));
     // check if PPP error events are enabled, if not, do enable the error occurred/state changed
     // to notify the modem layer when switching modes
     esp_netif_ppp_config_t ppp_config = {
-            .ppp_error_event_enabled = true,
-            .ppp_phase_event_enabled = true,
+        .ppp_error_event_enabled = true,
+        .ppp_phase_event_enabled = true,
     };
     esp_netif_ppp_set_params(esp_netif, &ppp_config);
     ESP_ERROR_CHECK(esp_event_handler_register(NETIF_PPP_STATUS, ESP_EVENT_ANY_ID, &on_ppp_changed, dte));
@@ -96,7 +99,7 @@ static esp_err_t esp_modem_post_attach_init(esp_netif_t * esp_netif, void * args
  * @brief Post attach adapter for esp-modem with autostart functionality
  *
  */
-static esp_err_t esp_modem_post_attach_start(esp_netif_t * esp_netif, void * args)
+static esp_err_t esp_modem_post_attach_start(esp_netif_t *esp_netif, void *args)
 {
     esp_modem_netif_driver_t *driver = args;
     ESP_ERROR_CHECK(esp_modem_post_attach_init(esp_netif, args));
@@ -122,21 +125,26 @@ static esp_err_t modem_netif_receive_cb(void *buffer, size_t len, void *context)
 esp_modem_netif_driver_t *esp_modem_netif_new(esp_modem_dte_t *dte)
 {
     esp_modem_netif_driver_t *driver = esp_modem_netif_setup(dte);
+
     if (driver) {
         driver->base.post_attach = esp_modem_post_attach_init;
         return driver;
     }
+
     return NULL;
 }
 
 esp_modem_netif_driver_t *esp_modem_netif_setup(esp_modem_dte_t *dte)
 {
-    esp_modem_netif_driver_t *driver =  calloc(1, sizeof(esp_modem_netif_driver_t));
+    esp_modem_netif_driver_t *driver = calloc(1, sizeof(esp_modem_netif_driver_t));
+
     if (driver == NULL) {
         ESP_LOGE(TAG, "Cannot allocate esp_modem_netif_driver_t");
         goto drv_create_failed;
     }
+
     esp_err_t err = esp_modem_set_rx_cb(dte, modem_netif_receive_cb, driver);
+
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_modem_set_rx_cb failed with: %d", err);
         goto drv_create_failed;
@@ -166,13 +174,17 @@ esp_err_t esp_modem_netif_clear_default_handlers(esp_modem_netif_driver_t *h)
     esp_modem_netif_driver_t *driver = h;
     esp_err_t ret;
     ret = esp_modem_remove_event_handler(driver->dte, esp_netif_action_start);
+
     if (ret != ESP_OK) {
         goto clear_event_failed;
     }
+
     ret = esp_modem_remove_event_handler(driver->dte, esp_netif_action_stop);
+
     if (ret != ESP_OK) {
         goto clear_event_failed;
     }
+
     return ESP_OK;
 
 clear_event_failed:
@@ -181,26 +193,34 @@ clear_event_failed:
 
 }
 
-esp_err_t esp_modem_netif_set_default_handlers(esp_modem_netif_driver_t *h, esp_netif_t * esp_netif)
+esp_err_t esp_modem_netif_set_default_handlers(esp_modem_netif_driver_t *h, esp_netif_t *esp_netif)
 {
     esp_modem_netif_driver_t *driver = h;
     esp_err_t ret;
     ret = esp_modem_set_event_handler(driver->dte, esp_netif_action_start, ESP_MODEM_EVENT_PPP_START, esp_netif);
+
     if (ret != ESP_OK) {
         goto set_event_failed;
     }
+
     ret = esp_modem_set_event_handler(driver->dte, esp_netif_action_stop, ESP_MODEM_EVENT_PPP_STOP, esp_netif);
+
     if (ret != ESP_OK) {
         goto set_event_failed;
     }
+
     ret = esp_event_handler_register(IP_EVENT, IP_EVENT_PPP_GOT_IP, esp_netif_action_connected, esp_netif);
+
     if (ret != ESP_OK) {
         goto set_event_failed;
     }
+
     ret = esp_event_handler_register(IP_EVENT, IP_EVENT_PPP_LOST_IP, esp_netif_action_disconnected, esp_netif);
+
     if (ret != ESP_OK) {
         goto set_event_failed;
     }
+
     return ESP_OK;
 
 set_event_failed:

@@ -26,135 +26,142 @@
 
 static int esp_read_byte(struct esp_sdio_context *context, u32 reg, u8 *data, u8 is_lock_needed)
 {
-	struct sdio_func *func = NULL;
-	int ret;
+    struct sdio_func *func = NULL;
+    int ret;
 
-	if (!context || !context->func || !data) {
-		printk (KERN_ERR "%s: Invalid or incomplete arguments!\n", __func__);
-		return -1;
-	}
+    if (!context || !context->func || !data) {
+        printk(KERN_ERR "%s: Invalid or incomplete arguments!\n", __func__);
+        return -1;
+    }
 
-	func = context->func;
+    func = context->func;
 
-	if (is_lock_needed)
-		sdio_claim_host(func);
+    if (is_lock_needed) {
+        sdio_claim_host(func);
+    }
 
-	*data = sdio_readb(func, reg, &ret);
+    *data = sdio_readb(func, reg, &ret);
 
-	if (is_lock_needed)
-		sdio_release_host(func);
+    if (is_lock_needed) {
+        sdio_release_host(func);
+    }
 
-	return ret;
+    return ret;
 }
 
 static int esp_write_byte(struct esp_sdio_context *context, u32 reg, u8 data, u8 is_lock_needed)
 {
-	struct sdio_func *func = NULL;
-	int ret;
+    struct sdio_func *func = NULL;
+    int ret;
 
-	if (!context || !context->func) {
-		printk (KERN_ERR "%s: Invalid or incomplete arguments!\n", __func__);
-		return -1;
-	}
+    if (!context || !context->func) {
+        printk(KERN_ERR "%s: Invalid or incomplete arguments!\n", __func__);
+        return -1;
+    }
 
-	func = context->func;
+    func = context->func;
 
-	if (is_lock_needed)
-		sdio_claim_host(func);
+    if (is_lock_needed) {
+        sdio_claim_host(func);
+    }
 
-	sdio_writeb(func, data, reg, &ret);
+    sdio_writeb(func, data, reg, &ret);
 
-	if (is_lock_needed)
-		sdio_release_host(func);
+    if (is_lock_needed) {
+        sdio_release_host(func);
+    }
 
-	return ret;
+    return ret;
 }
 
 static int esp_read_multi_byte(struct esp_sdio_context *context, u32 reg, u8 *data, u16 size, u8 is_lock_needed)
 {
-	struct sdio_func *func = NULL;
-	int ret;
+    struct sdio_func *func = NULL;
+    int ret;
 
-	if (!context || !context->func || !data) {
-		printk (KERN_ERR "%s: Invalid or incomplete arguments!\n", __func__);
-		return -1;
-	}
+    if (!context || !context->func || !data) {
+        printk(KERN_ERR "%s: Invalid or incomplete arguments!\n", __func__);
+        return -1;
+    }
 
-	func = context->func;
+    func = context->func;
 
-	if (is_lock_needed)
-		sdio_claim_host(func);
+    if (is_lock_needed) {
+        sdio_claim_host(func);
+    }
 
-	ret = sdio_memcpy_fromio(func, data, reg, size);
+    ret = sdio_memcpy_fromio(func, data, reg, size);
 
-	if (is_lock_needed)
-		sdio_release_host(func);
+    if (is_lock_needed) {
+        sdio_release_host(func);
+    }
 
-	return ret;
+    return ret;
 }
 
 static int esp_write_multi_byte(struct esp_sdio_context *context, u32 reg, u8 *data, u16 size, u8 is_lock_needed)
 {
-	struct sdio_func *func = NULL;
-	int ret;
+    struct sdio_func *func = NULL;
+    int ret;
 
-	if (!context || !context->func || !data) {
-		printk (KERN_ERR "%s: Invalid or incomplete arguments!\n", __func__);
-		return -1;
-	}
+    if (!context || !context->func || !data) {
+        printk(KERN_ERR "%s: Invalid or incomplete arguments!\n", __func__);
+        return -1;
+    }
 
-	func = context->func;
+    func = context->func;
 
-	if (is_lock_needed)
-		sdio_claim_host(func);
+    if (is_lock_needed) {
+        sdio_claim_host(func);
+    }
 
-	ret = sdio_memcpy_toio(func, reg, data, size);
+    ret = sdio_memcpy_toio(func, reg, data, size);
 
-	if (is_lock_needed)
-		sdio_release_host(func);
+    if (is_lock_needed) {
+        sdio_release_host(func);
+    }
 
-	return ret;
+    return ret;
 }
 
 int esp_read_reg(struct esp_sdio_context *context, u32 reg, u8 *data, u16 size, u8 is_lock_needed)
 {
-	/* Need to apply address mask when reading/writing slave registers */
-	reg &= ESP_ADDRESS_MASK;
+    /* Need to apply address mask when reading/writing slave registers */
+    reg &= ESP_ADDRESS_MASK;
 
-	if (size <= 1) {
-		return esp_read_byte(context, reg, data, is_lock_needed);
-	} else {
-		return esp_read_multi_byte(context, reg, data, size, is_lock_needed);
-	}
+    if (size <= 1) {
+        return esp_read_byte(context, reg, data, is_lock_needed);
+    } else {
+        return esp_read_multi_byte(context, reg, data, size, is_lock_needed);
+    }
 }
 
 int esp_read_block(struct esp_sdio_context *context, u32 reg, u8 *data, u16 size, u8 is_lock_needed)
 {
-	if (size <= 1) {
-		return esp_read_byte(context, reg, data, is_lock_needed);
-	} else {
-		return esp_read_multi_byte(context, reg, data, size, is_lock_needed);
-	}
+    if (size <= 1) {
+        return esp_read_byte(context, reg, data, is_lock_needed);
+    } else {
+        return esp_read_multi_byte(context, reg, data, size, is_lock_needed);
+    }
 }
 
 int esp_write_reg(struct esp_sdio_context *context, u32 reg, u8 *data, u16 size, u8 is_lock_needed)
 {
-	/* Need to apply address mask when reading/writing slave registers */
-	reg &= ESP_ADDRESS_MASK;
+    /* Need to apply address mask when reading/writing slave registers */
+    reg &= ESP_ADDRESS_MASK;
 
-	if (size <= 1) {
-		return esp_write_byte(context, reg, *data, is_lock_needed);
-	} else {
-		return esp_write_multi_byte(context, reg, data, size, is_lock_needed);
-	}
+    if (size <= 1) {
+        return esp_write_byte(context, reg, *data, is_lock_needed);
+    } else {
+        return esp_write_multi_byte(context, reg, data, size, is_lock_needed);
+    }
 }
 
 int esp_write_block(struct esp_sdio_context *context, u32 reg, u8 *data, u16 size, u8 is_lock_needed)
 {
-	if (size <= 1) {
-		return esp_write_byte(context, reg, *data, is_lock_needed);
-	} else {
-		return esp_write_multi_byte(context, reg, data, size, is_lock_needed);
-	}
+    if (size <= 1) {
+        return esp_write_byte(context, reg, *data, is_lock_needed);
+    } else {
+        return esp_write_multi_byte(context, reg, data, size, is_lock_needed);
+    }
 }
-

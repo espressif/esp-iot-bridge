@@ -50,15 +50,19 @@ static void usb_read_task(void *param)
 {
     size_t data_len = 0;
     uint8_t buf[256];
+
     while (!(xEventGroupGetBits(s_event_group_hdl) & READ_TASK_KILL_BIT)) {
         usbh_cdc_get_buffered_data_len(&data_len);
+
         if (data_len == 0 || data_len > 256) {
             vTaskDelay(1);
             continue;
         }
+
         usbh_cdc_read_bytes(buf, data_len, 10);
         ESP_LOGI(TAG, "RCV len=%d: %.*s", data_len, data_len, buf);
     }
+
     xEventGroupClearBits(s_event_group_hdl, READ_TASK_KILL_BIT);
     ESP_LOGW(TAG, "CDC read task deleted");
     vTaskDelete(NULL);
@@ -81,16 +85,20 @@ TEST_CASE("usb cdc R/W", "[esp_usbh_cdc]")
     xTaskCreate(usb_read_task, "usb_read", 4096, NULL, 2, NULL);
     uint8_t buff[] = "AT\r\n";
     uint8_t loop_num = 40;
+
     while (--loop_num) {
         int len = usbh_cdc_write_bytes(buff, 4);
         ESP_LOGI(TAG, "Send len=%d: %s", len, buff);
         vTaskDelay(pdMS_TO_TICKS(500));
     }
+
     xEventGroupSetBits(s_event_group_hdl, READ_TASK_KILL_BIT);
     ESP_LOGW(TAG, "Waiting CDC read task delete");
+
     while (xEventGroupGetBits(s_event_group_hdl) & READ_TASK_KILL_BIT) {
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
+
     vEventGroupDelete(s_event_group_hdl);
     TEST_ASSERT_EQUAL(ESP_OK, usbh_cdc_driver_delete());
 }

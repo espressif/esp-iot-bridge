@@ -62,7 +62,7 @@ esp_err_t esp_modem_netif_clear_default_handlers(esp_modem_netif_driver_t *h);
  * @param h pointer to the esp-netif adapter for esp-modem
  * @param esp_netif pointer corresponding esp-netif instance
  */
-esp_err_t esp_modem_netif_set_default_handlers(esp_modem_netif_driver_t *h, esp_netif_t * esp_netif);
+esp_err_t esp_modem_netif_set_default_handlers(esp_modem_netif_driver_t *h, esp_netif_t *esp_netif);
 
 /**
  * @}

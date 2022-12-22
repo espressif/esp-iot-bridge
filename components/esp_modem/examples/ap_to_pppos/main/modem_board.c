@@ -36,8 +36,8 @@ typedef struct {
     esp_modem_dce_t parent;
     esp_modem_recov_gpio_t *power_pin;
     esp_modem_recov_gpio_t *reset_pin;
-    esp_err_t (*reset)(esp_modem_dce_t *dce);
-    esp_err_t (*power_down)(esp_modem_dce_t *dce);
+    esp_err_t(*reset)(esp_modem_dce_t *dce);
+    esp_err_t(*power_down)(esp_modem_dce_t *dce);
     esp_modem_recov_resend_t *re_sync;
     esp_modem_recov_resend_t *re_store_profile;
 } sim7600_board_t;
@@ -47,6 +47,7 @@ esp_err_t sim7600_board_handle_powerup(esp_modem_dce_t *dce, const char *line)
     if (strstr(line, "PB DONE")) {
         ESP_LOGI(TAG, "Board ready after hard reset/power-cycle");
     }
+
     return ESP_OK;
 }
 
@@ -56,9 +57,11 @@ esp_err_t sim7600_board_deinit(esp_modem_dce_t *dce)
     board->power_pin->destroy(board->power_pin);
     board->power_pin->destroy(board->reset_pin);
     esp_err_t err = esp_modem_command_list_deinit(&board->parent);
+
     if (err == ESP_OK) {
         free(dce);
     }
+
     return err;
 }
 
@@ -95,6 +98,7 @@ static esp_err_t my_recov(esp_modem_recov_resend_t *retry_cmd, esp_err_t err, in
 {
     esp_modem_dce_t *dce = retry_cmd->dce;
     ESP_LOGI(TAG, "Current timeouts: %d and errors: %d", timeouts, errors);
+
     if (err == ESP_ERR_TIMEOUT) {
         if (timeouts < 2) {
             // first timeout, try to exit data mode and sync again
@@ -114,15 +118,19 @@ static esp_err_t my_recov(esp_modem_recov_resend_t *retry_cmd, esp_err_t err, in
         // check if a PIN needs to be supplied in case of a failure
         bool ready = false;
         esp_modem_dce_read_pin(dce, NULL, &ready);
+
         if (!ready) {
             esp_modem_dce_set_pin(dce, "1234", NULL);
         }
+
         vTaskDelay(1000 / portTICK_RATE_MS);
         esp_modem_dce_read_pin(dce, NULL, &ready);
+
         if (!ready) {
             return ESP_FAIL;
         }
     }
+
     return ESP_OK;
 }
 
@@ -132,10 +140,10 @@ static DEFINE_RETRY_CMD(re_store_profile_fn, re_store_profile, sim7600_board_t)
 
 esp_err_t sim7600_board_start_up(esp_modem_dce_t *dce)
 {
-//    sim7600_board_t *board = __containerof(dce, sim7600_board_t, parent);
+    //    sim7600_board_t *board = __containerof(dce, sim7600_board_t, parent);
     ESP_MODEM_EXAMPLE_CHECK(re_sync_fn(dce, NULL, NULL) == ESP_OK, "sending sync failed", err);
-    ESP_MODEM_EXAMPLE_CHECK(dce->set_echo(dce, (void*)false, NULL) == ESP_OK, "set_echo failed", err);
-    ESP_MODEM_EXAMPLE_CHECK(dce->set_flow_ctrl(dce, (void*)ESP_MODEM_FLOW_CONTROL_NONE, NULL) == ESP_OK, "set_flow_ctrl failed", err);
+    ESP_MODEM_EXAMPLE_CHECK(dce->set_echo(dce, (void *)false, NULL) == ESP_OK, "set_echo failed", err);
+    ESP_MODEM_EXAMPLE_CHECK(dce->set_flow_ctrl(dce, (void *)ESP_MODEM_FLOW_CONTROL_NONE, NULL) == ESP_OK, "set_flow_ctrl failed", err);
     ESP_MODEM_EXAMPLE_CHECK(dce->store_profile(dce, NULL, NULL) == ESP_OK, "store_profile failed", err);
     return ESP_OK;
 err:
@@ -149,11 +157,11 @@ esp_modem_dce_t *sim7600_board_create(esp_modem_dce_config_t *config)
     ESP_MODEM_EXAMPLE_CHECK(board, "failed to allocate board-sim7600 object", err);
     ESP_MODEM_EXAMPLE_CHECK(esp_modem_dce_init(&board->parent, config) == ESP_OK, "Failed to init sim7600", err);
     /* power on sequence (typical values for SIM7600 Ton=500ms, Ton-status=16s) */
-    board->power_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 12, /*inactive_level*/ 1, /*active_width*/
-                                                              500, /*inactive_width*/ 16000);
+    board->power_pin = esp_modem_recov_gpio_new(/*gpio_num*/ 12, /*inactive_level*/ 1,  /*active_width*/
+                       500, /*inactive_width*/ 16000);
     /* reset sequence (typical values for SIM7600 Treset=200ms, wait 10s after reset */
-    board->reset_pin = esp_modem_recov_gpio_new( /*gpio_num*/ 13, /*inactive_level*/ 1, /*active_width*/
-                                                              200, /*inactive_width*/ 10000);
+    board->reset_pin = esp_modem_recov_gpio_new(/*gpio_num*/ 13, /*inactive_level*/ 1,  /*active_width*/
+                       200, /*inactive_width*/ 10000);
     board->parent.deinit = sim7600_board_deinit;
     board->reset = sim7600_board_reset;
     board->power_down = sim7600_board_power_down;

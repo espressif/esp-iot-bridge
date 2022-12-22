@@ -17,13 +17,13 @@
 #include "esp_modem_dce_common_commands.h"
 
 typedef struct common_string_s {
-    const char * command;
-    char * string;
+    const char *command;
+    char *string;
     size_t len;
 } common_string_t;
 
 
-static inline esp_err_t generic_command_default_handle(esp_modem_dce_t *dce, const char * command)
+static inline esp_err_t generic_command_default_handle(esp_modem_dce_t *dce, const char *command)
 {
     return esp_modem_dce_generic_command(dce, command, MODEM_COMMAND_TIMEOUT_DEFAULT, esp_modem_dce_handle_response_default, NULL);
 }
@@ -31,6 +31,7 @@ static inline esp_err_t generic_command_default_handle(esp_modem_dce_t *dce, con
 static esp_err_t common_handle_string(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
@@ -39,12 +40,14 @@ static esp_err_t common_handle_string(esp_modem_dce_t *dce, const char *line)
         common_string_t *result_str = dce->handle_line_ctx;
         assert(result_str->string != NULL && result_str->len != 0);
         int len = snprintf(result_str->string, result_str->len, "%s", line);
+
         if (len > 2) {
             /* Strip "\r\n" */
             strip_cr_lf_tail(result_str->string, len);
             err = ESP_OK;
         }
     }
+
     return err;
 }
 
@@ -54,6 +57,7 @@ static esp_err_t common_handle_string(esp_modem_dce_t *dce, const char *line)
 static esp_err_t esp_modem_dce_common_handle_cbc(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
@@ -64,6 +68,7 @@ static esp_err_t esp_modem_dce_common_handle_cbc(esp_modem_dce_t *dce, const cha
         sscanf(line, "%*s%d,%d,%d", &cbc->bcs, &cbc->bcl, &cbc->battery_status);
         err = ESP_OK;
     }
+
     return err;
 }
 /**
@@ -72,6 +77,7 @@ static esp_err_t esp_modem_dce_common_handle_cbc(esp_modem_dce_t *dce, const cha
 static esp_err_t esp_modem_dce_common_handle_csq(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
@@ -83,6 +89,7 @@ static esp_err_t esp_modem_dce_common_handle_csq(esp_modem_dce_t *dce, const cha
         sscanf(line, "%*s%d,%d", &csq->rssi, &csq->ber);
         err = ESP_OK;
     }
+
     return err;
 }
 
@@ -92,11 +99,13 @@ static esp_err_t esp_modem_dce_common_handle_csq(esp_modem_dce_t *dce, const cha
 static esp_err_t esp_modem_dce_handle_power_down(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = ESP_OK;
     } else if (strstr(line, "POWERED DOWN")) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     }
+
     return err;
 }
 
@@ -106,6 +115,7 @@ static esp_err_t esp_modem_dce_handle_power_down(esp_modem_dce_t *dce, const cha
 static esp_err_t esp_modem_dce_handle_exit_data_mode(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_NO_CARRIER)) {
@@ -113,6 +123,7 @@ static esp_err_t esp_modem_dce_handle_exit_data_mode(esp_modem_dce_t *dce, const
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_FAIL);
     }
+
     return err;
 }
 
@@ -122,44 +133,49 @@ static esp_err_t esp_modem_dce_handle_exit_data_mode(esp_modem_dce_t *dce, const
 static esp_err_t esp_modem_dce_handle_atd_ppp(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_CONNECT)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_FAIL);
     }
+
     return err;
 }
 
 static esp_err_t esp_modem_dce_handle_read_pin(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, "READY")) {
-        bool *ready = (bool*)dce->handle_line_ctx;
+        bool *ready = (bool *)dce->handle_line_ctx;
         *ready = true;
         err = ESP_OK;
     } else if (strstr(line, "PIN") || strstr(line, "PUK")) {
-        bool *ready = (bool*)dce->handle_line_ctx;
+        bool *ready = (bool *)dce->handle_line_ctx;
         *ready = false;
         err = ESP_OK;
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_FAIL);
     }
+
     return err;
 }
 
 static esp_err_t esp_modem_dce_handle_reset(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_OK;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = ESP_OK;
-    } else
-    if (strstr(line, "PB DONE")) {
+    } else if (strstr(line, "PB DONE")) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_FAIL);
     }
+
     return err;
 }
 
@@ -172,6 +188,7 @@ esp_err_t esp_modem_dce_sync(esp_modem_dce_t *dce, void *param, void *result)
 esp_err_t esp_modem_dce_set_echo(esp_modem_dce_t *dce, void *param, void *result)
 {
     bool echo_on = (bool)param;
+
     if (echo_on) {
         return generic_command_default_handle(dce, "ATE1\r");
     } else {
@@ -182,6 +199,7 @@ esp_err_t esp_modem_dce_set_echo(esp_modem_dce_t *dce, void *param, void *result
 static esp_err_t common_get_operator_after_mode_format(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
@@ -198,25 +216,30 @@ static esp_err_t common_get_operator_after_mode_format(esp_modem_dce_t *dce, con
         uint8_t i = 0;
         /* strtok will broke string by replacing delimiter with '\0' */
         p[i] = strtok_r(line_copy, ",", &str_ptr);
+
         while (p[i]) {
             p[++i] = strtok_r(NULL, ",", &str_ptr);
         }
+
         if (i >= 3) {
             int len = snprintf(result_str->string, result_str->len, "%s", p[2]);
+
             if (len > 2) {
                 /* Strip "\r\n" */
                 strip_cr_lf_tail(result_str->string, len);
                 err = ESP_OK;
             }
         }
+
         free(line_copy);
     }
+
     return err;
 }
 
 static esp_err_t common_get_common_string(esp_modem_dce_t *dce, void *ctx)
 {
-    common_string_t * param_str = ctx;
+    common_string_t *param_str = ctx;
     return esp_modem_dce_generic_command(dce, param_str->command, MODEM_COMMAND_TIMEOUT_DEFAULT, common_handle_string, ctx);
 }
 
@@ -248,20 +271,20 @@ esp_err_t esp_modem_dce_get_operator_name(esp_modem_dce_t *dce, void *param, voi
 
 esp_err_t esp_modem_dce_reset(esp_modem_dce_t *dce, void *param, void *result)
 {
-    return esp_modem_dce_generic_command(dce,  "AT+CRESET\r", MODEM_COMMAND_TIMEOUT_RESET, esp_modem_dce_handle_reset, NULL);
+    return esp_modem_dce_generic_command(dce, "AT+CRESET\r", MODEM_COMMAND_TIMEOUT_RESET, esp_modem_dce_handle_reset, NULL);
 }
 
 esp_err_t esp_modem_dce_set_pin(esp_modem_dce_t *dce, void *param, void *result)
 {
     char command[] = "AT+CPIN=0000\r";
     memcpy(command + 8, param, 4); // copy 4 bytes to the "0000" placeholder
-    esp_err_t err = esp_modem_dce_generic_command(dce,  command, MODEM_COMMAND_TIMEOUT_DEFAULT, esp_modem_dce_handle_response_default, NULL);
+    esp_err_t err = esp_modem_dce_generic_command(dce, command, MODEM_COMMAND_TIMEOUT_DEFAULT, esp_modem_dce_handle_response_default, NULL);
     return err;
 }
 
 esp_err_t esp_modem_dce_read_pin(esp_modem_dce_t *dce, void *param, void *result)
 {
-    return esp_modem_dce_generic_command(dce,  "AT+CPIN?\r", MODEM_COMMAND_TIMEOUT_DEFAULT, esp_modem_dce_handle_read_pin, result);
+    return esp_modem_dce_generic_command(dce, "AT+CPIN?\r", MODEM_COMMAND_TIMEOUT_DEFAULT, esp_modem_dce_handle_read_pin, result);
 }
 
 
@@ -276,9 +299,11 @@ esp_err_t esp_modem_dce_set_flow_ctrl(esp_modem_dce_t *dce, void *param, void *r
     esp_modem_flow_ctrl_t flow_ctrl = (esp_modem_flow_ctrl_t)param;
     char *command;
     int len = asprintf(&command, "AT+IFC=%d,%d\r", dte->flow_ctrl, flow_ctrl);
+
     if (len <= 0) {
         return ESP_ERR_NO_MEM;
     }
+
     esp_err_t err = generic_command_default_handle(dce, command);
     free(command);
     return err;
@@ -289,9 +314,11 @@ esp_err_t esp_modem_dce_set_pdp_context(esp_modem_dce_t *dce, void *param, void 
     esp_modem_dce_pdp_ctx_t *pdp = param;
     char *command;
     int len = asprintf(&command, "AT+CGDCONT=%d,\"%s\",\"%s\"\r", pdp->cid, pdp->type, pdp->apn);
+
     if (len <= 0) {
         return ESP_ERR_NO_MEM;
     }
+
     esp_err_t err = generic_command_default_handle(dce, command);
     free(command);
     return err;
@@ -345,13 +372,15 @@ esp_err_t esp_modem_dce_set_baud_temp(esp_modem_dce_t *dce, void *param, void *r
 {
     char command[] = "AT+IPR=3686400\r"; // reserve space with max baud placeholder
     size_t cmd_placeholder_len = strlen(command);
-    strncpy(command + 7, param, cmd_placeholder_len-7); // copy param string to the param
+    strncpy(command + 7, param, cmd_placeholder_len - 7); // copy param string to the param
     size_t cmd_len = strlen(command);
-    if (cmd_len+1 >= cmd_placeholder_len) {
+
+    if (cmd_len + 1 >= cmd_placeholder_len) {
         return ESP_FAIL;
     }
+
     command[cmd_len] = '\r';
-    command[cmd_len+1] = '\0';
+    command[cmd_len + 1] = '\0';
     return esp_modem_dce_generic_command(dce, command, MODEM_COMMAND_TIMEOUT_DEFAULT,
                                          esp_modem_dce_handle_response_default, NULL);
 }

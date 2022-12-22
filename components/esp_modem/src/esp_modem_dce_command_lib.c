@@ -43,26 +43,26 @@ struct esp_modem_dce_cmd_list {
  *
  */
 static const cmd_item_t s_command_list[] = {
-        { .command = "sync", .function = esp_modem_dce_sync },
-        { .command = "get_imei_number", .function = esp_modem_dce_get_imei_number },
-        { .command = "get_imsi_number", .function = esp_modem_dce_get_imsi_number },
-        { .command = "get_module_name", .function = esp_modem_dce_get_module_name },
-        { .command = "get_operator_name", .function = esp_modem_dce_get_operator_name },
-        { .command = "set_echo", .function = esp_modem_dce_set_echo },
-        { .command = "store_profile", .function = esp_modem_dce_store_profile },
-        { .command = "set_flow_ctrl", .function = esp_modem_dce_set_flow_ctrl },
-        { .command = "set_pdp_context", .function = esp_modem_dce_set_pdp_context },
-        { .command = "hang_up", .function = esp_modem_dce_hang_up },
-        { .command = "get_signal_quality", .function = esp_modem_dce_get_signal_quality },
-        { .command = "set_data_mode", .function = esp_modem_dce_set_data_mode },
-        { .command = "resume_data_mode", .function = esp_modem_dce_resume_data_mode },
-        { .command = "set_command_mode", .function = esp_modem_dce_set_command_mode },
-        { .command = "get_battery_status", .function = esp_modem_dce_get_battery_status },
-        { .command = "power_down", .function = esp_modem_dce_power_down },
-        { .command = "reset", .function = esp_modem_dce_reset },
-        { .command = "set_pin", .function = esp_modem_dce_set_pin },
-        { .command = "read_pin", .function = esp_modem_dce_read_pin },
-        { .command = "set_baud", .function = esp_modem_dce_set_baud_temp },
+    {.command = "sync", .function = esp_modem_dce_sync },
+    {.command = "get_imei_number", .function = esp_modem_dce_get_imei_number },
+    {.command = "get_imsi_number", .function = esp_modem_dce_get_imsi_number },
+    {.command = "get_module_name", .function = esp_modem_dce_get_module_name },
+    {.command = "get_operator_name", .function = esp_modem_dce_get_operator_name },
+    {.command = "set_echo", .function = esp_modem_dce_set_echo },
+    {.command = "store_profile", .function = esp_modem_dce_store_profile },
+    {.command = "set_flow_ctrl", .function = esp_modem_dce_set_flow_ctrl },
+    {.command = "set_pdp_context", .function = esp_modem_dce_set_pdp_context },
+    {.command = "hang_up", .function = esp_modem_dce_hang_up },
+    {.command = "get_signal_quality", .function = esp_modem_dce_get_signal_quality },
+    {.command = "set_data_mode", .function = esp_modem_dce_set_data_mode },
+    {.command = "resume_data_mode", .function = esp_modem_dce_resume_data_mode },
+    {.command = "set_command_mode", .function = esp_modem_dce_set_command_mode },
+    {.command = "get_battery_status", .function = esp_modem_dce_get_battery_status },
+    {.command = "power_down", .function = esp_modem_dce_power_down },
+    {.command = "reset", .function = esp_modem_dce_reset },
+    {.command = "set_pin", .function = esp_modem_dce_set_pin },
+    {.command = "read_pin", .function = esp_modem_dce_read_pin },
+    {.command = "set_baud", .function = esp_modem_dce_set_baud_temp },
 };
 
 static esp_err_t update_internal_command_refs(esp_modem_dce_t *dce)
@@ -87,14 +87,16 @@ static esp_err_t esp_modem_dce_init_command_list(esp_modem_dce_t *dce, size_t co
     if (commands < 1 || command_list == NULL || dce->dce_cmd_list == NULL) {
         return ESP_ERR_INVALID_ARG;
     }
+
     SLIST_INIT(&dce->dce_cmd_list->command_list);
 
-    for (int i=0; i < commands; ++i) {
+    for (int i = 0; i < commands; ++i) {
         cmd_item_t *new_item = calloc(1, sizeof(struct cmd_item_s));
         new_item->command = command_list[i].command;
         new_item->function = command_list[i].function;
         SLIST_INSERT_HEAD(&dce->dce_cmd_list->command_list, new_item, next);
     }
+
     return ESP_OK;
 }
 
@@ -103,14 +105,16 @@ static esp_err_t esp_modem_dce_init_command_list(esp_modem_dce_t *dce, size_t co
 esp_err_t esp_modem_set_default_command_list(esp_modem_dce_t *dce)
 {
     esp_err_t err = esp_modem_dce_init_command_list(dce, sizeof(s_command_list) / sizeof(cmd_item_t), s_command_list);
+
     if (err == ESP_OK) {
         return update_internal_command_refs(dce);
     }
+
     return err;
 
 }
 
-esp_err_t esp_modem_command_list_run(esp_modem_dce_t *dce, const char * command, void * param, void* result)
+esp_err_t esp_modem_command_list_run(esp_modem_dce_t *dce, const char *command, void *param, void *result)
 {
     if (dce == NULL || dce->dce_cmd_list == NULL) {
         return ESP_ERR_INVALID_ARG;
@@ -126,7 +130,7 @@ esp_err_t esp_modem_command_list_run(esp_modem_dce_t *dce, const char * command,
 }
 
 
-dce_command_t esp_modem_dce_find_command(esp_modem_dce_t *dce, const char * command)
+dce_command_t esp_modem_dce_find_command(esp_modem_dce_t *dce, const char *command)
 {
     if (dce == NULL || dce->dce_cmd_list == NULL) {
         return NULL;
@@ -150,10 +154,11 @@ esp_err_t esp_modem_dce_delete_all_commands(esp_modem_dce_t *dce)
             free(item);
         }
     }
+
     return ESP_OK;
 }
 
-esp_err_t esp_modem_dce_delete_command(esp_modem_dce_t *dce, const char * command_id)
+esp_err_t esp_modem_dce_delete_command(esp_modem_dce_t *dce, const char *command_id)
 {
     cmd_item_t *item;
     SLIST_FOREACH(item, &dce->dce_cmd_list->command_list, next) {
@@ -166,7 +171,7 @@ esp_err_t esp_modem_dce_delete_command(esp_modem_dce_t *dce, const char * comman
     return ESP_ERR_NOT_FOUND;
 }
 
-esp_err_t esp_modem_command_list_set_cmd(esp_modem_dce_t *dce, const char * command_id, dce_command_t command)
+esp_err_t esp_modem_command_list_set_cmd(esp_modem_dce_t *dce, const char *command_id, dce_command_t command)
 {
     if (dce == NULL || dce->dce_cmd_list == NULL) {
         return ESP_ERR_INVALID_ARG;
@@ -187,7 +192,7 @@ esp_err_t esp_modem_command_list_set_cmd(esp_modem_dce_t *dce, const char * comm
 
 }
 
-struct esp_modem_dce_cmd_list* esp_modem_command_list_create(void)
+struct esp_modem_dce_cmd_list *esp_modem_command_list_create(void)
 {
     return calloc(1, sizeof(struct esp_modem_dce_cmd_list));
 }
@@ -197,9 +202,8 @@ esp_err_t esp_modem_command_list_deinit(esp_modem_dce_t *dce)
     if (dce->dte) {
         dce->dte->dce = NULL;
     }
+
     esp_modem_dce_delete_all_commands(dce);
     free(dce->dce_cmd_list);
     return ESP_OK;
 }
-
-

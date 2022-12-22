@@ -46,11 +46,12 @@ static const char *TAG = "esp-modem-dte";
  */
 static inline bool is_only_cr_lf(const char *str, uint32_t len)
 {
-    for (int i=0; i<len; ++i) {
+    for (int i = 0; i < len; ++i) {
         if (str[i] != '\r' && str[i] != '\n') {
             return false;
         }
     }
+
     return true;
 }
 
@@ -77,6 +78,7 @@ IRAM_ATTR static esp_err_t esp_dte_handle_line(esp_modem_dte_internal_t *esp_dte
     ESP_MODEM_ERR_CHECK(dce, "DTE has not yet bind with DCE", err);
     const char *line = (const char *)(esp_dte->buffer);
     size_t len = strlen(line);
+
     /* Skip pure "\r\n" lines */
     if (len > 2 && !is_only_cr_lf(line, len)) {
         if (dce->handle_line == NULL) {
@@ -85,8 +87,10 @@ IRAM_ATTR static esp_err_t esp_dte_handle_line(esp_modem_dte_internal_t *esp_dte
             err = ESP_OK; /* Not an error, just propagate the line to user handler */
             goto post_event_unknown;
         }
+
         ESP_MODEM_ERR_CHECK(dce->handle_line(dce, line) == ESP_OK, "handle line failed", err);
     }
+
     return ESP_OK;
 post_event_unknown:
     /* Send ESP_MODEM_EVENT_UNKNOWN signal to event loop */
@@ -104,31 +108,39 @@ IRAM_ATTR static void esp_handle_usb_data(esp_modem_dte_internal_t *esp_dte)
     if (esp_dte->parent.dce->mode != ESP_MODEM_PPP_MODE && length) {
 
         // Read the data and process it using `handle_line` logic
-        length = MIN(esp_dte->line_buffer_size-1, length);
+        length = MIN(esp_dte->line_buffer_size - 1, length);
         length = usbh_cdc_read_bytes(esp_dte->buffer, length, portMAX_DELAY);
         esp_dte->buffer[length] = '\0';
-        if (strchr((char*)esp_dte->buffer, '\n') == NULL) {
-            size_t max = esp_dte->line_buffer_size-1;
+
+        if (strchr((char *)esp_dte->buffer, '\n') == NULL) {
+            size_t max = esp_dte->line_buffer_size - 1;
             size_t bytes;
+
             // if pattern not found in the data,
             // continue reading as long as the modem is in MODEM_STATE_PROCESSING, checking for the pattern
-            while (length < max && esp_dte->buffer[length-1] != '\n' &&
-                   esp_dte->parent.dce->state == ESP_MODEM_STATE_PROCESSING) {
+            while (length < max && esp_dte->buffer[length - 1] != '\n' &&
+                    esp_dte->parent.dce->state == ESP_MODEM_STATE_PROCESSING) {
                 bytes = usbh_cdc_read_bytes(esp_dte->buffer + length, 1, 1);
                 length += bytes;
-                ESP_LOGV("esp-modem: debug_data", "Continuous read in non-data mode: length: %d char: %x", length, esp_dte->buffer[length-1]);
+                ESP_LOGV("esp-modem: debug_data", "Continuous read in non-data mode: length: %d char: %x", length, esp_dte->buffer[length - 1]);
             }
+
             esp_dte->buffer[length] = '\0';
         }
+
         ESP_LOG_BUFFER_HEXDUMP("esp-modem: debug_data", esp_dte->buffer, length, ESP_LOG_DEBUG);
+
         if (esp_dte->parent.dce->handle_line) {
             /* Send new line to handle if handler registered */
             esp_dte_handle_line(esp_dte);
         }
+
         return;
     }
+
     length = MIN(esp_dte->line_buffer_size, length);
     length = usbh_cdc_read_bytes(esp_dte->buffer, length, portMAX_DELAY);
+
     /* pass the input data to configured callback */
     if (length) {
         ESP_LOG_BUFFER_HEXDUMP("esp-modem-dte: ppp_input", esp_dte->buffer, length, ESP_LOG_VERBOSE);
@@ -139,7 +151,11 @@ IRAM_ATTR static void esp_handle_usb_data(esp_modem_dte_internal_t *esp_dte)
 static void _usb_recv_date_cb(void *arg)
 {
     TaskHandle_t *p_usb_event_hdl = (TaskHandle_t *)arg;
-    if (*p_usb_event_hdl == NULL) return;
+
+    if (*p_usb_event_hdl == NULL) {
+        return;
+    }
+
     xTaskNotifyGive(*p_usb_event_hdl);
 }
 
@@ -151,21 +167,26 @@ static void _usb_recv_date_cb(void *arg)
 static void _usb_data_recv_task(void *param)
 {
     esp_modem_dte_internal_t *esp_dte = (esp_modem_dte_internal_t *)param;
-    EventBits_t bits = xEventGroupWaitBits(esp_dte->process_group, (ESP_MODEM_START_BIT|ESP_MODEM_STOP_BIT), pdFALSE, pdFALSE, portMAX_DELAY);
+    EventBits_t bits = xEventGroupWaitBits(esp_dte->process_group, (ESP_MODEM_START_BIT | ESP_MODEM_STOP_BIT), pdFALSE, pdFALSE, portMAX_DELAY);
+
     if (bits & ESP_MODEM_STOP_BIT) {
         vTaskDelete(NULL);
     }
+
     size_t length = 0;
+
     while (xEventGroupGetBits(esp_dte->process_group) & ESP_MODEM_START_BIT) {
         /* Drive the event loop */
         esp_event_loop_run(esp_dte->event_loop_hdl, pdMS_TO_TICKS(0));//no block
         usbh_cdc_get_buffered_data_len(&length);
+
         if (length > 0) {
             esp_handle_usb_data(esp_dte);
         } else {
             ulTaskNotifyTake(true, 1);//yield to other task, but unblock as soon as possiable
         }
     }
+
     vTaskDelete(NULL);
 }
 
@@ -190,10 +211,10 @@ static esp_err_t esp_modem_dte_send_cmd(esp_modem_dte_t *dte, const char *comman
     /* Reset runtime information */
     dce->state = ESP_MODEM_STATE_PROCESSING;
     /* Send command via UART */
-    usbh_cdc_write_bytes((const uint8_t*)command, strlen(command));
+    usbh_cdc_write_bytes((const uint8_t *)command, strlen(command));
     /* Check timeout */
-    EventBits_t bits = xEventGroupWaitBits(esp_dte->process_group, (ESP_MODEM_COMMAND_BIT|ESP_MODEM_STOP_BIT), pdTRUE, pdFALSE, pdMS_TO_TICKS(timeout));
-    ESP_MODEM_ERR_CHECK(bits&ESP_MODEM_COMMAND_BIT, "process command timeout", err);
+    EventBits_t bits = xEventGroupWaitBits(esp_dte->process_group, (ESP_MODEM_COMMAND_BIT | ESP_MODEM_STOP_BIT), pdTRUE, pdFALSE, pdMS_TO_TICKS(timeout));
+    ESP_MODEM_ERR_CHECK(bits & ESP_MODEM_COMMAND_BIT, "process command timeout", err);
     ret = ESP_OK;
 err:
     dce->handle_line = NULL;
@@ -212,13 +233,15 @@ static int esp_modem_dte_send_data(esp_modem_dte_t *dte, const char *data, uint3
 {
     ESP_MODEM_ERR_CHECK(data, "data is NULL", err);
     esp_modem_dte_internal_t *esp_dte = __containerof(dte, esp_modem_dte_internal_t, parent);
+
     if (esp_dte->parent.dce->mode == ESP_MODEM_TRANSITION_MODE) {
         ESP_LOGD(TAG, "Not sending data in transition mode");
         return -1;
     }
+
     ESP_LOG_BUFFER_HEXDUMP("esp-modem-dte: ppp_output", data, length, ESP_LOG_VERBOSE);
 
-    return usbh_cdc_write_bytes((const uint8_t*)data, length);
+    return usbh_cdc_write_bytes((const uint8_t *)data, length);
 err:
     return -1;
 }
@@ -236,11 +259,11 @@ err:
  *      ESP_FAIL on error
  */
 static esp_err_t esp_modem_dte_send_wait(esp_modem_dte_t *dte, const char *data, uint32_t length,
-                                         const char *prompt, uint32_t timeout)
+        const char *prompt, uint32_t timeout)
 {
     ESP_MODEM_ERR_CHECK(data, "data is NULL", err_param);
     ESP_MODEM_ERR_CHECK(prompt, "prompt is NULL", err_param);
-    ESP_MODEM_ERR_CHECK(usbh_cdc_write_bytes((const uint8_t*)data, length) >= 0, "uart write bytes failed", err_param);
+    ESP_MODEM_ERR_CHECK(usbh_cdc_write_bytes((const uint8_t *)data, length) >= 0, "uart write bytes failed", err_param);
     uint32_t len = strlen(prompt);
     uint8_t *buffer = calloc(len + 1, sizeof(uint8_t));
     int ret = usbh_cdc_read_bytes(buffer, len, pdMS_TO_TICKS(timeout));
@@ -272,18 +295,22 @@ static esp_err_t esp_modem_dte_change_mode(esp_modem_dte_t *dte, esp_modem_mode_
     esp_modem_mode_t current_mode = dce->mode;
     ESP_MODEM_ERR_CHECK(current_mode != new_mode, "already in mode: %d", err, new_mode);
     dce->mode = ESP_MODEM_TRANSITION_MODE;  // mode switching will be finished in set_working_mode() on success
-                                            // (or restored on failure)
+
+    // (or restored on failure)
     switch (new_mode) {
     case ESP_MODEM_PPP_MODE:
         ESP_MODEM_ERR_CHECK(dce->set_working_mode(dce, new_mode) == ESP_OK, "set new working mode:%d failed", err_restore_mode, new_mode);
         break;
+
     case ESP_MODEM_COMMAND_MODE:
         ESP_MODEM_ERR_CHECK(dce->set_working_mode(dce, new_mode) == ESP_OK, "set new working mode:%d failed", err_restore_mode, new_mode);
         //TODO:usb_flush();
         break;
+
     default:
         break;
     }
+
     return ESP_OK;
 err_restore_mode:
     dce->mode = current_mode;
@@ -321,16 +348,18 @@ static esp_err_t esp_modem_dte_deinit(esp_modem_dte_t *dte)
     usbh_cdc_driver_delete();
     /* Free memory */
     free(esp_dte->buffer);
+
     if (dte->dce) {
         dte->dce->dte = NULL;
     }
+
     free(esp_dte);
     return ESP_OK;
 }
 
 extern esp_err_t esp_modem_board_force_reset(void);
 
-static void _usb_disconn_cb(void* arg)
+static void _usb_disconn_cb(void *arg)
 {
     esp_modem_board_force_reset();
 }
@@ -382,13 +411,13 @@ esp_modem_dte_t *esp_modem_dte_new(const esp_modem_dte_config_t *config)
     ret = usbh_cdc_wait_connect(portMAX_DELAY);
     ESP_MODEM_ERR_CHECK(ret == ESP_OK, "usb connect timeout", err_usb_config);
     /* Create UART Event task */
-    BaseType_t base_ret = xTaskCreate (_usb_data_recv_task,             //Task Entry
-                                 "usb_data_recv",              //Task Name
-                                 config->event_task_stack_size,           //Task Stack Size(Bytes)
-                                 esp_dte,                           //Task Parameter
-                                 config->event_task_priority,             //Task Priority, must higher than USB Task
-                                 &(esp_dte->uart_event_task_hdl)   //Task Handler
-                                );
+    BaseType_t base_ret = xTaskCreate(_usb_data_recv_task,              //Task Entry
+                                      "usb_data_recv",              //Task Name
+                                      config->event_task_stack_size,           //Task Stack Size(Bytes)
+                                      esp_dte,                           //Task Parameter
+                                      config->event_task_priority,             //Task Priority, must higher than USB Task
+                                      & (esp_dte->uart_event_task_hdl) //Task Handler
+                                     );
     ESP_MODEM_ERR_CHECK(base_ret == pdTRUE, "create uart event task failed", err_tsk_create);
 
     return &(esp_dte->parent);

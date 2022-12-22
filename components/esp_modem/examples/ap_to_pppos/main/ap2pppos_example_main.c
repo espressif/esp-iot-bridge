@@ -38,6 +38,7 @@ static void on_modem_event(void *arg, esp_event_base_t event_base,
 {
     if (event_base == IP_EVENT) {
         ESP_LOGD(TAG, "IP event! %d", event_id);
+
         if (event_id == IP_EVENT_PPP_GOT_IP) {
             esp_netif_dns_info_t dns_info;
 
@@ -82,15 +83,15 @@ static esp_err_t set_dhcps_dns(esp_netif_t *netif, uint32_t addr)
     return ESP_OK;
 }
 
-static void wifi_event_handler(void* arg, esp_event_base_t event_base,
-                               int32_t event_id, void* event_data)
+static void wifi_event_handler(void *arg, esp_event_base_t event_base,
+                               int32_t event_id, void *event_data)
 {
     if (event_id == WIFI_EVENT_AP_STACONNECTED) {
-        wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
+        wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)event_data;
         ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",
                  MAC2STR(event->mac), event->aid);
     } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
-        wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
+        wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)event_data;
         ESP_LOGI(TAG, "station "MACSTR" leave, AID=%d",
                  MAC2STR(event->mac), event->aid);
     }
@@ -103,10 +104,10 @@ void wifi_init_softap(void)
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-                                                        ESP_EVENT_ANY_ID,
-                                                        &wifi_event_handler,
-                                                        NULL,
-                                                        NULL));
+                    ESP_EVENT_ANY_ID,
+                    &wifi_event_handler,
+                    NULL,
+                    NULL));
 
     wifi_config_t wifi_config = {
         .ap = {
@@ -118,6 +119,7 @@ void wifi_init_softap(void)
             .authmode = WIFI_AUTH_WPA_WPA2_PSK
         },
     };
+
     if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
     }
@@ -136,10 +138,12 @@ void app_main(void)
 {
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
+
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
     }
+
     ESP_ERROR_CHECK(ret);
 
     ESP_ERROR_CHECK(esp_netif_init());
@@ -172,11 +176,13 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_modem_start_ppp(dte));
     /* Wait for the first connection */
     EventBits_t bits;
+
     do {
         bits = xEventGroupWaitBits(event_group, (CONNECT_BIT | DISCONNECT_BIT), pdTRUE, pdFALSE, portMAX_DELAY);
-        if (bits&DISCONNECT_BIT) {
+
+        if (bits & DISCONNECT_BIT) {
         }
-    } while ((bits&CONNECT_BIT) == 0);
+    } while ((bits & CONNECT_BIT) == 0);
 
     /* Init the AP with NAT enabled */
     esp_netif_t *ap_netif = esp_netif_create_default_wifi_ap();
@@ -189,7 +195,7 @@ void app_main(void)
     ip_napt_enable(_g_esp_netif_soft_ap_ip.ip.addr, 1);
 
     /* Provide recovery if disconnection of some kind registered */
-    while (DISCONNECT_BIT&xEventGroupWaitBits(event_group, DISCONNECT_BIT, pdTRUE, pdFALSE, portMAX_DELAY)) {
+    while (DISCONNECT_BIT & xEventGroupWaitBits(event_group, DISCONNECT_BIT, pdTRUE, pdFALSE, portMAX_DELAY)) {
         // restart the modem PPP mode
         ESP_ERROR_CHECK(esp_modem_stop_ppp(dte));
         ESP_ERROR_CHECK(esp_modem_start_ppp(dte));

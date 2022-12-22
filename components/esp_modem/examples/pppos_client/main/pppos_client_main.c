@@ -45,17 +45,20 @@ static const int GOT_DATA_BIT = BIT2;
 static esp_err_t example_default_handle(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
         err = esp_modem_process_command_done(dce, MODEM_STATE_FAIL);
     }
+
     return err;
 }
 
 static esp_err_t example_handle_cmgs(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
@@ -63,6 +66,7 @@ static esp_err_t example_handle_cmgs(esp_modem_dce_t *dce, const char *line)
     } else if (!strncmp(line, "+CMGS", strlen("+CMGS"))) {
         err = ESP_OK;
     }
+
     return err;
 }
 
@@ -75,43 +79,52 @@ static esp_err_t example_send_message_text(modem_dce_t *user_dce, const char *ph
     esp_modem_dce_t *dce = &user_dce->parent;
     modem_dte_t *dte = dce->dte;
     dce->handle_line = example_default_handle;
+
     /* Set text mode */
     if (dte->send_cmd(dte, "AT+CMGF=1\r", MODEM_COMMAND_TIMEOUT_DEFAULT) != ESP_OK) {
         ESP_LOGE(TAG, "send command failed");
         goto err;
     }
+
     if (dce->state != MODEM_STATE_SUCCESS) {
         ESP_LOGE(TAG, "set message format failed");
         goto err;
     }
+
     ESP_LOGD(TAG, "set message format ok");
     /* Specify character set */
     dce->handle_line = example_default_handle;
+
     if (dte->send_cmd(dte, "AT+CSCS=\"GSM\"\r", MODEM_COMMAND_TIMEOUT_DEFAULT) != ESP_OK) {
         ESP_LOGE(TAG, "send command failed");
         goto err;
     }
+
     if (dce->state != MODEM_STATE_SUCCESS) {
         ESP_LOGE(TAG, "set character set failed");
         goto err;
     }
+
     ESP_LOGD(TAG, "set character set ok");
     /* send message */
-    char command[MODEM_SMS_MAX_LENGTH] = {0};
+    char command[MODEM_SMS_MAX_LENGTH] = { 0 };
     int length = snprintf(command, MODEM_SMS_MAX_LENGTH, "AT+CMGS=\"%s\"\r", phone_num);
     /* set phone number and wait for "> " */
     dte->send_wait(dte, command, length, "\r\n> ", MODEM_PROMPT_TIMEOUT_MS);
     /* end with CTRL+Z */
     snprintf(command, MODEM_SMS_MAX_LENGTH, "%s\x1A", text);
     dce->handle_line = example_handle_cmgs;
+
     if (dte->send_cmd(dte, command, MODEM_COMMAND_TIMEOUT_SMS_MS) != ESP_OK) {
         ESP_LOGE(TAG, "send command failed");
         goto err;
     }
+
     if (dce->state != MODEM_STATE_SUCCESS) {
         ESP_LOGE(TAG, "send message failed");
         goto err;
     }
+
     ESP_LOGD(TAG, "send message ok");
     return ESP_OK;
 err:
@@ -125,13 +138,16 @@ static void modem_event_handler(void *event_handler_arg, esp_event_base_t event_
     case ESP_MODEM_EVENT_PPP_START:
         ESP_LOGI(TAG, "Modem PPP Started");
         break;
+
     case ESP_MODEM_EVENT_PPP_STOP:
         ESP_LOGI(TAG, "Modem PPP Stopped");
         xEventGroupSetBits(event_group, STOP_BIT);
         break;
+
     case ESP_MODEM_EVENT_UNKNOWN:
         ESP_LOGW(TAG, "Unknow line received: %s", (char *)event_data);
         break;
+
     default:
         break;
     }
@@ -141,39 +157,48 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 {
     esp_mqtt_client_handle_t client = event->client;
     int msg_id;
+
     switch (event->event_id) {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
         msg_id = esp_mqtt_client_subscribe(client, "/topic/esp-pppos", 0);
         ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
         break;
+
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
         break;
+
     case MQTT_EVENT_SUBSCRIBED:
         ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
         msg_id = esp_mqtt_client_publish(client, "/topic/esp-pppos", "esp32-pppos", 0, 0, 0);
         ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
         break;
+
     case MQTT_EVENT_UNSUBSCRIBED:
         ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
         break;
+
     case MQTT_EVENT_PUBLISHED:
         ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
         break;
+
     case MQTT_EVENT_DATA:
         ESP_LOGI(TAG, "MQTT_EVENT_DATA");
         printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
         printf("DATA=%.*s\r\n", event->data_len, event->data);
         xEventGroupSetBits(event_group, GOT_DATA_BIT);
         break;
+
     case MQTT_EVENT_ERROR:
         ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
         break;
+
     default:
         ESP_LOGI(TAG, "MQTT other event id: %d", event->event_id);
         break;
     }
+
     return ESP_OK;
 }
 
@@ -181,6 +206,7 @@ static void on_ppp_changed(void *arg, esp_event_base_t event_base,
                            int32_t event_id, void *event_data)
 {
     ESP_LOGI(TAG, "PPP state changed event %d", event_id);
+
     if (event_id == NETIF_PPP_ERRORUSER) {
         /* User interrupted event from esp-netif */
         esp_netif_t *netif = event_data;
@@ -193,6 +219,7 @@ static void on_ip_event(void *arg, esp_event_base_t event_base,
                         int32_t event_id, void *event_data)
 {
     ESP_LOGD(TAG, "IP event! %d", event_id);
+
     if (event_id == IP_EVENT_PPP_GOT_IP) {
         esp_netif_dns_info_t dns_info;
 
@@ -258,7 +285,7 @@ void app_main(void)
     esp_netif_config_t netif_ppp_config = ESP_NETIF_DEFAULT_PPP();
 
     /* Run the modem demo app */
-    return modem_test_app(&dte_config, &dce_config,&netif_ppp_config);
+    return modem_test_app(&dte_config, &dce_config, &netif_ppp_config);
 }
 
 #if !defined(CONFIG_EXAMPLE_MODEM_LEGACY_API)
@@ -309,8 +336,8 @@ static void modem_test_app(esp_modem_dte_config_t *dte_config, esp_modem_dce_con
 
         /* Config MQTT */
         esp_mqtt_client_config_t mqtt_config = {
-                .uri = BROKER_URL,
-                .event_handle = mqtt_event_handler,
+            .uri = BROKER_URL,
+            .event_handle = mqtt_event_handler,
         };
         esp_mqtt_client_handle_t mqtt_client = esp_mqtt_client_init(&mqtt_config);
         esp_mqtt_client_start(mqtt_client);

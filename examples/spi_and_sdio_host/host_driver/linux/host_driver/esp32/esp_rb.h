@@ -9,11 +9,11 @@
 #define _ESP_RB_H_
 
 typedef struct esp_rb {
-	wait_queue_head_t wq;		/* waitqueue to wait for data */
-	unsigned char *buf, *end;	/* actual queue start and end */
-	size_t size;
-	unsigned char *rp, *wp;		/* current read/write pointers */
-	struct semaphore sem;		/* Mutex to protect rb */
+    wait_queue_head_t wq;       /* waitqueue to wait for data */
+    unsigned char *buf, * end;   /* actual queue start and end */
+    size_t size;
+    unsigned char *rp, * wp;     /* current read/write pointers */
+    struct semaphore sem;       /* Mutex to protect rb */
 } esp_rb_t;
 
 int esp_rb_init(esp_rb_t *rb, size_t sz);

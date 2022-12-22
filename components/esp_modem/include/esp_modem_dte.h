@@ -29,7 +29,7 @@ typedef enum {
     ESP_MODEM_COMMAND_MODE = 0, /*!< Command Mode */
     ESP_MODEM_PPP_MODE,         /*!< PPP Mode */
     ESP_MODEM_TRANSITION_MODE   /*!< Transition Mode between data and command mode indicating that
-                                 the modem is not yet ready for sending commands nor data */
+                                     the modem is not yet ready for sending commands nor data */
 } esp_modem_mode_t;
 
 /**
@@ -40,20 +40,20 @@ struct esp_modem_dte {
     esp_modem_flow_ctrl_t flow_ctrl;                                                    /*!< Flow control of DTE */
     esp_modem_dce_t *dce;                                                               /*!< DCE which connected to the DTE */
     struct esp_modem_netif_driver_s *netif_adapter;
-    esp_err_t (*send_cmd)(esp_modem_dte_t *dte, const char *command, uint32_t timeout); /*!< Send command to DCE */
+    esp_err_t(*send_cmd)(esp_modem_dte_t *dte, const char *command, uint32_t timeout); /*!< Send command to DCE */
     int (*send_data)(esp_modem_dte_t *dte, const char *data, uint32_t length);          /*!< Send data to DCE */
-    esp_err_t (*send_wait)(esp_modem_dte_t *dte, const char *data, uint32_t length,
-                           const char *prompt, uint32_t timeout);      /*!< Wait for specific prompt */
-    esp_err_t (*change_mode)(esp_modem_dte_t *dte, esp_modem_mode_t new_mode); /*!< Changing working mode */
-    esp_err_t (*process_cmd_done)(esp_modem_dte_t *dte);                   /*!< Callback when DCE process command done */
-    esp_err_t (*deinit)(esp_modem_dte_t *dte);                             /*!< Deinitialize */
+    esp_err_t(*send_wait)(esp_modem_dte_t *dte, const char *data, uint32_t length,
+                          const char *prompt, uint32_t timeout);      /*!< Wait for specific prompt */
+    esp_err_t(*change_mode)(esp_modem_dte_t *dte, esp_modem_mode_t new_mode); /*!< Changing working mode */
+    esp_err_t(*process_cmd_done)(esp_modem_dte_t *dte);                   /*!< Callback when DCE process command done */
+    esp_err_t(*deinit)(esp_modem_dte_t *dte);                             /*!< Deinitialize */
 };
 
 /**
  * @brief Type used for reception callback
  *
  */
-typedef esp_err_t (*esp_modem_on_receive)(void *buffer, size_t len, void *context);
+typedef esp_err_t(*esp_modem_on_receive)(void *buffer, size_t len, void *context);
 
 /**
  * @brief Setup on reception callback

@@ -25,11 +25,11 @@ extern "C" {
 *
 */
 #define DEFINE_RETRY_CMD(name, retry, super_type) \
-        esp_err_t name(esp_modem_dce_t *dce, void *param, void *result) \
-        { \
-            super_type *super = __containerof(dce, super_type, parent); \
-            return super->retry->run(super->retry, param, result);      \
-        }
+    esp_err_t name(esp_modem_dce_t *dce, void *param, void *result) \
+    { \
+        super_type *super = __containerof(dce, super_type, parent); \
+        return super->retry->run(super->retry, param, result);      \
+    }
 
 
 /**
@@ -56,7 +56,7 @@ typedef struct esp_modem_retry_s esp_modem_recov_resend_t;
  * @brief User recovery function to be called upon modem command failed
  *
  */
-typedef esp_err_t (*esp_modem_retry_fn_t)(esp_modem_recov_resend_t *retry_cmd, esp_err_t current_err, int timeouts, int errors);
+typedef esp_err_t(*esp_modem_retry_fn_t)(esp_modem_recov_resend_t *retry_cmd, esp_err_t current_err, int timeouts, int errors);
 
 /**
  * @brief Recovery helper object
@@ -64,7 +64,7 @@ typedef esp_err_t (*esp_modem_retry_fn_t)(esp_modem_recov_resend_t *retry_cmd, e
  */
 struct esp_modem_retry_s {
     const char *command;
-    esp_err_t (*run)(struct esp_modem_retry_s *retry, void *param, void *result);
+    esp_err_t(*run)(struct esp_modem_retry_s *retry, void *param, void *result);
     dce_command_t orig_cmd;
     esp_modem_retry_fn_t recover;
     esp_modem_dce_t *dce;
@@ -85,5 +85,3 @@ esp_modem_recov_resend_t *esp_modem_recov_resend_new(esp_modem_dce_t *dce, dce_c
  *
  */
 esp_modem_recov_gpio_t *esp_modem_recov_gpio_new(int gpio_num, int inactive_level, int active_width_ms, int inactive_width_ms);
-
-

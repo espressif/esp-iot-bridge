@@ -48,17 +48,21 @@ static void configure_pins(usb_hal_context_t *usb)
     for (const usb_iopin_dsc_t *iopin = usb_periph_iopins; iopin->pin != -1; ++iopin) {
         if ((usb->use_external_phy) || (iopin->ext_phy_only == 0)) {
             esp_rom_gpio_pad_select_gpio(iopin->pin);
+
             if (iopin->is_output) {
                 esp_rom_gpio_connect_out_signal(iopin->pin, iopin->func, false, false);
             } else {
                 esp_rom_gpio_connect_in_signal(iopin->pin, iopin->func, false);
+
                 if ((iopin->pin != GPIO_FUNC_IN_LOW) && (iopin->pin != GPIO_FUNC_IN_HIGH)) {
                     gpio_ll_input_enable(&GPIO, iopin->pin);
                 }
             }
+
             esp_rom_gpio_pad_unhold(iopin->pin);
         }
     }
+
     if (!usb->use_external_phy) {
         gpio_set_drive_capability(USBPHY_DM_NUM, GPIO_DRIVE_CAP_3);
         gpio_set_drive_capability(USBPHY_DP_NUM, GPIO_DRIVE_CAP_3);

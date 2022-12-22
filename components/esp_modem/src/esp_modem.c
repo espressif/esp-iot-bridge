@@ -70,9 +70,11 @@ esp_err_t esp_modem_stop_ppp(esp_modem_dte_t *dte)
 
     /* wait for the PPP mode to exit gracefully */
     EventBits_t bits = xEventGroupWaitBits(esp_dte->process_group, ESP_MODEM_STOP_PPP_BIT, pdTRUE, pdTRUE, pdMS_TO_TICKS(20000));
+
     if (!(bits & ESP_MODEM_STOP_PPP_BIT)) {
         ESP_LOGW(TAG, "Failed to exit the PPP mode gracefully");
     }
+
     return ESP_OK;
 err:
     return ESP_FAIL;
@@ -90,7 +92,7 @@ esp_err_t esp_modem_notify_initialized(esp_modem_dte_t *dte)
     esp_modem_dte_internal_t *esp_dte = __containerof(dte, esp_modem_dte_internal_t, parent);
     EventBits_t bits = xEventGroupSetBits(esp_dte->process_group, ESP_MODEM_START_BIT);
     return bits & ESP_MODEM_START_BIT ? ESP_OK : ESP_FAIL;  // START bit should be set (since it's not auto-cleared)
-                                                            // report error otherwise
+    // report error otherwise
 }
 
 esp_err_t esp_modem_default_destroy(esp_modem_dte_t *dte)
@@ -125,7 +127,7 @@ err_params:
     return ESP_ERR_INVALID_ARG;
 }
 
-esp_err_t esp_modem_default_attach(esp_modem_dte_t *dte, esp_modem_dce_t *dce, esp_netif_t* ppp_netif)
+esp_err_t esp_modem_default_attach(esp_modem_dte_t *dte, esp_modem_dce_t *dce, esp_netif_t *ppp_netif)
 {
     /* Bind DTE with DCE */
     dce->dte = dte;
@@ -160,23 +162,29 @@ esp_err_t esp_modem_dce_init(esp_modem_dce_t *dce, esp_modem_dce_config_t *confi
     /* init the default DCE first */
     ESP_MODEM_ERR_CHECK(dce && config, "failed to init with zero dce or configuration", err_params);
     ESP_MODEM_ERR_CHECK(esp_modem_dce_default_init(dce, config) == ESP_OK, "dce default init has failed", err);
+
     if (config->populate_command_list) {
         ESP_MODEM_ERR_CHECK(esp_modem_set_default_command_list(dce) == ESP_OK, "esp_modem_dce_set_default_commands failed", err);
     }
+
     switch (config->device) {
-        case ESP_MODEM_DEVICE_SIM800:
-            err = esp_modem_sim800_specific_init(dce);
-            break;
-        case ESP_MODEM_DEVICE_SIM7600:
-            err = esp_modem_sim7600_specific_init(dce);
-            break;
-        case ESP_MODEM_DEVICE_BG96:
-            err = esp_modem_bg96_specific_init(dce);
-            break;
-        default:
-        case ESP_MODEM_DEVICE_UNSPECIFIED:
-            break;
+    case ESP_MODEM_DEVICE_SIM800:
+        err = esp_modem_sim800_specific_init(dce);
+        break;
+
+    case ESP_MODEM_DEVICE_SIM7600:
+        err = esp_modem_sim7600_specific_init(dce);
+        break;
+
+    case ESP_MODEM_DEVICE_BG96:
+        err = esp_modem_bg96_specific_init(dce);
+        break;
+
+    default:
+    case ESP_MODEM_DEVICE_UNSPECIFIED:
+        break;
     }
+
     ESP_MODEM_ERR_CHECK(err == ESP_OK, "dce specific initialization has failed for %d type device", err, config->device);
     return ESP_OK;
 err:

@@ -25,7 +25,7 @@ extern "C" {
 
 /**
  * @brief Report delta movement of mouse.
- * 
+ *
  * @param x Current delta x movement of the mouse
  * @param y Current delta y movement on the mouse
  * @param vertical Current delta wheel movement on the mouse
@@ -36,14 +36,14 @@ void tinyusb_hid_mouse_move_report(int8_t x, int8_t y, int8_t vertical, int8_t h
 /**
  * @brief Report button click in the mouse, using bitmap here.
  * eg. MOUSE_BUTTON_LEFT | MOUSE_BUTTON_RIGHT, if click left and right button at same time.
- * 
+ *
  * @param buttons hid mouse button bit mask
  */
 void tinyusb_hid_mouse_button_report(uint8_t buttons_map);
 
 /**
  * @brief Report key press in the keyboard, using array here, contains six keys at most.
- * 
+ *
  * @param keycode hid keyboard code array
  */
 void tinyusb_hid_keyboard_report(uint8_t keycode[]);

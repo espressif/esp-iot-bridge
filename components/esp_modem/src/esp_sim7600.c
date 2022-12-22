@@ -30,6 +30,7 @@ static const char *TAG = "sim7600";
 static esp_err_t sim7600_handle_cbc(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
@@ -38,15 +39,16 @@ static esp_err_t sim7600_handle_cbc(esp_modem_dce_t *dce, const char *line)
         esp_modem_dce_cbc_ctx_t *cbc = dce->handle_line_ctx;
         int32_t volts = 0, fraction = 0;
         /* +CBC: <voltage in Volts> V*/
-        sscanf(line, "+CBC: %d.%dV", &volts, &fraction);
+        sscanf(line, "+CBC: %d.%dV", (int *)&volts, (int *)&fraction);
         /* Since the "read_battery_status()" API (besides voltage) returns also values for BCS, BCL (charge status),
          * which are not applicable to this modem, we return -1 to indicate invalid value
          */
         cbc->bcs = -1; // BCS
         cbc->bcl = -1; // BCL
-        cbc->battery_status = volts*1000 + fraction;
+        cbc->battery_status = volts * 1000 + fraction;
         err = ESP_OK;
     }
+
     return err;
 }
 
@@ -69,6 +71,7 @@ static esp_err_t sim7600_get_battery_status(esp_modem_dce_t *dce, void *p, void 
 static esp_err_t sim7600_handle_power_down(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_OK;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_NO_CARRIER)) {
@@ -76,6 +79,7 @@ static esp_err_t sim7600_handle_power_down(esp_modem_dce_t *dce, const char *lin
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_FAIL);
     }
+
     return err;
 }
 
@@ -88,14 +92,16 @@ static esp_err_t sim7600_power_down(esp_modem_dce_t *dce, void *p, void *r)
 esp_err_t esp_modem_sim7600_specific_init(esp_modem_dce_t *dce)
 {
     ESP_MODEM_ERR_CHECK(dce, "failed to specific init with zero dce", err_params);
+
     if (dce->config.populate_command_list) {
         ESP_MODEM_ERR_CHECK(esp_modem_set_default_command_list(dce) == ESP_OK, "esp_modem_dce_set_default_commands failed", err);
 
         /* Update some commands which differ from the defaults */
         ESP_MODEM_ERR_CHECK(esp_modem_command_list_set_cmd(dce, "power_down", sim7600_power_down) == ESP_OK, "esp_modem_dce_set_command failed", err);
         ESP_MODEM_ERR_CHECK(
-                esp_modem_command_list_set_cmd(dce, "get_battery_status", sim7600_get_battery_status) == ESP_OK, "esp_modem_dce_set_command failed", err);
+            esp_modem_command_list_set_cmd(dce, "get_battery_status", sim7600_get_battery_status) == ESP_OK, "esp_modem_dce_set_command failed", err);
     }
+
     return ESP_OK;
 err:
     return ESP_FAIL;

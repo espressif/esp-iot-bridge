@@ -103,8 +103,8 @@ void tinyusb_hid_keyboard_report(uint8_t keycode[])
 // Note: For composite reports, report[0] is report ID
 void tud_hid_report_complete_cb(uint8_t itf, uint8_t const *report, uint8_t len)
 {
-    (void) itf;
-    (void) len;
+    (void)itf;
+    (void)len;
     uint8_t report_id = report[0];
 
     if (report_id == REPORT_ID_KEYBOARD && s_keyboard_pressed) {
@@ -119,11 +119,11 @@ void tud_hid_report_complete_cb(uint8_t itf, uint8_t const *report, uint8_t len)
 uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen)
 {
     // TODO not Implemented
-    (void) itf;
-    (void) report_id;
-    (void) report_type;
-    (void) buffer;
-    (void) reqlen;
+    (void)itf;
+    (void)report_id;
+    (void)report_type;
+    (void)buffer;
+    (void)reqlen;
 
     return 0;
 }
@@ -133,9 +133,9 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
 void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize)
 {
     // TODO set LED based on CAPLOCK, NUMLOCK etc...
-    (void) itf;
-    (void) report_id;
-    (void) report_type;
-    (void) buffer;
-    (void) bufsize;
+    (void)itf;
+    (void)report_id;
+    (void)report_type;
+    (void)buffer;
+    (void)bufsize;
 }

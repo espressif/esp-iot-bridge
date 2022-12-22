@@ -29,6 +29,7 @@ static TaskHandle_t s_tusb_tskh;
 static void tusb_device_task(void *arg)
 {
     ESP_LOGD(TAG, "tinyusb task started");
+
     while (1) { // RTOS forever loop
         tud_task();
     }

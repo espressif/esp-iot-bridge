@@ -25,19 +25,19 @@
 
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 5, 0))
-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 34))
-		#define hci_skb_pkt_type(skb) bt_cb((skb))->pkt_type
-	#else
-        #error "ESP-Hosted solution doesn't supported below kernel version < 2.6.34"
-	#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 34))
+#define hci_skb_pkt_type(skb) bt_cb((skb))->pkt_type
+#else
+#error "ESP-Hosted solution doesn't supported below kernel version < 2.6.34"
+#endif
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0))
-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 34)) 
-		#define HCI_PRIMARY HCI_BREDR
-	#else
-        #error "ESP-Hosted solution doesn't supported below kernel version < 2.6.34"
-	#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 34))
+#define HCI_PRIMARY HCI_BREDR
+#else
+#error "ESP-Hosted solution doesn't supported below kernel version < 2.6.34"
+#endif
 #endif
 
 int esp_init_bt(struct esp_adapter *adapter);

@@ -47,39 +47,39 @@ struct esp_adapter;
 #define INTERFACE_HEADER_PADDING (SKB_DATA_ADDR_ALIGNMENT*3)
 
 struct esp_adapter {
-	u8                      if_type;
-	u32                     capabilities;
+    u8                      if_type;
+    u32                     capabilities;
 
-	/* Possible types:
-	 * struct esp_sdio_context */
-	void                    *if_context;
+    /* Possible types:
+     * struct esp_sdio_context */
+    void *if_context;
 
-	struct esp_if_ops       *if_ops;
+    struct esp_if_ops *if_ops;
 
-	/* Private for each interface */
-	struct esp_private      *priv[ESP_MAX_INTERFACE];
-	struct hci_dev          *hcidev;
+    /* Private for each interface */
+    struct esp_private *priv[ESP_MAX_INTERFACE];
+    struct hci_dev *hcidev;
 
-	struct workqueue_struct *if_rx_workqueue;
-	struct work_struct       if_rx_work;
+    struct workqueue_struct *if_rx_workqueue;
+    struct work_struct       if_rx_work;
 
-	/* Process TX work */
-	struct workqueue_struct *tx_workqueue;
-	struct work_struct      tx_work;
+    /* Process TX work */
+    struct workqueue_struct *tx_workqueue;
+    struct work_struct      tx_work;
 };
 
 
 struct esp_private {
-	struct esp_adapter      *adapter;
-	struct net_device       *ndev;
-	struct net_device_stats stats;
-	u8                      link_state;
-	u8                      mac_address[6];
-	u8                      if_type;
-	u8                      if_num;
+    struct esp_adapter *adapter;
+    struct net_device *ndev;
+    struct net_device_stats stats;
+    u8                      link_state;
+    u8                      mac_address[6];
+    u8                      if_type;
+    u8                      if_num;
 };
 
 struct esp_skb_cb {
-	struct esp_private      *priv;
+    struct esp_private *priv;
 };
 #endif

@@ -44,7 +44,7 @@ static const char *TAG = "led_indicator";
 /*********************************** Config Blink List in Different Conditions ***********************************/
 /**
  * @brief connecting to AP (or Cloud)
- * 
+ *
  */
 static const blink_step_t connecting[] = {
     {LED_BLINK_HOLD, LED_STATE_ON, 200},
@@ -54,7 +54,7 @@ static const blink_step_t connecting[] = {
 
 /**
  * @brief connected to AP (or Cloud) succeed
- * 
+ *
  */
 static const blink_step_t connected[] = {
     {LED_BLINK_HOLD, LED_STATE_ON, 1000},
@@ -62,8 +62,8 @@ static const blink_step_t connected[] = {
 };
 
 /**
- * @brief reconnecting to AP (or Cloud), if lose connection 
- * 
+ * @brief reconnecting to AP (or Cloud), if lose connection
+ *
  */
 static const blink_step_t reconnecting[] = {
     {LED_BLINK_HOLD, LED_STATE_ON, 100},
@@ -73,7 +73,7 @@ static const blink_step_t reconnecting[] = {
 
 /**
  * @brief updating software
- * 
+ *
  */
 static const blink_step_t updating[] = {
     {LED_BLINK_HOLD, LED_STATE_ON, 50},
@@ -85,7 +85,7 @@ static const blink_step_t updating[] = {
 
 /**
  * @brief restoring factory settings
- * 
+ *
  */
 static const blink_step_t factory_reset[] = {
     {LED_BLINK_HOLD, LED_STATE_ON, 200},
@@ -95,7 +95,7 @@ static const blink_step_t factory_reset[] = {
 
 /**
  * @brief provisioning
- * 
+ *
  */
 static const blink_step_t provisioning[] = {
     {LED_BLINK_HOLD, LED_STATE_ON, 500},
@@ -105,7 +105,7 @@ static const blink_step_t provisioning[] = {
 
 /**
  * @brief provision done
- * 
+ *
  */
 static const blink_step_t provisioned[] = {
     {LED_BLINK_HOLD, LED_STATE_OFF, 1000},
@@ -114,9 +114,9 @@ static const blink_step_t provisioned[] = {
 
 /**
  * @brief led indicator blink lists, the index like BLINK_FACTORY_RESET defined the priority of the blink
- * 
+ *
  */
-blink_step_t const * led_indicator_blink_lists[] = {
+blink_step_t const *led_indicator_blink_lists[] = {
     [BLINK_FACTORY_RESET] = factory_reset,
     [BLINK_UPDATING] = updating,
     [BLINK_CONNECTED] = connected,
@@ -132,7 +132,7 @@ blink_step_t const * led_indicator_blink_lists[] = {
 
 /**
  * @brief led indicator object
- * 
+ *
  */
 typedef struct {
     bool off_level; /*!< gpio level during led turn off */
@@ -142,12 +142,12 @@ typedef struct {
     int *p_blink_steps; /*!< stage of each blink list */
     SemaphoreHandle_t mutex; /*!< mutex to achive thread-safe */
     TimerHandle_t h_timer; /*!< led timmer handle, invalid if works in pwm mode */
-}_led_indicator_t;
+} _led_indicator_t;
 
-typedef struct _led_indicator_slist_t{
+typedef struct _led_indicator_slist_t {
     SLIST_ENTRY(_led_indicator_slist_t) next;
     _led_indicator_t *p_led_indicator;
-}_led_indicator_slist_t;
+} _led_indicator_slist_t;
 
 static SLIST_HEAD(_led_indicator_head_t, _led_indicator_slist_t) s_led_indicator_slist_head = SLIST_HEAD_INITIALIZER(s_led_indicator_slist_head);
 
@@ -177,14 +177,14 @@ static esp_err_t _led_indicator_remove_node(_led_indicator_t *p_led_indicator)
 
 /**
  * @brief init a gpio to control led
- * 
+ *
  * @param io_num gpio number of the led
  * @return true init succeed
  * @return false init failed
  */
 static bool _led_gpio_init(int io_num)
 {
-    gpio_config_t io_conf = {0};
+    gpio_config_t io_conf = { 0 };
     //disable interrupt
     io_conf.intr_type = GPIO_INTR_DISABLE;
     //set as output mode
@@ -207,7 +207,7 @@ static bool _led_gpio_init(int io_num)
 
 /**
  * @brief deinit a gpio to control led
- * 
+ *
  * @param io_num gpio number of the led
  * @return true deinit succeed
  * @return false deinit failed
@@ -225,26 +225,34 @@ static bool _led_gpio_deinit(int io_num)
 
 /**
  * @brief turn on or off of the led
- * 
+ *
  * @param io_num gpio number of the led
  * @param off_level gpio level when off, 0 if attach led positive side to esp32 gpio pin, 1 if attach led negative side
  * @param state target state
- * @return esp_err_t 
+ * @return esp_err_t
  */
 static esp_err_t _led_set_state(int io_num, bool off_level, blink_step_state_t state)
 {
     uint32_t level = 0;
 
-    switch (state)
-    {
+    switch (state) {
     case LED_STATE_ON:
         level = 1;
-        if (off_level) level = 0;
+
+        if (off_level) {
+            level = 0;
+        }
+
         break;
+
     case LED_STATE_OFF:
-    default :
+    default:
         level = 0;
-        if (off_level) level = 1;
+
+        if (off_level) {
+            level = 1;
+        }
+
         break;
     }
 
@@ -253,16 +261,15 @@ static esp_err_t _led_set_state(int io_num, bool off_level, blink_step_state_t s
 
 /**
  * @brief switch to the first high priority incomplete blink steps
- * 
+ *
  * @param p_led_indicator pointer to led indicator
  */
 static void _blink_list_switch(_led_indicator_t *p_led_indicator)
 {
     p_led_indicator->active_blink = NULL_ACTIVE_BLINK; //stop active blink
-    for(size_t index = 0; index < BLINK_LIST_NUM; index ++) //find the first incomplete blink
-    {
-        if (p_led_indicator->p_blink_steps[index] != LED_BLINK_STOP)
-        {
+
+    for (size_t index = 0; index < BLINK_LIST_NUM; index++) { //find the first incomplete blink
+        if (p_led_indicator->p_blink_steps[index] != LED_BLINK_STOP) {
             p_led_indicator->active_blink = index;
             break;
         }
@@ -271,18 +278,19 @@ static void _blink_list_switch(_led_indicator_t *p_led_indicator)
 
 /**
  * @brief timmer callback to control led and counter steps
- * 
+ *
  * @param xTimer handle of the timmer instance
  */
 static void _blink_list_runner(xTimerHandle xTimer)
 {
-    _led_indicator_t * p_led_indicator = (_led_indicator_t *)pvTimerGetTimerID(xTimer);
+    _led_indicator_t *p_led_indicator = (_led_indicator_t *)pvTimerGetTimerID(xTimer);
     bool leave = false;
 
-    while(!leave) {
+    while (!leave) {
 
-        if (p_led_indicator->active_blink == NULL_ACTIVE_BLINK)
-        return;
+        if (p_led_indicator->active_blink == NULL_ACTIVE_BLINK) {
+            return;
+        }
 
         int active_blink = p_led_indicator->active_blink;
         int active_step = p_led_indicator->p_blink_steps[active_blink];
@@ -297,37 +305,41 @@ static void _blink_list_runner(xTimerHandle xTimer)
             break;
         }
 
-        switch(p_blink_step->type) {
-            case LED_BLINK_LOOP:
-                    p_led_indicator->p_blink_steps[active_blink] = 0;
-                break;
+        switch (p_blink_step->type) {
+        case LED_BLINK_LOOP:
+            p_led_indicator->p_blink_steps[active_blink] = 0;
+            break;
 
-            case LED_BLINK_STOP:
-                    p_led_indicator->p_blink_steps[active_blink] = LED_BLINK_STOP;
-                    _blink_list_switch(p_led_indicator);
-                break;
+        case LED_BLINK_STOP:
+            p_led_indicator->p_blink_steps[active_blink] = LED_BLINK_STOP;
+            _blink_list_switch(p_led_indicator);
+            break;
 
-            case LED_BLINK_HOLD:
-                    _led_set_state(p_led_indicator->io_num, p_led_indicator->off_level, p_blink_step->on_off);
-                    if (p_blink_step->hold_time_ms == 0)
-                    break;
-                    xTimerChangePeriod(p_led_indicator->h_timer, (p_blink_step->hold_time_ms / portTICK_PERIOD_MS), 0);
-                    xTimerStart(p_led_indicator->h_timer, 0);
-                    leave=true;
-                break;
+        case LED_BLINK_HOLD:
+            _led_set_state(p_led_indicator->io_num, p_led_indicator->off_level, p_blink_step->on_off);
 
-            default:
-                    assert(false && "invalid state");
+            if (p_blink_step->hold_time_ms == 0) {
                 break;
+            }
+
+            xTimerChangePeriod(p_led_indicator->h_timer, (p_blink_step->hold_time_ms / portTICK_PERIOD_MS), 0);
+            xTimerStart(p_led_indicator->h_timer, 0);
+            leave = true;
+            break;
+
+        default:
+            assert(false && "invalid state");
+            break;
         }
+
         xSemaphoreGive(p_led_indicator->mutex);
     }
 }
 
-led_indicator_handle_t led_indicator_create(int io_num, const led_indicator_config_t* config)
+led_indicator_handle_t led_indicator_create(int io_num, const led_indicator_config_t *config)
 {
     LED_INDICATOR_CHECK(config != NULL, "invalid config pointer", NULL);
-    char timmer_name[16] = {'\0'};
+    char timmer_name[16] = { '\0' };
     snprintf(timmer_name, sizeof(timmer_name) - 1, "%s%02x", "led_tmr_", io_num);
     _led_indicator_t *p_led_indicator = (_led_indicator_t *)calloc(1, sizeof(_led_indicator_t));
     LED_INDICATOR_CHECK(p_led_indicator != NULL, "calloc indicator memory failed", NULL);
@@ -339,25 +351,23 @@ led_indicator_handle_t led_indicator_create(int io_num, const led_indicator_conf
     LED_INDICATOR_CHECK_GOTO(p_led_indicator->p_blink_steps != NULL, "calloc blink_steps memory failed", cleanup_indicator);
     p_led_indicator->mutex = xSemaphoreCreateMutex();
     LED_INDICATOR_CHECK_GOTO(p_led_indicator->mutex != NULL, "create mutex failed", cleanup_indicator_blinkstep);
-    
-    for(size_t j = 0; j < BLINK_LIST_NUM; j++) {
+
+    for (size_t j = 0; j < BLINK_LIST_NUM; j++) {
         *(p_led_indicator->p_blink_steps + j) = LED_BLINK_STOP;
     }
 
-    switch (p_led_indicator->mode)
-    {
-        case LED_GPIO_MODE:        /**< blink with max brightness*/
-            {
-            bool ininted = _led_gpio_init(p_led_indicator->io_num);
-            LED_INDICATOR_CHECK_GOTO(ininted != false, "init led gpio failed", cleanup_all);
-            p_led_indicator->h_timer = xTimerCreate(timmer_name, (100 / portTICK_PERIOD_MS), pdFALSE, (void *)p_led_indicator, _blink_list_runner);
-            LED_INDICATOR_CHECK_GOTO(p_led_indicator->h_timer != NULL, "led timmer create failed", cleanup_all);
-            }
-            break;
+    switch (p_led_indicator->mode) {
+    case LED_GPIO_MODE: {      /**< blink with max brightness*/
+        bool ininted = _led_gpio_init(p_led_indicator->io_num);
+        LED_INDICATOR_CHECK_GOTO(ininted != false, "init led gpio failed", cleanup_all);
+        p_led_indicator->h_timer = xTimerCreate(timmer_name, (100 / portTICK_PERIOD_MS), pdFALSE, (void *)p_led_indicator, _blink_list_runner);
+        LED_INDICATOR_CHECK_GOTO(p_led_indicator->h_timer != NULL, "led timmer create failed", cleanup_all);
+    }
+    break;
 
-        default:
-            LED_INDICATOR_CHECK_GOTO(false, "mode not supported", cleanup_all);
-            break;
+    default:
+        LED_INDICATOR_CHECK_GOTO(false, "mode not supported", cleanup_all);
+        break;
     }
 
     _led_indicator_add_node(p_led_indicator);
@@ -388,27 +398,26 @@ led_indicator_handle_t led_indicator_get_handle(int io_num)
     return NULL;
 }
 
-esp_err_t led_indicator_delete(led_indicator_handle_t* p_handle)
+esp_err_t led_indicator_delete(led_indicator_handle_t *p_handle)
 {
     LED_INDICATOR_CHECK(p_handle != NULL && *p_handle != NULL, "invalid p_handle", ESP_ERR_INVALID_ARG);
     _led_indicator_t *p_led_indicator = (_led_indicator_t *)(*p_handle);
     xSemaphoreTake(p_led_indicator->mutex, portMAX_DELAY);
 
-    switch (p_led_indicator->mode)
-    {
-        case LED_GPIO_MODE:
-            {
-            bool deinited = _led_gpio_deinit(p_led_indicator->io_num);
-            LED_INDICATOR_CHECK(deinited != false, "deinit led gpio failed", ESP_FAIL);
-            BaseType_t ret = xTimerDelete(p_led_indicator->h_timer, portMAX_DELAY);
-            LED_INDICATOR_CHECK(ret == pdPASS, "led timmer delete failed", ESP_FAIL);
-            }
-            break;
-
-        default:
-            LED_INDICATOR_CHECK(false, "mode not supported", ESP_ERR_NOT_SUPPORTED);
-            break;
+    switch (p_led_indicator->mode) {
+    case LED_GPIO_MODE: {
+        bool deinited = _led_gpio_deinit(p_led_indicator->io_num);
+        LED_INDICATOR_CHECK(deinited != false, "deinit led gpio failed", ESP_FAIL);
+        BaseType_t ret = xTimerDelete(p_led_indicator->h_timer, portMAX_DELAY);
+        LED_INDICATOR_CHECK(ret == pdPASS, "led timmer delete failed", ESP_FAIL);
     }
+    break;
+
+    default:
+        LED_INDICATOR_CHECK(false, "mode not supported", ESP_ERR_NOT_SUPPORTED);
+        break;
+    }
+
     _led_indicator_remove_node(p_led_indicator);
     vSemaphoreDelete(p_led_indicator->mutex);
     free(p_led_indicator->p_blink_steps);
@@ -427,7 +436,7 @@ esp_err_t led_indicator_start(led_indicator_handle_t handle, led_indicator_blink
     _blink_list_switch(p_led_indicator);
     xSemaphoreGive(p_led_indicator->mutex);
 
-    if(p_led_indicator->active_blink == blink_type) { //re-run from first step
+    if (p_led_indicator->active_blink == blink_type) { //re-run from first step
         _blink_list_runner(p_led_indicator->h_timer);
     }
 
@@ -444,7 +453,7 @@ esp_err_t led_indicator_stop(led_indicator_handle_t handle, led_indicator_blink_
     _blink_list_switch(p_led_indicator); //stop and swith to next blink steps
     xSemaphoreGive(p_led_indicator->mutex);
 
-    if(p_led_indicator->active_blink == blink_type) { //re-run from first step
+    if (p_led_indicator->active_blink == blink_type) { //re-run from first step
         _blink_list_runner(p_led_indicator->h_timer);
     }
 

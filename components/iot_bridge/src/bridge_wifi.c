@@ -54,6 +54,7 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
     if (mode & WIFI_MODE_STA) {
         memcpy((char *)wifi_cfg.sta.ssid, ssid, sizeof(wifi_cfg.sta.ssid));
         strlcpy((char *)wifi_cfg.sta.password, password, sizeof(wifi_cfg.sta.password));
+
         if (bssid != NULL) {
             wifi_cfg.sta.bssid_set = 1;
             memcpy((char *)wifi_cfg.sta.bssid, bssid, sizeof(wifi_cfg.sta.bssid));
@@ -75,21 +76,21 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
         snprintf(suffix, sizeof(suffix), "_%02x%02x%02x", softap_mac[3], softap_mac[4], softap_mac[5]);
         strcat(softap_ssid, suffix);
 #endif
-        memcpy((char *)wifi_cfg.ap.ssid, softap_ssid, sizeof(wifi_cfg.ap.ssid));
-        strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
+        memcpy((char*)wifi_cfg.ap.ssid, softap_ssid, sizeof(wifi_cfg.ap.ssid));
+        strlcpy((char*)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
         wifi_cfg.ap.max_connection = ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER;
-        wifi_cfg.ap.authmode = strlen((char *)wifi_cfg.ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
+        wifi_cfg.ap.authmode = strlen((char*)wifi_cfg.ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
 
-        ESP_LOGI(TAG, "softap ssid: %s password: %s", (char *)wifi_cfg.ap.ssid, (char *)wifi_cfg.ap.password);
+        ESP_LOGI(TAG, "softap ssid: %s password: %s", (char*)wifi_cfg.ap.ssid, (char*)wifi_cfg.ap.password);
     }
 
     return ESP_OK;
 }
 
 /* Event handler for catching system events */
-static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t event_base,
-                                                int32_t event_id, void *event_data)
+static void wifi_event_sta_disconnected_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
 {
 #if !CONFIG_BRIDGE_STATION_CANCEL_AUTO_CONNECT_WHEN_DISCONNECTED
     ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
@@ -98,18 +99,18 @@ static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t even
     xEventGroupClearBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
 }
 
-static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
-                                        int32_t event_id, void *event_data)
+static void ip_event_sta_got_ip_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
 {
-    ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
+    ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
     ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
 
     esp_bridge_netif_network_segment_conflict_update(event->esp_netif);
     xEventGroupSetBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
 }
 
-static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
-                                        int32_t event_id, void *event_data)
+static void wifi_event_ap_start_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
 {
     esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
 
@@ -127,18 +128,20 @@ static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
 
         esp_netif_ip_info_t netif_ip;
         esp_netif_get_ip_info(netif, &netif_ip);
+#if CONFIG_LWIP_IPV4_NAPT
         ip_napt_enable(netif_ip.ip.addr, 1);
+#endif
     }
 }
 
-static void wifi_event_ap_staconnected_handler(void *arg, esp_event_base_t event_base,
-                                               int32_t event_id, void *event_data)
+static void wifi_event_ap_staconnected_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
 {
     ESP_LOGI(TAG, "STA Connecting to the AP again...");
 }
 
-static void wifi_event_ap_stadisconnected_handler(void *arg, esp_event_base_t event_base,
-                                                  int32_t event_id, void *event_data)
+static void wifi_event_ap_stadisconnected_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
 {
     ESP_LOGE(TAG, "STA Disconnect to the AP");
 }
@@ -167,7 +170,7 @@ static esp_err_t esp_bridge_wifi_init(void)
 
 esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
-    esp_netif_t *wifi_netif = NULL;
+    esp_netif_t* wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
 
     if (data_forwarding || enable_dhcps) {
@@ -188,8 +191,8 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
 
     /* Get Wi-Fi Station ssid success */
     if (strlen((const char*)router_config.ssid)) {
-        ESP_LOGI(TAG, "Found ssid %s",     (const char*) router_config.ssid);
-        ESP_LOGI(TAG, "Found password %s", (const char*) router_config.password);
+        ESP_LOGI(TAG, "Found ssid %s", (const char*)router_config.ssid);
+        ESP_LOGI(TAG, "Found password %s", (const char*)router_config.password);
     }
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
@@ -201,7 +204,7 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
 #endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_STATION */
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
-static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
+static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t* ip_info)
 {
     esp_err_t ret = ESP_FAIL;
     ESP_LOGW(TAG, "SoftAP IP network segment has changed, deauth all station");
@@ -216,7 +219,7 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_
 {
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
-    esp_netif_t *wifi_netif = NULL;
+    esp_netif_t* wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
 
     if (!data_forwarding) {

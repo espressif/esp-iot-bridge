@@ -21,32 +21,35 @@
 
 static const char *TAG = "esp_modem_dce";
 
-esp_err_t esp_modem_dce_generic_command(esp_modem_dce_t *dce, const char * command, uint32_t timeout, esp_modem_dce_handle_line_t handle_line, void *ctx)
+esp_err_t esp_modem_dce_generic_command(esp_modem_dce_t *dce, const char *command, uint32_t timeout, esp_modem_dce_handle_line_t handle_line, void *ctx)
 {
     esp_modem_dte_t *dte = dce->dte;
-    ESP_LOGD(TAG, "%s(%d): Sending command:%s\n", __func__, __LINE__, command );
+    ESP_LOGD(TAG, "%s(%d): Sending command:%s\n", __func__, __LINE__, command);
     dce->handle_line = handle_line;
     dce->handle_line_ctx = ctx;
+
     if (dte->send_cmd(dte, command, timeout) != ESP_OK) {
-        ESP_LOGW(TAG, "%s(%d): Command:%s response timeout", __func__, __LINE__, command );
+        ESP_LOGW(TAG, "%s(%d): Command:%s response timeout", __func__, __LINE__, command);
         return ESP_ERR_TIMEOUT;
     }
+
     if (dce->state == ESP_MODEM_STATE_FAIL) {
-        ESP_LOGW(TAG, "%s(%d): Command:%s\n...failed", __func__, __LINE__, command );
+        ESP_LOGW(TAG, "%s(%d): Command:%s\n...failed", __func__, __LINE__, command);
         return ESP_FAIL;
     }
-    ESP_LOGD(TAG, "%s(%d): Command:%s\n succeeded", __func__, __LINE__, command );
+
+    ESP_LOGD(TAG, "%s(%d): Command:%s\n succeeded", __func__, __LINE__, command);
     return ESP_OK;
 }
 
-esp_err_t esp_modem_dce_set_params(esp_modem_dce_t *dce, esp_modem_dce_config_t* config)
+esp_err_t esp_modem_dce_set_params(esp_modem_dce_t *dce, esp_modem_dce_config_t *config)
 {
     // save the config
     memcpy(&dce->config, config, sizeof(esp_modem_dce_config_t));
     return ESP_OK;
 }
 
-esp_err_t esp_modem_dce_default_init(esp_modem_dce_t *dce, esp_modem_dce_config_t* config)
+esp_err_t esp_modem_dce_default_init(esp_modem_dce_t *dce, esp_modem_dce_config_t *config)
 {
     // Check parameters
     ESP_MODEM_ERR_CHECK(dce && config, "dce object or configuration is NULL", err);
@@ -75,6 +78,7 @@ esp_err_t esp_modem_dce_default_init(esp_modem_dce_t *dce, esp_modem_dce_config_
         dce->dce_cmd_list = esp_modem_command_list_create();
         ESP_MODEM_ERR_CHECK(dce->dce_cmd_list, "Allocation of dce internal object has failed", err);
     }
+
     return ESP_OK;
 err:
     return ESP_ERR_NO_MEM;
@@ -92,11 +96,13 @@ err:
 esp_err_t esp_modem_dce_handle_response_default(esp_modem_dce_t *dce, const char *line)
 {
     esp_err_t err = ESP_FAIL;
+
     if (strstr(line, MODEM_RESULT_CODE_SUCCESS)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_SUCCESS);
     } else if (strstr(line, MODEM_RESULT_CODE_ERROR)) {
         err = esp_modem_process_command_done(dce, ESP_MODEM_STATE_FAIL);
     }
+
     return err;
 }
 
@@ -109,6 +115,7 @@ esp_err_t esp_modem_process_command_done(esp_modem_dce_t *dce, esp_modem_state_t
 static esp_err_t esp_modem_switch_to_command_mode(esp_modem_dce_t *dce)
 {
     esp_modem_wait_ms(1000);   // 1s delay for the device to recognize the data escape sequence
+
     if (dce->set_command_mode(dce, NULL, NULL) != ESP_OK) {
         // exiting data mode could fail if the modem is already in command mode via PPP netif closed
         ESP_MODEM_ERR_CHECK(dce->sync(dce, NULL, NULL) == ESP_OK, "sync after PPP exit failed", err);
@@ -117,9 +124,10 @@ static esp_err_t esp_modem_switch_to_command_mode(esp_modem_dce_t *dce)
         dce->mode = ESP_MODEM_COMMAND_MODE;
         ESP_MODEM_ERR_CHECK(dce->hang_up(dce, NULL, NULL) == ESP_OK, "hang-up after PPP exit failed", err);
     }
+
     dce->mode = ESP_MODEM_COMMAND_MODE;
     return ESP_OK;
-    err:
+err:
     return ESP_FAIL;
 }
 
@@ -127,6 +135,7 @@ static esp_err_t esp_modem_switch_to_data_mode(esp_modem_dce_t *dce)
 {
     // before going to data mode, set the PDP data context
     ESP_MODEM_ERR_CHECK(dce->set_pdp_context(dce, &dce->config.pdp_context, NULL) == ESP_OK, "setting pdp context failed", err);
+
     // now set the data mode
     if (dce->set_data_mode(dce, NULL, NULL) != ESP_OK) {
         // Initiate PPP mode could fail, if we've already "dialed" the data call before.
@@ -134,9 +143,10 @@ static esp_err_t esp_modem_switch_to_data_mode(esp_modem_dce_t *dce)
         ESP_LOGD(TAG, "set_data_mode, retry with resume_data_mode");
         ESP_MODEM_ERR_CHECK(dce->resume_data_mode(dce, NULL, NULL) == ESP_OK, "setting data mode failed", err);
     }
+
     dce->mode = ESP_MODEM_PPP_MODE;
     return ESP_OK;
-    err:
+err:
     return ESP_FAIL;
 }
 
@@ -153,28 +163,31 @@ static esp_err_t esp_modem_switch_to_data_mode(esp_modem_dce_t *dce)
 esp_err_t esp_modem_dce_set_working_mode(esp_modem_dce_t *dce, esp_modem_mode_t mode)
 {
     switch (mode) {
-        case ESP_MODEM_COMMAND_MODE:
-            ESP_MODEM_ERR_CHECK(esp_modem_switch_to_command_mode(dce) == ESP_OK, "Setting command mode failed", err);
-            break;
-        case ESP_MODEM_PPP_MODE:
-            ESP_MODEM_ERR_CHECK(esp_modem_switch_to_data_mode(dce) == ESP_OK, "Setting data mode failed", err);
-            break;
-        default:
-            ESP_LOGW(TAG, "unsupported working mode: %d", mode);
-            goto err;
+    case ESP_MODEM_COMMAND_MODE:
+        ESP_MODEM_ERR_CHECK(esp_modem_switch_to_command_mode(dce) == ESP_OK, "Setting command mode failed", err);
+        break;
+
+    case ESP_MODEM_PPP_MODE:
+        ESP_MODEM_ERR_CHECK(esp_modem_switch_to_data_mode(dce) == ESP_OK, "Setting data mode failed", err);
+        break;
+
+    default:
+        ESP_LOGW(TAG, "unsupported working mode: %d", mode);
+        goto err;
     }
+
     return ESP_OK;
-    err:
+err:
     return ESP_FAIL;
 }
 
 esp_err_t esp_modem_dce_default_start_up(esp_modem_dce_t *dce)
 {
     ESP_MODEM_ERR_CHECK(dce->sync(dce, NULL, NULL) == ESP_OK, "sending sync failed", err);
-    ESP_MODEM_ERR_CHECK(dce->set_echo(dce, (void*)false, NULL) == ESP_OK, "set_echo failed", err);
-    ESP_MODEM_ERR_CHECK(dce->set_flow_ctrl(dce, (void*)ESP_MODEM_FLOW_CONTROL_NONE, NULL) == ESP_OK, "set_flow_ctrl failed", err);
+    ESP_MODEM_ERR_CHECK(dce->set_echo(dce, (void *)false, NULL) == ESP_OK, "set_echo failed", err);
+    ESP_MODEM_ERR_CHECK(dce->set_flow_ctrl(dce, (void *)ESP_MODEM_FLOW_CONTROL_NONE, NULL) == ESP_OK, "set_flow_ctrl failed", err);
     ESP_MODEM_ERR_CHECK(dce->store_profile(dce, NULL, NULL) == ESP_OK, "store_profile failed", err);
     return ESP_OK;
-    err:
+err:
     return ESP_FAIL;
 }

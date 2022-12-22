@@ -26,17 +26,17 @@
 #define SPI_BUF_SIZE            1600
 
 struct esp_spi_context {
-	struct esp_adapter          *adapter;
-	struct spi_device           *esp_spi_dev;
-	struct sk_buff_head         tx_q[MAX_PRIORITY_QUEUES];
-	struct sk_buff_head         rx_q[MAX_PRIORITY_QUEUES];
-	struct workqueue_struct     *spi_workqueue;
-	struct work_struct          spi_work;
+    struct esp_adapter *adapter;
+    struct spi_device *esp_spi_dev;
+    struct sk_buff_head         tx_q[MAX_PRIORITY_QUEUES];
+    struct sk_buff_head         rx_q[MAX_PRIORITY_QUEUES];
+    struct workqueue_struct *spi_workqueue;
+    struct work_struct          spi_work;
 };
 
 enum {
-	CLOSE_DATAPATH,
-	OPEN_DATAPATH,
+    CLOSE_DATAPATH,
+    OPEN_DATAPATH,
 };
 
 

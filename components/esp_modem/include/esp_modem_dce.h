@@ -43,12 +43,12 @@ typedef enum {
 /**
  * @brief Generic command type used in DCE unit
  */
-typedef esp_err_t (*dce_command_t)(esp_modem_dce_t *dce, void *param, void *result);
+typedef esp_err_t(*dce_command_t)(esp_modem_dce_t *dce, void *param, void *result);
 
 /**
  * @brief Type of line handlers called fro DTE upon line response reception
  */
-typedef esp_err_t (*esp_modem_dce_handle_line_t)(esp_modem_dce_t *dce, const char *line);
+typedef esp_err_t(*esp_modem_dce_handle_line_t)(esp_modem_dce_t *dce, const char *line);
 
 
 
@@ -65,11 +65,11 @@ struct esp_modem_dce {
     esp_modem_dce_handle_line_t handle_line;                                    /*!< Handle line strategy */
 
     void *handle_line_ctx;                                                      /*!< DCE context reserved for handle_line
-                                                                                    processing */
+                                                                                        processing */
     // higher level actions DCE unit can take
-    esp_err_t (*set_working_mode)(esp_modem_dce_t *dce, esp_modem_mode_t mode); /*!< Set working mode */
-    esp_err_t (*deinit)(esp_modem_dce_t *dce);                                  /*!< Destroys the DCE */
-    esp_err_t (*start_up)(esp_modem_dce_t *dce);                                /*!< Start-up sequence */
+    esp_err_t(*set_working_mode)(esp_modem_dce_t *dce, esp_modem_mode_t mode); /*!< Set working mode */
+    esp_err_t(*deinit)(esp_modem_dce_t *dce);                                  /*!< Destroys the DCE */
+    esp_err_t(*start_up)(esp_modem_dce_t *dce);                                /*!< Start-up sequence */
 
     // list of essential commands for esp-modem basic work
     dce_command_t hang_up;                                                      /*!< generic command for hang-up */
@@ -99,7 +99,7 @@ struct esp_modem_dce {
  *      - ESP_FAIL on error
  *      - ESP_ERR_TIMEOUT if timeout while waiting for expected response
  */
-esp_err_t esp_modem_dce_generic_command(esp_modem_dce_t *dce, const char * command, uint32_t timeout, esp_modem_dce_handle_line_t handle_line, void *ctx);
+esp_err_t esp_modem_dce_generic_command(esp_modem_dce_t *dce, const char *command, uint32_t timeout, esp_modem_dce_handle_line_t handle_line, void *ctx);
 
 /**
  * @brief Indicate that processing current command has done
@@ -170,7 +170,7 @@ esp_err_t esp_modem_dce_default_destroy(esp_modem_dce_t *dce);
  *      - ESP_OK on success
  *      - ESP_FAIL on error
  */
-esp_err_t esp_modem_dce_default_init(esp_modem_dce_t *dce, esp_modem_dce_config_t* config);
+esp_err_t esp_modem_dce_default_init(esp_modem_dce_t *dce, esp_modem_dce_config_t *config);
 
 /**
  * @brief Sets the DCE parameters. This API updates runtime DCE config parameters,
@@ -183,7 +183,7 @@ esp_err_t esp_modem_dce_default_init(esp_modem_dce_t *dce, esp_modem_dce_config_
  *      - ESP_OK on success
  *      - ESP_FAIL on error
  */
-esp_err_t esp_modem_dce_set_params(esp_modem_dce_t *dce, esp_modem_dce_config_t* config);
+esp_err_t esp_modem_dce_set_params(esp_modem_dce_t *dce, esp_modem_dce_config_t *config);
 
 
 // list command operations
@@ -200,7 +200,7 @@ esp_err_t esp_modem_dce_set_params(esp_modem_dce_t *dce, esp_modem_dce_config_t*
  *      - ESP_FAIL on error
  *      - ESP_ERR_TIMEOUT if timeout while waiting for expected response
  */
-esp_err_t esp_modem_command_list_run(esp_modem_dce_t *dce, const char * command, void * param, void* result);
+esp_err_t esp_modem_command_list_run(esp_modem_dce_t *dce, const char *command, void *param, void *result);
 
 /**
  * @brief Deinitialize the command list
@@ -229,7 +229,7 @@ esp_err_t esp_modem_set_default_command_list(esp_modem_dce_t *dce);
  *
  * @return ESP_OK on success, ESP_FAIL on error
  */
-esp_err_t esp_modem_command_list_set_cmd(esp_modem_dce_t *dce, const char * command_id, dce_command_t command);
+esp_err_t esp_modem_command_list_set_cmd(esp_modem_dce_t *dce, const char *command_id, dce_command_t command);
 
 #ifdef __cplusplus
 }

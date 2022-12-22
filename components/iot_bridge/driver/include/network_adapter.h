@@ -20,7 +20,7 @@
 #include "interface.h"
 
 typedef struct {
-	interface_context_t *context;
+    interface_context_t *context;
 } adapter;
 
 void network_adapter_driver_init(void);

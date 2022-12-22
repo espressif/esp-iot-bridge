@@ -39,14 +39,14 @@
 #ifndef _RNDIS_H
 #define _RNDIS_H
 
-/** 
+/**
   \addtogroup RNDIS
   @{
   */
 
 #include <stdint.h>
 
-#define RNDIS_MAJOR_VERSION	1
+#define RNDIS_MAJOR_VERSION 1
 #define RNDIS_MINOR_VERSION 0
 
 #define RNDIS_STATUS_SUCCESS            0X00000000
@@ -97,92 +97,92 @@ typedef uint32_t rndis_AfListOffset_t;
 typedef uint32_t rndis_AfListSize_t;
 
 /*** Remote NDIS Generic Message type ***/
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	} rndis_generic_msg_t;
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+} rndis_generic_msg_t;
 
 
 /*** Remote NDIS Initialize Message ***/
-typedef struct{
-	rndis_MessageType_t 	MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	rndis_MajorVersion_t	MajorVersion;
-	rndis_MinorVersion_t	MinorVersion;
-	rndis_MaxTransferSize_t	MaxTransferSize;
-	} rndis_initialize_msg_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+    rndis_MajorVersion_t    MajorVersion;
+    rndis_MinorVersion_t    MinorVersion;
+    rndis_MaxTransferSize_t MaxTransferSize;
+} rndis_initialize_msg_t;
+
 /* Response: */
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	rndis_Status_t			Status;
-	rndis_MajorVersion_t	MajorVersion;
-	rndis_MinorVersion_t	MinorVersion;
-	rndis_DeviceFlags_t		DeviceFlags;
-	rndis_Medium_t			Medium;
-	rndis_MaxPacketsPerTransfer_t 	MaxPacketsPerTransfer;
-	rndis_MaxTransferSize_t			MaxTransferSize;
-	rndis_PacketAlignmentFactor_t 	PacketAlignmentFactor;
-	rndis_AfListOffset_t	AfListOffset;
-	rndis_AfListSize_t		AfListSize;
-	} rndis_initialize_cmplt_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+    rndis_Status_t          Status;
+    rndis_MajorVersion_t    MajorVersion;
+    rndis_MinorVersion_t    MinorVersion;
+    rndis_DeviceFlags_t     DeviceFlags;
+    rndis_Medium_t          Medium;
+    rndis_MaxPacketsPerTransfer_t   MaxPacketsPerTransfer;
+    rndis_MaxTransferSize_t         MaxTransferSize;
+    rndis_PacketAlignmentFactor_t   PacketAlignmentFactor;
+    rndis_AfListOffset_t    AfListOffset;
+    rndis_AfListSize_t      AfListSize;
+} rndis_initialize_cmplt_t;
+
 
 /*** Remote NDIS Halt Message ***/
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	} rndis_halt_msg_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+} rndis_halt_msg_t;
+
 typedef uint32_t rndis_Oid_t;
 typedef uint32_t rndis_InformationBufferLength_t;
 typedef uint32_t rndis_InformationBufferOffset_t;
 typedef uint32_t rndis_DeviceVcHandle_t;
 
 /*** Remote NDIS Query Message ***/
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	rndis_Oid_t				Oid;
-	rndis_InformationBufferLength_t	InformationBufferLength;
-	rndis_InformationBufferOffset_t	InformationBufferOffset;
-	rndis_DeviceVcHandle_t			DeviceVcHandle;
-	}  rndis_query_msg_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+    rndis_Oid_t             Oid;
+    rndis_InformationBufferLength_t InformationBufferLength;
+    rndis_InformationBufferOffset_t InformationBufferOffset;
+    rndis_DeviceVcHandle_t          DeviceVcHandle;
+}  rndis_query_msg_t;
+
 /* Response: */
 
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	rndis_Status_t			Status;
-	rndis_InformationBufferLength_t	InformationBufferLength;
-	rndis_InformationBufferOffset_t	InformationBufferOffset;
-	} rndis_query_cmplt_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+    rndis_Status_t          Status;
+    rndis_InformationBufferLength_t InformationBufferLength;
+    rndis_InformationBufferOffset_t InformationBufferOffset;
+} rndis_query_cmplt_t;
+
 /*** Remote NDIS Set Message ***/
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	rndis_Oid_t				Oid;
-	rndis_InformationBufferLength_t	InformationBufferLength;
-	rndis_InformationBufferOffset_t	InformationBufferOffset;
-	rndis_DeviceVcHandle_t			DeviceVcHandle;
-	} rndis_set_msg_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+    rndis_Oid_t             Oid;
+    rndis_InformationBufferLength_t InformationBufferLength;
+    rndis_InformationBufferOffset_t InformationBufferOffset;
+    rndis_DeviceVcHandle_t          DeviceVcHandle;
+} rndis_set_msg_t;
+
 /* Response */
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	rndis_Status_t			Status;
-	}rndis_set_cmplt_t;
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+    rndis_Status_t          Status;
+} rndis_set_cmplt_t;
 
 /* Information buffer layout for OID_GEN_RNDIS_CONFIG_PARAMETER */
 typedef uint32_t rndis_ParameterNameOffset_t;
@@ -191,67 +191,67 @@ typedef uint32_t rndis_ParameterType_t;
 typedef uint32_t rndis_ParameterValueOffset_t;
 typedef uint32_t rndis_ParameterValueLength_t;
 
-#define PARAMETER_TYPE_STRING		2
-#define PARAMETER_TYPE_NUMERICAL	0
+#define PARAMETER_TYPE_STRING       2
+#define PARAMETER_TYPE_NUMERICAL    0
 
-typedef struct{
-	rndis_ParameterNameOffset_t		ParameterNameOffset;
-	rndis_ParameterNameLength_t		ParameterNameLength;
-	rndis_ParameterType_t			ParameterType;
-	rndis_ParameterValueOffset_t	ParameterValueOffset;
-	rndis_ParameterValueLength_t	ParameterValueLength;	
-	}rndis_config_parameter_t;
-	
+typedef struct {
+    rndis_ParameterNameOffset_t     ParameterNameOffset;
+    rndis_ParameterNameLength_t     ParameterNameLength;
+    rndis_ParameterType_t           ParameterType;
+    rndis_ParameterValueOffset_t    ParameterValueOffset;
+    rndis_ParameterValueLength_t    ParameterValueLength;
+} rndis_config_parameter_t;
+
 typedef uint32_t rndis_Reserved_t;
 
 /*** Remote NDIS Soft Reset Message ***/
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_Reserved_t		Reserved;
-	} rndis_reset_msg_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_Reserved_t        Reserved;
+} rndis_reset_msg_t;
+
 typedef uint32_t rndis_AddressingReset_t;
 
 /* Response: */
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_Status_t			Status;
-	rndis_AddressingReset_t	AddressingReset;
-	}  rndis_reset_cmplt_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_Status_t          Status;
+    rndis_AddressingReset_t AddressingReset;
+}  rndis_reset_cmplt_t;
+
 /*** Remote NDIS Indicate Status Message ***/
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_Status_t			Status;
-	rndis_Status_t			StatusBufferLength;
-	rndis_Status_t			StatusBufferOffset;
-	}  rndis_indicate_status_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_Status_t          Status;
+    rndis_Status_t          StatusBufferLength;
+    rndis_Status_t          StatusBufferOffset;
+}  rndis_indicate_status_t;
+
 typedef uint32_t rndis_DiagStatus_t;
 typedef uint32_t rndis_ErrorOffset_t;
 
 typedef struct {
-	rndis_DiagStatus_t		DiagStatus;
-	rndis_ErrorOffset_t		ErrorOffset;
-	}rndis_diagnostic_info_t;
-	
+    rndis_DiagStatus_t      DiagStatus;
+    rndis_ErrorOffset_t     ErrorOffset;
+} rndis_diagnostic_info_t;
+
 /*** Remote NDIS Keepalive Message */
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	}rndis_keepalive_msg_t;
-	
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+} rndis_keepalive_msg_t;
+
 /* Response: */
-typedef struct{
-	rndis_MessageType_t		MessageType;
-	rndis_MessageLength_t	MessageLength;
-	rndis_RequestId_t		RequestId;
-	rndis_Status_t			Status;
-	}rndis_keepalive_cmplt_t;
+typedef struct {
+    rndis_MessageType_t     MessageType;
+    rndis_MessageLength_t   MessageLength;
+    rndis_RequestId_t       RequestId;
+    rndis_Status_t          Status;
+} rndis_keepalive_cmplt_t;
 
 /*** Remote NDIS Data Packet ***/
 
@@ -263,43 +263,43 @@ typedef uint32_t rndis_NumOOBDataElements_t;
 typedef uint32_t rndis_PerPacketInfoOffset_t;
 typedef uint32_t rndis_PerPacketInfoLength_t;
 
-typedef struct{
-	rndis_MessageType_t			MessageType;
-	rndis_MessageLength_t		MessageLength;
-	rndis_DataOffset_t			DataOffset;
-	rndis_DataLength_t			DataLength;
-	rndis_OOBDataOffset_t		OOBDataOffset;
-	rndis_OOBDataLength_t		OOBDataLength;
-	rndis_NumOOBDataElements_t	NumOOBDataElements;
-	rndis_PerPacketInfoOffset_t	PerPacketInfoOffset;
-	rndis_PerPacketInfoLength_t PerPacketInfoLength;
-	rndis_DeviceVcHandle_t		DeviceVcHandle;
-	rndis_Reserved_t			Reserved;
-	}rndis_data_packet_t;
+typedef struct {
+    rndis_MessageType_t         MessageType;
+    rndis_MessageLength_t       MessageLength;
+    rndis_DataOffset_t          DataOffset;
+    rndis_DataLength_t          DataLength;
+    rndis_OOBDataOffset_t       OOBDataOffset;
+    rndis_OOBDataLength_t       OOBDataLength;
+    rndis_NumOOBDataElements_t  NumOOBDataElements;
+    rndis_PerPacketInfoOffset_t PerPacketInfoOffset;
+    rndis_PerPacketInfoLength_t PerPacketInfoLength;
+    rndis_DeviceVcHandle_t      DeviceVcHandle;
+    rndis_Reserved_t            Reserved;
+} rndis_data_packet_t;
 
 typedef uint32_t rndis_ClassInformationOffset_t;
 typedef uint32_t rndis_Size_t;
 typedef uint32_t rndis_Type_t;
 
-typedef struct{
-	rndis_Size_t					Size;
-	rndis_Type_t					Type;
-	rndis_ClassInformationOffset_t	ClassInformationType;
-	}rndis_OOB_packet_t;
+typedef struct {
+    rndis_Size_t                    Size;
+    rndis_Type_t                    Type;
+    rndis_ClassInformationOffset_t  ClassInformationType;
+} rndis_OOB_packet_t;
 
 #include "ndis.h"
 
 typedef enum rnids_state_e {
-	rndis_uninitialized,
-	rndis_initialized,
-	rndis_data_initialized
-	} rndis_state_t;
+    rndis_uninitialized,
+    rndis_initialized,
+    rndis_data_initialized
+} rndis_state_t;
 
 typedef struct {
-	uint32_t		txok;
-	uint32_t		rxok;
-	uint32_t		txbad;
-	uint32_t		rxbad;
+    uint32_t        txok;
+    uint32_t        rxok;
+    uint32_t        txbad;
+    uint32_t        rxbad;
 } usb_eth_stat_t;
 
 //void rndis_indicate_status(int status);

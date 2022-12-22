@@ -30,7 +30,7 @@
 #include "dfu.h"
 
 #ifdef __cplusplus
-  extern "C" {
+extern "C" {
 #endif
 
 //--------------------------------------------------------------------+
@@ -52,20 +52,20 @@
 // Interface number, Alternate count, starting string index, attributes, detach timeout, transfer size
 // Note: Alternate count must be numberic or macro, string index is increased by one for each Alt interface
 #define TUD_DFU_DESCRIPTOR(_itfnum, _alt_count, _stridx, _attr, _timeout, _xfer_size) \
-  TU_XSTRCAT(_TUD_DFU_ALT_,_alt_count)(_itfnum, 0, _stridx), \
-  /* Function */ \
-  9, DFU_DESC_FUNCTIONAL, _attr, U16_TO_U8S_LE(_timeout), U16_TO_U8S_LE(_xfer_size), U16_TO_U8S_LE(0x0101)
+    TU_XSTRCAT(_TUD_DFU_ALT_,_alt_count)(_itfnum, 0, _stridx), \
+    /* Function */ \
+    9, DFU_DESC_FUNCTIONAL, _attr, U16_TO_U8S_LE(_timeout), U16_TO_U8S_LE(_xfer_size), U16_TO_U8S_LE(0x0101)
 
 #define _TUD_DFU_ALT(_itfnum, _alt, _stridx) \
-  /* Interface */ \
-  9, TUSB_DESC_INTERFACE, _itfnum, _alt, 0, TUD_DFU_APP_CLASS, TUD_DFU_APP_SUBCLASS, DFU_PROTOCOL_DFU, _stridx
+    /* Interface */ \
+    9, TUSB_DESC_INTERFACE, _itfnum, _alt, 0, TUD_DFU_APP_CLASS, TUD_DFU_APP_SUBCLASS, DFU_PROTOCOL_DFU, _stridx
 
 #define _TUD_DFU_ALT_1(_itfnum, _alt_count, _stridx) \
-  _TUD_DFU_ALT(_itfnum, _alt_count, _stridx)
+    _TUD_DFU_ALT(_itfnum, _alt_count, _stridx)
 
 #define _TUD_DFU_ALT_2(_itfnum, _alt_count, _stridx) \
-  _TUD_DFU_ALT(_itfnum, _alt_count, _stridx),      \
-  _TUD_DFU_ALT_1(_itfnum, _alt_count+1, _stridx+1)
+    _TUD_DFU_ALT(_itfnum, _alt_count, _stridx),      \
+    _TUD_DFU_ALT_1(_itfnum, _alt_count+1, _stridx+1)
 
 //--------------------------------------------------------------------+
 // Application API
@@ -90,7 +90,7 @@ uint32_t tud_dfu_get_timeout_cb(uint8_t alt, uint8_t state);
 // Invoked when received DFU_DNLOAD (wLength>0) following by DFU_GETSTATUS (state=DFU_DNBUSY) requests
 // This callback could be returned before flashing op is complete (async).
 // Once finished flashing, application must call tud_dfu_finish_flashing()
-void tud_dfu_download_cb (uint8_t alt, uint16_t block_num, uint8_t const *data, uint16_t length);
+void tud_dfu_download_cb(uint8_t alt, uint16_t block_num, uint8_t const *data, uint16_t length);
 
 // Invoked when download process is complete, received DFU_DNLOAD (wLength=0) following by DFU_GETSTATUS (state=Manifest)
 // Application can do checksum, or actual flashing if buffered entire image previously.
@@ -100,7 +100,7 @@ void tud_dfu_manifest_cb(uint8_t alt);
 // Invoked when received DFU_UPLOAD request
 // Application must populate data with up to length bytes and
 // Return the number of written bytes
-TU_ATTR_WEAK uint16_t tud_dfu_upload_cb(uint8_t alt, uint16_t block_num, uint8_t* data, uint16_t length);
+TU_ATTR_WEAK uint16_t tud_dfu_upload_cb(uint8_t alt, uint16_t block_num, uint8_t *data, uint16_t length);
 
 // Invoked when a DFU_DETACH request is received
 TU_ATTR_WEAK void tud_dfu_detach_cb(void);
@@ -113,12 +113,12 @@ TU_ATTR_WEAK void tud_dfu_abort_cb(uint8_t alt);
 //--------------------------------------------------------------------+
 void     dfu_moded_init(void);
 void     dfu_moded_reset(uint8_t rhport);
-uint16_t dfu_moded_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint16_t max_len);
-bool     dfu_moded_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request);
+uint16_t dfu_moded_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, uint16_t max_len);
+bool     dfu_moded_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request);
 
 
 #ifdef __cplusplus
- }
+}
 #endif
 
 #endif /* _TUSB_DFU_MODE_DEVICE_H_ */

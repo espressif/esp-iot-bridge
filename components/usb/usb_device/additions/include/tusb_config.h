@@ -119,8 +119,8 @@ extern "C" {
 #define CFG_TUD_DFU_XFER_BUFSIZE    CONFIG_TINYUSB_DFU_BUFSIZE
 
 // Enabled device class driver
-#define CFG_TUD_CDC                 CONFIG_TINYUSB_CDC_ENABLED 
-#define CFG_TUD_CDCACM              CONFIG_TINYUSB_CDCACM_ENABLED 
+#define CFG_TUD_CDC                 CONFIG_TINYUSB_CDC_ENABLED
+#define CFG_TUD_CDCACM              CONFIG_TINYUSB_CDCACM_ENABLED
 #define CFG_TUD_MSC                 CONFIG_TINYUSB_MSC_ENABLED
 #define CFG_TUD_HID                 CONFIG_TINYUSB_HID_ENABLED
 #define CFG_TUD_MIDI                CONFIG_TINYUSB_MIDI_ENABLED

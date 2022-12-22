@@ -6,7 +6,7 @@
  *      You may obtain a copy of the License at
  *
  *               http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *      Unless required by applicable law or agreed to in writing, software
  *      distributed under the License is distributed on an "AS IS" BASIS,
  *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,14 +26,15 @@
 extern bool s_wifi_is_connected;
 static SemaphoreHandle_t Net_Semphore;
 
-extern esp_netif_t* usb_netif;
+extern esp_netif_t *usb_netif;
 
 bool tud_network_wait_xmit(uint32_t ms)
 {
-    if (xSemaphoreTake(Net_Semphore, ms/portTICK_PERIOD_MS) == pdTRUE) {
+    if (xSemaphoreTake(Net_Semphore, ms / portTICK_PERIOD_MS) == pdTRUE) {
         xSemaphoreGive(Net_Semphore);
         return true;
     }
+
     return false;
 }
 
@@ -48,6 +49,7 @@ esp_err_t pkt_netif2usb(void *buffer, uint16_t len)
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
         if (tud_network_can_xmit(len)) {
 #else
+
         if (tud_network_can_xmit()) {
 #endif /* ESP_IDF_VERSION >= 5.0.0 */
             // ESP_LOG_BUFFER_HEXDUMP(" netif ==> usb", buffer, len, ESP_LOG_INFO);
