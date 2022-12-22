@@ -39,7 +39,7 @@
 #define BUTTON_REPEAT_TIME    5
 
 static const char *TAG = "main";
-static button_handle_t g_btns[BUTTON_NUM] = {0};
+static button_handle_t g_btns[BUTTON_NUM] = { 0 };
 static bool button_long_press = false;
 static esp_timer_handle_t restart_timer;
 
@@ -60,6 +60,7 @@ static esp_err_t esp_storage_init(void)
 static void button_press_up_cb(void *hardware_data, void *usr_data)
 {
     ESP_LOGI(TAG, "BTN: BUTTON_PRESS_UP");
+
     if (button_long_press) {
         ESP_ERROR_CHECK(esp_timer_stop(restart_timer));
         button_long_press = false;
@@ -79,7 +80,7 @@ static void button_long_press_start_cb(void *hardware_data, void *usr_data)
     ESP_ERROR_CHECK(esp_timer_start_once(restart_timer, BUTTON_PRESS_TIME));
 }
 
-static void restart_timer_callback(void* arg)
+static void restart_timer_callback(void *arg)
 {
     ESP_LOGI(TAG, "Restore factory settings");
     nvs_flash_erase();
@@ -89,8 +90,8 @@ static void restart_timer_callback(void* arg)
 static void esp_bridge_create_button(void)
 {
     const esp_timer_create_args_t restart_timer_args = {
-            .callback = &restart_timer_callback,
-            .name = "restart"
+        .callback = &restart_timer_callback,
+        .name = "restart"
     };
     ESP_ERROR_CHECK(esp_timer_create(&restart_timer_args, &restart_timer));
 

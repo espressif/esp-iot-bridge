@@ -143,11 +143,11 @@ typedef struct {
 static web_server_context_t *s_web_context = NULL;
 static httpd_handle_t s_server = NULL;
 static int32_t s_web_wifi_reconnect_timeout = ESP_BRIDGE_WEB_WIFI_MAX_RECONNECT_TIMEOUT;
-static wifi_sta_connection_info_t s_wifi_sta_connection_info = {0};
-static wifi_sta_connect_config_t s_wifi_sta_connect_config = {0};
+static wifi_sta_connection_info_t s_wifi_sta_connection_info = { 0 };
+static wifi_sta_connect_config_t s_wifi_sta_connect_config = { 0 };
 static TimerHandle_t s_wifi_sta_connect_timer_handler = NULL;
 static EventGroupHandle_t s_wifi_sta_connect_event_group = NULL;
-static uint8_t s_mobile_phone_mac[6] = {0};
+static uint8_t s_mobile_phone_mac[6] = { 0 };
 static bool s_sta_got_ip_flag = false;
 static const char *s_wifi_start_connect_response = "wifi_start_connect\r\n";
 static const char *s_wifi_conncet_finish_response = "wifi_conncet_finish\r\n";
@@ -167,6 +167,7 @@ static uint8_t esp_web_get_mac_match_len(uint8_t *mac1, uint8_t *mac2, uint8_t m
 {
     uint8_t match_len = 0;
     uint8_t i = 0;
+
     if (mac1 == NULL || mac2 == NULL) {
         return 0;
     }
@@ -183,7 +184,7 @@ static uint8_t esp_web_get_mac_match_len(uint8_t *mac1, uint8_t *mac2, uint8_t m
 esp_err_t __attribute__((weak)) esp_web_wifi_connect(wifi_sta_config_t *conf)
 {
     esp_wifi_set_storage(WIFI_STORAGE_FLASH);
-    esp_err_t ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t*)conf);
+    esp_err_t ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t *)conf);
     esp_wifi_set_storage(WIFI_STORAGE_RAM);
     esp_wifi_disconnect();
     esp_wifi_connect();
@@ -198,7 +199,7 @@ esp_err_t __attribute__((weak)) esp_web_wifi_connect(wifi_sta_config_t *conf)
  * @param[in] password - password used for Wi-Fi connect config
  * @param[in] bssid - bssid used for Wi-Fi connect config, can be null.
  * @param[in] connect_event - the handler of wifi connect status eventgroup, used to feedback try connect result.
- * 
+ *
  * @return
  * - ESP_OK : success
  * - Others : fail
@@ -207,8 +208,8 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
 {
     esp_err_t ret;
     EventBits_t bits;
-    char temp_ssid[ESP_BRIDGE_WEB_WIFI_SSID_LEN_DEFAULT + 1] = {0};
-    wifi_sta_config_t sta = {0};
+    char temp_ssid[ESP_BRIDGE_WEB_WIFI_SSID_LEN_DEFAULT + 1] = { 0 };
+    wifi_sta_config_t sta = { 0 };
     memcpy(sta.ssid, ssid, sizeof(sta.ssid));
     memcpy(sta.password, password, sizeof(sta.password));
     memcpy(temp_ssid, ssid, sizeof(sta.ssid));
@@ -222,20 +223,20 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
 
     if (connect_event != NULL) { // need to wait wifi connect result, now it's phone config wifi and ssid is null
         bits = xEventGroupWaitBits(connect_event,
-            ESP_BRIDGE_WEB_WIFI_CONNECTED_BIT | ESP_BRIDGE_WEB_WIFI_FAIL_BIT,
-            pdTRUE,
-            pdFALSE,
-            ESP_BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT / portTICK_PERIOD_MS); // wait until timeout
+                                   ESP_BRIDGE_WEB_WIFI_CONNECTED_BIT | ESP_BRIDGE_WEB_WIFI_FAIL_BIT,
+                                   pdTRUE,
+                                   pdFALSE,
+                                   ESP_BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT / portTICK_PERIOD_MS); // wait until timeout
 
         if (bits & ESP_BRIDGE_WEB_WIFI_CONNECTED_BIT) {
             ESP_LOGI(TAG, "connected to ap SSID:%s", temp_ssid);
         }
-        
+
         if (bits & ESP_BRIDGE_WEB_WIFI_FAIL_BIT) {
             ESP_LOGI(TAG, "connecting to SSID:%s, reconnect timeout", temp_ssid);
             ret = ESP_ERR_TIMEOUT;
         }
-        
+
         if (bits == 0) { // timeout expeird
             ESP_LOGI(TAG, "try connected to ap SSID:%s timeout", temp_ssid);
             ret = ESP_FAIL;
@@ -243,16 +244,17 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
     } else { // don't need to wait wifi connect result
         printf("connect config finish\r\n");
     }
+
     return ret;
 }
 
 /**
  * @brief Get mobile phone's mac connecting to the ESP AP
- * 
+ *
  * @note If there is more than one station connecting to the ESP AP, the function will return the last station's mac.
  *
  * @param[out] mobile_phone_mac
- * 
+ *
  * @return
  *    - ESP_OK
  *    - ESP_FAIL
@@ -263,6 +265,7 @@ static esp_err_t esp_web_get_mobile_phone_mac(uint8_t *mobile_phone_mac)
     wifi_sta_list_t sta_list;
 
     err = esp_wifi_ap_get_sta_list(&sta_list);
+
     if ((err != ESP_OK) && (err != ESP_ERR_WIFI_MODE)) {
         ESP_LOGE(TAG, "Get sta list fail");
         return ESP_FAIL;
@@ -304,6 +307,7 @@ static esp_err_t stop_scan_filter(void)
             free(fail_item);
         }
     }
+
     return ESP_OK;
 }
 
@@ -312,7 +316,7 @@ static void insert_fail_list(router_obj_t *item)
     if (item == NULL) {
         return;
     }
-    
+
     SLIST_INSERT_HEAD(&s_router_fail_list, item, next);
 }
 
@@ -321,8 +325,10 @@ static void esp_record_sort_by_rssi(wifi_ap_record_t *ap_record_array, int len)
     int i, j;
     wifi_ap_record_t tmp_ap_record;
     int flag;
+
     for (i = 0; i < len - 1; i++) {
         flag = 1;
+
         for (j = 0; j < len - i - 1; j++) {
             if (ap_record_array[j].rssi < ap_record_array[j + 1].rssi) {
                 tmp_ap_record = ap_record_array[j];
@@ -331,16 +337,17 @@ static void esp_record_sort_by_rssi(wifi_ap_record_t *ap_record_array, int len)
                 flag = 0;
             }
         }
+
         if (flag == 1) {
             break;
-        }  
+        }
     }
 }
 
 /**
   * @brief Start one scan, and get AP list found in the scan.
   *
-  * @param[in,out] number As input param, it stores max AP number ap_records can hold. 
+  * @param[in,out] number As input param, it stores max AP number ap_records can hold.
   *                As output param, it receives the actual AP number this API returns.
   * @param[out]    ap_records  wifi_ap_record_t array to hold the found APs
   *
@@ -356,14 +363,17 @@ esp_err_t esp_web_wifi_scan_get_ap_records(uint16_t *number, wifi_ap_record_t *a
     if ((number == NULL) || (ap_records == NULL)) {
         return ESP_ERR_INVALID_ARG;
     }
+
     esp_err_t ret = ESP_FAIL;
     ret = esp_wifi_scan_start(NULL, true);
+
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "scan start fail");
         return ret;
     }
 
     ret = esp_wifi_scan_get_ap_records(number, ap_records);
+
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "get scan fail");
         return ret;
@@ -373,8 +383,9 @@ esp_err_t esp_web_wifi_scan_get_ap_records(uint16_t *number, wifi_ap_record_t *a
         ESP_LOGW(TAG, "There is no ap here");
         return ESP_FAIL;
     }
+
     ESP_LOGI(TAG, "Total APs scanned = %u", *number);
-    // sort ap_record according to rssi 
+    // sort ap_record according to rssi
     esp_record_sort_by_rssi(ap_records, *number);
     return ESP_OK;
 }
@@ -384,25 +395,30 @@ static esp_err_t esp_web_check_ap_info(wifi_ap_record_t *ap_info)
     if (ap_info == NULL) {
         return ESP_ERR_INVALID_ARG;
     }
+
     // check ssid
     if (strlen((const char *)ap_info->ssid) == 0) {
         ESP_LOGD(TAG, "Ignore hidden ssid");
         goto check_err;
     }
+
     // check encryption
     if (ap_info->authmode > 5) {
         ESP_LOGD(TAG, "error encryption %d, ssid: %s", ap_info->authmode, ap_info->ssid);
         goto check_err;
     }
+
     if (ap_info->authmode < 2) {
         ESP_LOGD(TAG, "Ignore unsafe password, ssid: %s", ap_info->ssid);
         goto check_err;
     }
+
     // check rssi
     if (ap_info->rssi < ESP_BRIDGE_WEB_SCAN_RSSI_THRESHOLD) {
         ESP_LOGD(TAG, "Ignore low rssi, ssid: %s", ap_info->ssid);
         goto check_err;
     }
+
     return ESP_OK;
 check_err:
     return ESP_FAIL;
@@ -415,7 +431,7 @@ check_err:
  * @param[in] password - web server received Wi-Fi connect password.
  * @param[in] max_connect_time - the Max connection time allowed to attempt(include scan delay and try connect time, unit: s).
  * @param[in] connect_event - the handler of wifi connect status eventgroup, used to feedback try connect result.
- * 
+ *
  * @return
  *    - ESP_OK
  *    - ESP_ERR_INVALID_ARG
@@ -445,25 +461,29 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
         return ESP_ERR_INVALID_ARG;
     }
 
-    ap_info = (wifi_ap_record_t*) malloc(ESP_BRIDGE_WEB_SCAN_LIST_SIZE * sizeof(wifi_ap_record_t));
+    ap_info = (wifi_ap_record_t *)malloc(ESP_BRIDGE_WEB_SCAN_LIST_SIZE * sizeof(wifi_ap_record_t));
+
     if (ap_info == NULL) {
         ESP_LOGE(TAG, "ap info malloc fail");
         return ESP_ERR_NO_MEM;
     }
 
-    ESP_LOGD(TAG, "max connect time is %d", max_connect_time);
+    ESP_LOGD(TAG, "max connect time is %d", (int)max_connect_time);
 
     while (max_try_connect_num > 0) {
         start = clock();
+
         if (current_available_time <= ESP_BRIDGE_WEB_WIFI_LAST_SCAN_TIMEOUT) {
             last_scan = true;
         }
+
         // clear the value of the variable
         try_connect_count = 0;
         ap_scan_number = ESP_BRIDGE_WEB_SCAN_LIST_SIZE;
         memset(ap_info, 0, ESP_BRIDGE_WEB_SCAN_LIST_SIZE * sizeof(wifi_ap_record_t));
 
         ret = esp_web_wifi_scan_get_ap_records(&ap_scan_number, ap_info);
+
         if (ret != ESP_OK) {
             ESP_LOGE(TAG, "get scan fail");
             goto err;
@@ -474,11 +494,13 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
                 continue;
             }
 
-            item = (router_obj_t*) malloc(sizeof(router_obj_t));
+            item = (router_obj_t *)malloc(sizeof(router_obj_t));
+
             if (item == NULL) {
                 ESP_LOGE(TAG, "router malloc fail");
                 break;
             }
+
             memset(item, 0x0, sizeof(router_obj_t));
             // copy mac
             memcpy(item->mac, ap_info[loop].bssid, sizeof(item->mac));
@@ -504,12 +526,14 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
         // If have mobile phone mac, first consider connect the router which has similar mac
         if (phone_mac != NULL) {
             ESP_LOGI(TAG, "Try to macth MAC");
+
             for (item = SLIST_FIRST(&s_router_all_list); (item != NULL) && (try_connect_count < max_try_connect_num); item = SLIST_NEXT(item, next)) {
                 // some phone(like XIAOMI10), the difference between SOFTAP and STA is two bytes
                 if ((esp_web_get_mac_match_len(phone_mac, item->mac, sizeof(item->mac)) >= 5)) {
                     if (check_fail_list(item->mac)) { // ignore fail connect mac
                         try_connect_count++;
                         ret = esp_web_try_connect(item->ssid, password, item->mac, connect_event);
+
                         if (ret != ESP_OK) {
                             ESP_LOGW(TAG, "match mac connect error");
                             SLIST_REMOVE(&s_router_all_list, item, router_obj, next);
@@ -517,24 +541,31 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
                         } else {
                             s_connect_success_flag = 1;
                         }
+
                         break; // find ssid, skip search
                     }
                 }
             }
+
             if (item == NULL) {
                 ESP_LOGI(TAG, "No macth MAC");
             }
         }
+
 #if ESP_BRIDGE_WEB_ENABLE_VIRTUAL_MAC_MATCH
+
         // if connect fail, try to connect the router which has virtual mac
         if (last_scan == true && s_connect_success_flag == 0 && try_connect_count < max_try_connect_num) {
             ESP_LOGI(TAG, "Try to connect router through virtual MAC");
+
             for (item = SLIST_FIRST(&s_router_all_list); (item != NULL) && (try_connect_count < max_try_connect_num); item = SLIST_NEXT(item, next)) {
                 if ((item->mac[1]) & 0x2) { // Compare the first byte
                     ESP_LOGI(TAG, "Find a virtual MAC: %02x:%02x:%02x:%02x:%02x:%02x, ssid: %s", MAC2STR(item->mac), item->ssid);
+
                     if (check_fail_list(item->mac)) {
                         try_connect_count++;
                         ret = esp_web_try_connect(item->ssid, password, item->mac, connect_event);
+
                         if (ret != ESP_OK) {
                             ESP_LOGW(TAG, "virtual mac connect error");
                             SLIST_REMOVE(&s_router_all_list, item, router_obj, next);
@@ -542,27 +573,33 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
                         } else {
                             s_connect_success_flag = 1;
                         }
+
                         break; // find ssid, skip seach
                     }
                 }
             }
+
             if (item == NULL) {
                 ESP_LOGI(TAG, "No virtual MAC");
             }
         }
+
 #endif
 
 #if ESP_BRIDGE_WEB_ENABLE_CONNECT_HIGHEST_RSSI
+
         // if connect fail, try to connect the router which has highest rssi
         if (last_scan == true && s_connect_success_flag == 0 && try_connect_count < max_try_connect_num) {
             ESP_LOGI(TAG, "Try to connect highest RSSI SSID");
             head_item = SLIST_FIRST(&s_router_all_list);
             highest_rssi_connect_count = ESP_BRIDGE_WEB_HIGH_RSSI_CONNECT_COUNT;
+
             while ((highest_rssi_connect_count > 0) && (try_connect_count < max_try_connect_num)) {
                 if (check_fail_list(head_item->mac)) {
                     ESP_LOGI(TAG, "Try to connect highest rssi ssid %s, rssi: %d", head_item->ssid, head_item->rssi);
                     try_connect_count++;
                     ret = esp_web_try_connect(head_item->ssid, password, head_item->mac, connect_event);
+
                     if (ret != ESP_OK) {
                         ESP_LOGW(TAG, "rssi connect error");
                         SLIST_REMOVE(&s_router_all_list, head_item, router_obj, next);
@@ -572,8 +609,10 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
                         break;
                     }
                 }
+
                 highest_rssi_connect_count--;
                 head_item = SLIST_NEXT(head_item, next);
+
                 if (head_item == NULL) {
                     ESP_LOGE(TAG, "List is NULL");
                     break;
@@ -581,7 +620,9 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
 
             }
         }
+
 #endif
+
         // delete scan list
         for (item = SLIST_FIRST(&s_router_all_list); item != NULL; item = SLIST_NEXT(item, next)) {
             ESP_LOGD(TAG, "Delete SSID:%s", item->ssid);
@@ -600,12 +641,13 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
 
         last = NULL;
         end = clock();
+
         if (end > start) {
-            ESP_LOGI(TAG, "scan and try connect use time is %d", (int32_t)((end - start) / 1000));
+            ESP_LOGI(TAG, "scan and try connect use time is %d", (int)((end - start) / 1000));
             current_available_time -= ((end - start) / 1000);
         } else if (end < start) {
-            ESP_LOGI(TAG, "scan and try connect use time is %d", (int32_t)((end + 0xFFFFFFFFUL - start)/ 1000));
-            current_available_time -= ((end + 0xFFFFFFFFUL - start)/ 1000);
+            ESP_LOGI(TAG, "scan and try connect use time is %d", (int)((end + 0xFFFFFFFFUL - start) / 1000));
+            current_available_time -= ((end + 0xFFFFFFFFUL - start) / 1000);
         } else {
             ESP_LOGE(TAG, "time interval fatal error");
             break;
@@ -615,13 +657,15 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
             break;
         } else {
             max_try_connect_num = (current_available_time * 1000) / ESP_BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT;
-            ESP_LOGI(TAG, "current avail time is %d, max_try_connect_num is %d", current_available_time, max_try_connect_num);
+            ESP_LOGI(TAG, "current avail time is %d, max_try_connect_num is %d", (int)current_available_time, max_try_connect_num);
         }
     }
+
     if (ap_info != NULL) {
         free(ap_info);
         ap_info = NULL;
     }
+
     // delete fail connect list
     stop_scan_filter();
     ESP_LOGW(TAG, "scan filter timeout");
@@ -701,7 +745,7 @@ static int esp_web_url_decode(char *val, int valLen, char *ret, int retLen)
  */
 static int esp_web_find_arg(char *line, char *arg, char *buff, int buffLen)
 {
-    char *p,  *e;
+    char *p, * e;
 
     if (line == NULL) {
         return -1;
@@ -712,7 +756,7 @@ static int esp_web_find_arg(char *line, char *arg, char *buff, int buffLen)
     while (p != NULL && *p != '\n' && *p != '\r' && *p != 0) {
         if (strncmp(p, arg, strlen(arg)) == 0 && p[strlen(arg)] == '=') {
             p += strlen(arg) + 1; // move p to start of value
-            e = (char*) strstr(p, "&");
+            e = (char *)strstr(p, "&");
 
             if (e == NULL) {
                 e = p + strlen(p);
@@ -721,7 +765,7 @@ static int esp_web_find_arg(char *line, char *arg, char *buff, int buffLen)
             return esp_web_url_decode(p, (e - p), buff, buffLen);
         }
 
-        p = (char*) strstr(p, "&");
+        p = (char *)strstr(p, "&");
 
         if (p != NULL) {
             p += 1;
@@ -740,12 +784,13 @@ static esp_err_t web_common_get_handler(httpd_req_t *req)
 {
     char filepath[ESP_BRIDGE_WEB_FILE_PATH_MAX];
     esp_err_t err = ESP_FAIL;
-    web_server_context_t *s_web_context = (web_server_context_t*) req->user_ctx;
+    web_server_context_t *s_web_context = (web_server_context_t *)req->user_ctx;
     strlcpy(filepath, s_web_context->base_path, sizeof(filepath));
     strlcat(filepath, "/index.html", sizeof(filepath)); // Now, we just send the index html for the common handler
-    
+
     ESP_LOGW(TAG, "open file : %s", filepath);
     int fd = open(filepath, O_RDONLY);
+
     if (fd == -1) {
         ESP_LOGE(TAG, "Failed to open file : %s, errno =%d", filepath, errno);
         /*Respond with 500 Internal Server Error */
@@ -757,14 +802,17 @@ static esp_err_t web_common_get_handler(httpd_req_t *req)
 
     char *chunk = s_web_context->scratch;
     ssize_t read_bytes;
+
     do {
         /* Read file in chunks into the scratch buffer */
         read_bytes = read(fd, chunk, ESP_BRIDGE_WEB_SCRATCH_BUFSIZE);
+
         if (read_bytes == -1) {
             ESP_LOGE(TAG, "Failed to read file : %s", filepath);
         } else if (read_bytes > 0) {
             /* Send the buffer contents as HTTP response chunk */
             err = httpd_resp_send_chunk(req, chunk, read_bytes);
+
             if (err != ESP_OK) {
                 close(fd);
                 ESP_LOGE(TAG, "File sending failed!,err: %d,read_bytes: %d", err, read_bytes);
@@ -776,6 +824,7 @@ static esp_err_t web_common_get_handler(httpd_req_t *req)
             }
         }
     } while (read_bytes > 0);
+
     /* Close file after sending complete */
     close(fd);
     ESP_LOGD(TAG, "File sending complete");
@@ -791,7 +840,7 @@ static esp_err_t index_html_get_handler(httpd_req_t *req)
     const size_t html_size = (html_end - html_start);
     httpd_resp_set_type(req, "text/html");
     /* Add file upload form and script which on execution sends a POST request to /upload */
-    httpd_resp_send_chunk(req, (const char*) html_start, html_size);
+    httpd_resp_send_chunk(req, (const char *)html_start, html_size);
     /* Respond with an empty chunk to signal HTTP response completion */
     return httpd_resp_send_chunk(req, NULL, 0);
 }
@@ -817,16 +866,20 @@ static esp_err_t recv_post_data(httpd_req_t *req, char *buf)
         ESP_LOGE(TAG, "context too long");
         return ESP_FAIL;
     }
+
     while (cur_len < total_len) {
         received = httpd_req_recv(req, buf + cur_len, total_len);
+
         if (received <= 0) {
             /* Respond with 500 Internal Server Error */
             httpd_resp_send_500(req);
             ESP_LOGE(TAG, "Failed to post control value");
             return ESP_FAIL;
         }
+
         cur_len += received;
     }
+
     buf[total_len] = '\0'; // now ,the post is str format, like ssid=yuxin&pwd=TestPWD&chl=1&ecn=0&maxconn=1&ssidhidden=0
     ESP_LOGI(TAG, "Post data is : %s\n", buf);
     return ESP_OK;
@@ -837,7 +890,7 @@ static void esp_web_response_ok(httpd_req_t *req)
     const char *temp_str = "{\"state\": 0}";
     httpd_resp_set_type(req, HTTPD_TYPE_JSON);
     httpd_resp_set_status(req, HTTPD_200);
-    
+
     httpd_resp_send(req, temp_str, strlen(temp_str));
 }
 
@@ -846,7 +899,7 @@ static void esp_web_response_error(httpd_req_t *req, const char *status)
     const char *temp_str = "{\"state\": 1}";
     httpd_resp_set_type(req, HTTPD_TYPE_JSON);
     httpd_resp_set_status(req, status);
-    
+
     httpd_resp_send(req, temp_str, strlen(temp_str));
 }
 
@@ -897,27 +950,30 @@ static bool esp_web_get_sta_got_ip_flag(void)
 
 static void listen_sta_connect_status_timer_cb(TimerHandle_t timer)
 {
-    wifi_sta_connection_info_t connection_info = {0};
+    wifi_sta_connection_info_t connection_info = { 0 };
     int32_t reconnnect_timeout = esp_web_get_sta_reconnect_timeout();
     int32_t connect_max_count = (reconnnect_timeout * 1000) / ESP_BRIDGE_WEB_TIMER_POLLING_PERIOD;
     esp_err_t ret = ESP_FAIL;
     bool sta_got_ip = false;
     static int connect_count = 1;
     ESP_LOGD(TAG, "Connect callback timer %p count = %d", timer, connect_count);
-    esp_netif_ip_info_t sta_ip = {0};
+    esp_netif_ip_info_t sta_ip = { 0 };
     esp_netif_t *sta_if = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
 
     if (connect_count < connect_max_count) {
         sta_got_ip = esp_web_get_sta_got_ip_flag(); // to check whether sta has connnected to appointed ap(like at_wifi_station_get_connect_status())
+
         if (sta_got_ip != true) {
             connect_count++;
             return;
         } else {
             ESP_LOGI(TAG, "Connect SSID success");
             ret = esp_netif_get_ip_info(sta_if, &sta_ip);
+
             if (ret != ESP_OK) {
                 ESP_LOGE(TAG, "get sta ip fail");
             }
+
             ESP_LOGI(TAG, "Congratulate, got ip:" IPSTR, IP2STR(&sta_ip.ip));
             sprintf(connection_info.sta_ip, IPSTR, IP2STR(&sta_ip.ip));
             connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECT_OK;
@@ -928,6 +984,7 @@ static void listen_sta_connect_status_timer_cb(TimerHandle_t timer)
         connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECT_FAIL;
         goto connect_finish;
     }
+
     return;
 
 connect_finish:
@@ -940,8 +997,8 @@ connect_finish:
 
 static int udp_create(uint16_t port, char *bind_ip)
 {
-    struct sockaddr_in dest_addr = {0};
-    struct sockaddr_in *dest_addr_ip4 = (struct sockaddr_in*) &dest_addr;
+    struct sockaddr_in dest_addr = { 0 };
+    struct sockaddr_in *dest_addr_ip4 = (struct sockaddr_in *)&dest_addr;
     int ip_protocol = 0;
     const int on = 1;
     inet_aton(bind_ip, &dest_addr_ip4->sin_addr.s_addr); // bind sta ip
@@ -950,12 +1007,14 @@ static int udp_create(uint16_t port, char *bind_ip)
     ip_protocol = IPPROTO_IP;
 
     int sock = socket(AF_INET, SOCK_DGRAM, ip_protocol);
+
     if (sock < 0) {
         ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
         return -1;
     }
 
-    int err = bind(sock, (struct sockaddr*) &dest_addr, sizeof(dest_addr));
+    int err = bind(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+
     if (err < 0) {
         ESP_LOGE(TAG, "Socket unable to bind: errno %d", errno);
         shutdown(sock, 0);
@@ -989,7 +1048,7 @@ static int readable_check(int fd, int sec, int usec)
     tv.tv_sec = sec;
     tv.tv_usec = usec;
     /* > 0 if descriptor is readable */
-    return(select(fd + 1, &rset, NULL, NULL, &tv));
+    return (select(fd + 1, &rset, NULL, NULL, &tv));
 }
 
 static void listen_sta_connect_success_timer_cb(TimerHandle_t timer)
@@ -999,6 +1058,7 @@ static void listen_sta_connect_success_timer_cb(TimerHandle_t timer)
 
     if (current_connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECTING) {
         sta_got_ip = esp_web_get_sta_got_ip_flag(); // to check whether sta has connnected to appointed ap(like at_wifi_station_get_connect_status())
+
         if (sta_got_ip != true) {
             return;
         } else {
@@ -1025,26 +1085,28 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
     esp_err_t ret;
     wifi_sta_connect_config_t *connect_config = esp_web_get_sta_connect_config();
     int32_t reconnnect_timeout = esp_web_get_sta_reconnect_timeout();
-    wifi_sta_connection_info_t connection_info = {0};
+    wifi_sta_connection_info_t connection_info = { 0 };
     int send_count = ESP_BRIDGE_WEB_BROADCAST_TIMES_DEFAULT;
     int udp_socket = -1;
     int len = 0;
-    char gateway[ESP_BRIDGE_WEB_IPV4_MAX_IP_LEN_DEFAULT] = {0};
-    struct sockaddr_in broadcast_addr = {0};
-    struct sockaddr_in unicast_addr = {0};
-    char sendline[64] = {0};
-    char rx_buffer[32] = {0};
+    char gateway[ESP_BRIDGE_WEB_IPV4_MAX_IP_LEN_DEFAULT] = { 0 };
+    struct sockaddr_in broadcast_addr = { 0 };
+    struct sockaddr_in unicast_addr = { 0 };
+    char sendline[64] = { 0 };
+    char rx_buffer[32] = { 0 };
     // Calculate the max connect time,unit: s
     int32_t connect_timeout = reconnnect_timeout - ESP_BRIDGE_WEB_BROADCAST_TIMES_DEFAULT * ESP_BRIDGE_WEB_BROADCAST_INTERVAL_DEFAULT / 1000000;
 
     // Clear connect status flag
     esp_web_update_sta_got_ip_flag(false);
+
     // According to config wifi device to try connect
     // when udp_port == -1, it's web browser post data to config wifi. otherwise, Now, It's WeChat post data to config wifi.
     // when (strlen((char *)connect_config->ssid) == 0) && (udp_port != -1), it's WeChat post data, and target AP is local phone.
     if ((strlen((char *)connect_config->ssid) != 0) || (udp_port == -1)) {
         ESP_LOGI(TAG, "Use SSID %s direct connect", (char *)connect_config->ssid);
         ret = esp_web_try_connect(connect_config->ssid, connect_config->password, NULL, NULL);
+
         if (ret != ESP_OK) {
             ESP_LOGE(TAG, "Apply connect fail");
             goto err;
@@ -1058,7 +1120,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         }
 
         s_wifi_sta_connect_timer_handler = xTimerCreate("listen_sta_connect_status", ESP_BRIDGE_WEB_TIMER_POLLING_PERIOD / portTICK_PERIOD_MS, pdTRUE,
-            NULL, listen_sta_connect_status_timer_cb);
+                                           NULL, listen_sta_connect_status_timer_cb);
         xTimerStart(s_wifi_sta_connect_timer_handler, 5);
     } else {
         // if have connect to a ap, then disconnect
@@ -1066,7 +1128,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         s_wifi_sta_connect_event_group = xEventGroupCreate();
 
         s_wifi_sta_connect_timer_handler = xTimerCreate("listen_sta_connect_success", ESP_BRIDGE_WEB_TIMER_POLLING_PERIOD / portTICK_PERIOD_MS, pdTRUE,
-            NULL, listen_sta_connect_success_timer_cb);
+                                           NULL, listen_sta_connect_success_timer_cb);
         xTimerStart(s_wifi_sta_connect_timer_handler, 5);
         connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECTING;
         esp_web_update_sta_connection_info(&connection_info);
@@ -1075,6 +1137,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         printf("%s\r\n", s_wifi_start_connect_response);
         // begin scan and try connect,attention, this function will block until connect successfully or reach max_scan_time or reach connect_num
         ret = esp_web_start_scan_filter(s_mobile_phone_mac, connect_config->password, connect_timeout, s_wifi_sta_connect_event_group);
+
         // when function return, it means have finished scan and try connect.
         // clear connect resource, include Timer and EventGroup.
         if (s_wifi_sta_connect_timer_handler != NULL) {
@@ -1091,7 +1154,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         memset(s_mobile_phone_mac, 0, sizeof(s_mobile_phone_mac));
         esp_web_clear_sta_connect_config();
 
-        esp_netif_ip_info_t sta_ip = {0};
+        esp_netif_ip_info_t sta_ip = { 0 };
         esp_netif_t *sta_if = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
 
         // according to connect result to update or report results
@@ -1104,15 +1167,17 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         } else { // connect ok
             ESP_LOGI(TAG, "Connect router success");
             ret = esp_netif_get_ip_info(sta_if, &sta_ip);
+
             if (ret != ESP_OK) {
                 ESP_LOGE(TAG, "get sta ip fail");
             }
+
             ESP_LOGI(TAG, "Congratulate, got ip:" IPSTR, IP2STR(&sta_ip.ip));
             ESP_LOGI(TAG, "got gw:" IPSTR, IP2STR(&sta_ip.gw)); // got gateway, Actually, it's mobile phone's ap ip.
 
             sprintf(connection_info.sta_ip, IPSTR, IP2STR(&sta_ip.ip));
             sprintf(gateway, IPSTR, IP2STR(&sta_ip.gw));
-            
+
             sprintf(sendline, "ip=%d.%d.%d.%d&port=%d", IP2STR(&sta_ip.ip), ESP_BRIDGE_WEB_UDP_PORT_DEFAULT);
             ESP_LOGD(TAG, "udp send str is %s", sendline);
 
@@ -1120,6 +1185,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
             esp_web_update_sta_connection_info(&connection_info);
             // creat udp to send wifi connect success to mobile phone.
             udp_socket = udp_create(ESP_BRIDGE_WEB_UDP_PORT_DEFAULT, connection_info.sta_ip);
+
             if (udp_socket == -1) {
                 goto err;
             }
@@ -1133,28 +1199,36 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
             unicast_addr.sin_port = htons(udp_port);
 
             do {
-                len = sendto(udp_socket, sendline, strlen(sendline), 0, (struct sockaddr*) &broadcast_addr, sizeof(broadcast_addr));
+                len = sendto(udp_socket, sendline, strlen(sendline), 0, (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr));
+
                 if (len < 0) {
                     ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
                 }
-                len = sendto(udp_socket, sendline, strlen(sendline), 0, (struct sockaddr*) &unicast_addr, sizeof(unicast_addr));
+
+                len = sendto(udp_socket, sendline, strlen(sendline), 0, (struct sockaddr *)&unicast_addr, sizeof(unicast_addr));
+
                 if (len < 0) {
                     ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
                 }
+
                 ESP_LOGI(TAG, "send ok udp");
+
                 if (readable_check(udp_socket, 0, ESP_BRIDGE_WEB_BROADCAST_INTERVAL_DEFAULT) > 0) { // wait 500ms to check whether mobile phone send "received" ack
                     len = recvfrom(udp_socket, rx_buffer, sizeof(rx_buffer) - 1, 0, NULL, NULL);
+
                     if (len < 0) {
                         ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
                     } else { // Data received
                         rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
                         ESP_LOGI(TAG, "receive %s", rx_buffer);
+
                         if (strcmp(rx_buffer, ESP_BRIDGE_WEB_RECEIVED_ACK_MESSAGE) == 0) {
                             ESP_LOGI(TAG, "Received expected message, finished");
                             break;
                         }
                     }
                 }
+
                 send_count--;
             } while (send_count > 0);
 
@@ -1162,6 +1236,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
                 shutdown(udp_socket, 0);
                 close(udp_socket);
             }
+
             if (send_count == 0) { // can not received ack message from WeChat.
                 ESP_LOGW(TAG, "not receive ack message from WeChat");
             } else { // received ack message from WeChat.
@@ -1170,6 +1245,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
             }
         }
     }
+
     return ESP_OK;
 
 err:
@@ -1180,52 +1256,57 @@ err:
 
 static esp_err_t config_wifi_post_handler(httpd_req_t *req)
 {
-    char *buf = ((web_server_context_t*) (req->user_ctx))->scratch;
-    wifi_sta_connect_config_t wifi_config = {0};
+    char *buf = ((web_server_context_t *)(req->user_ctx))->scratch;
+    wifi_sta_connect_config_t wifi_config = { 0 };
     int str_len = 0;
     int32_t udp_port = -1;
-    char temp_str[32] = {0};
+    char temp_str[32] = { 0 };
     bool ssid_is_null = false;
     wifi_mode_t current_wifi_mode;
     wifi_sta_connection_info_t *connection_info = esp_web_get_sta_connection_info();
     memset(buf, '\0', ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     esp_wifi_get_mode(&current_wifi_mode);
+
     if ((current_wifi_mode != WIFI_MODE_APSTA) && (current_wifi_mode != WIFI_MODE_STA)) {
         printf("Error, wifi mode is not correct\r\n");
         goto error_handle;
     }
+
     // only wifi config not start or have success apply one connection,allow to apply new connect
     if ((connection_info->config_status == ESP_BRIDGE_WIFI_STA_NOT_START) ||
-        (connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECT_FAIL) ||
-        (connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECT_OK)) {
+            (connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECT_FAIL) ||
+            (connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECT_OK)) {
         if (recv_post_data(req, buf) != ESP_OK) {
             esp_web_response_error(req, HTTPD_500);
             ESP_LOGE(TAG, "recv post data error");
             goto error_handle;
         }
 
-        str_len = esp_web_find_arg(buf, "sta_ssid", (char*)&wifi_config.ssid, sizeof(wifi_config.ssid) - 1);
+        str_len = esp_web_find_arg(buf, "sta_ssid", (char *)&wifi_config.ssid, sizeof(wifi_config.ssid) - 1);
+
         if (str_len == -1) { // we allow ssid can be null.
             ESP_LOGE(TAG, "sta ssid is abnormal");
             goto error_handle;
         } else {
-            if (strlen((char*)&wifi_config.ssid) == 0) { // now, user don't enter ssid in web pages
+            if (strlen((char *)&wifi_config.ssid) == 0) { // now, user don't enter ssid in web pages
                 ssid_is_null = true; // it means config wifi phone is target ap
             }
         }
 
-        str_len = esp_web_find_arg(buf, "sta_password", (char*)&wifi_config.password, sizeof(wifi_config.password) - 1);
+        str_len = esp_web_find_arg(buf, "sta_password", (char *)&wifi_config.password, sizeof(wifi_config.password) - 1);
+
         if (str_len == -1) {
             ESP_LOGE(TAG, "sta password is abnormal");
             goto error_handle;
         } else {
-            if ((ssid_is_null == true) && (strlen((char*)&wifi_config.password) == 0)) {
+            if ((ssid_is_null == true) && (strlen((char *)&wifi_config.password) == 0)) {
                 ESP_LOGE(TAG, "Error, ssid and password all is null");
                 goto error_handle;
             }
         }
 
-        str_len = esp_web_find_arg(buf, "udp_port", (char*)temp_str, sizeof(temp_str));
+        str_len = esp_web_find_arg(buf, "udp_port", (char *)temp_str, sizeof(temp_str));
+
         if (str_len == -1) {
             ESP_LOGD(TAG, "udp port is null");
         } else {
@@ -1240,7 +1321,8 @@ static esp_err_t config_wifi_post_handler(httpd_req_t *req)
         esp_web_update_sta_connect_config(&wifi_config);
 
         esp_web_response_ok(req);
-        vTaskDelay(300/portTICK_PERIOD_MS); // to avoid wifi ap channel changed so quickly that the response can not be sent.
+        vTaskDelay(300 / portTICK_PERIOD_MS); // to avoid wifi ap channel changed so quickly that the response can not be sent.
+
         // begin connect
         if (ssid_is_null != true) {
             if (esp_web_apply_wifi_connect_info(udp_port) != ESP_OK) {
@@ -1252,13 +1334,16 @@ static esp_err_t config_wifi_post_handler(httpd_req_t *req)
             if (esp_web_get_mobile_phone_mac(s_mobile_phone_mac) != ESP_OK) {
                 ESP_LOGW(TAG, "Cannot find Mobile phone mac");
             }
+
             if (esp_web_apply_wifi_connect_info(udp_port) != ESP_OK) {
                 ESP_LOGE(TAG, "WiFi config connect fail");
                 return ESP_FAIL;
             }
         }
+
         return ESP_OK;
     }
+
 error_handle:
     esp_web_response_error(req, HTTPD_400);
     return ESP_FAIL;
@@ -1269,9 +1354,9 @@ static esp_err_t config_wifi_get_handler(httpd_req_t *req)
 {
     wifi_sta_connect_config_t *connect_config = esp_web_get_sta_connect_config();
     wifi_sta_connection_info_t *connection_info = esp_web_get_sta_connection_info();
-    char temp_str[32] = {0};
+    char temp_str[32] = { 0 };
     int32_t json_len = 0;
-    char *temp_json_str = ((web_server_context_t*) (req->user_ctx))->scratch;
+    char *temp_json_str = ((web_server_context_t *)(req->user_ctx))->scratch;
     memset(temp_json_str, '\0', ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     httpd_resp_set_type(req, "application/json");
 
@@ -1291,21 +1376,27 @@ static esp_err_t config_wifi_get_handler(httpd_req_t *req)
     case ESP_BRIDGE_WIFI_STA_NOT_START:
         strcpy(temp_str, "waiting config");
         break;
+
     case ESP_BRIDGE_WIFI_STA_CONFIG_DONE:
         strcpy(temp_str, "config done");
         break;
+
     case ESP_BRIDGE_WIFI_STA_CONNECTING:
         strcpy(temp_str, "connecting");
         break;
+
     case ESP_BRIDGE_WIFI_STA_CONNECT_FAIL:
         strcpy(temp_str, "connect fail");
         break;
+
     case ESP_BRIDGE_WIFI_STA_CONNECT_OK:
         strcpy(temp_str, "connect OK");
         break;
+
     default:
         break;
     }
+
     json_len += sprintf(temp_json_str + json_len, "\"message\":\"%s\"}", temp_str);
 
     ESP_LOGD(TAG, "now wifi get json str is %s\n", temp_json_str);
@@ -1316,12 +1407,12 @@ static esp_err_t config_wifi_get_handler(httpd_req_t *req)
 
 static esp_err_t accept_wifi_result_post_handler(httpd_req_t *req)
 {
-    char *buf = ((web_server_context_t*) (req->user_ctx))->scratch;
-    int32_t received_flag;
-    char temp[4] = {0};
+    char *buf = ((web_server_context_t *)(req->user_ctx))->scratch;
+    int received_flag = 0;
+    char temp[4] = { 0 };
     int str_len = 0;
 
-    wifi_sta_connection_info_t wifi_connection_info = {0};
+    wifi_sta_connection_info_t wifi_connection_info = { 0 };
     wifi_sta_connection_info_t *connection_info = esp_web_get_sta_connection_info();
     memset(buf, '\0', ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     ESP_LOGD(TAG, "detect web close pages");
@@ -1329,11 +1420,13 @@ static esp_err_t accept_wifi_result_post_handler(httpd_req_t *req)
     switch (connection_info->config_status) {
     case ESP_BRIDGE_WIFI_STA_NOT_START:
         break;
+
     case ESP_BRIDGE_WIFI_STA_CONFIG_DONE:
     case ESP_BRIDGE_WIFI_STA_CONNECTING:
         // esp_at_port_write_data((uint8_t*)s_wifi_conncet_finish_response, strlen(s_wifi_conncet_finish_response));
         printf("%s\r\n", s_wifi_conncet_finish_response);
         break;
+
     case ESP_BRIDGE_WIFI_STA_CONNECT_FAIL:
     case ESP_BRIDGE_WIFI_STA_CONNECT_OK:
         if (recv_post_data(req, buf) != ESP_OK) {
@@ -1342,7 +1435,8 @@ static esp_err_t accept_wifi_result_post_handler(httpd_req_t *req)
             return ESP_FAIL;
         }
 
-        str_len = esp_web_find_arg(buf, "received", (char*) temp, sizeof(temp));
+        str_len = esp_web_find_arg(buf, "received", (char *)temp, sizeof(temp));
+
         if (str_len == -1) {
             ESP_LOGE(TAG, "received flag is abnormal");
             goto error_handle;
@@ -1361,9 +1455,11 @@ static esp_err_t accept_wifi_result_post_handler(httpd_req_t *req)
         // esp_at_port_write_data((uint8_t*)s_wifi_conncet_finish_response, strlen(s_wifi_conncet_finish_response));
         printf("%s\r\n", s_wifi_conncet_finish_response);
         break;
+
     default:
         break;
     }
+
     esp_web_response_ok(req);
     return ESP_OK;
 error_handle:
@@ -1378,34 +1474,39 @@ static esp_err_t ap_record_get_handler(httpd_req_t *req)
     int32_t json_len = 0;
     int valid_ap_count = 1;
     char *temp_json_str = NULL;
-    wifi_ap_record_t *ap_info = (wifi_ap_record_t*) malloc(ESP_BRIDGE_WEB_AP_SCAN_NUM_DEFAULT * sizeof(wifi_ap_record_t));
+    wifi_ap_record_t *ap_info = (wifi_ap_record_t *)malloc(ESP_BRIDGE_WEB_AP_SCAN_NUM_DEFAULT * sizeof(wifi_ap_record_t));
+
     if (ap_info == NULL) {
         ESP_LOGE(TAG, "ap info malloc fail");
         return ESP_FAIL;
     }
+
     memset(ap_info, 0, ESP_BRIDGE_WEB_AP_SCAN_NUM_DEFAULT * sizeof(wifi_ap_record_t));
-    
+
     if (esp_web_wifi_scan_get_ap_records(&ap_number, ap_info) != ESP_OK) {
         esp_web_response_error(req, HTTPD_500);
         goto error_handle;
     }
 
-    temp_json_str = (char*) malloc(ESP_BRIDGE_WEB_AP_RECORD_JSON_STR_LEN * sizeof(char));
+    temp_json_str = (char *)malloc(ESP_BRIDGE_WEB_AP_RECORD_JSON_STR_LEN * sizeof(char));
+
     if (temp_json_str == NULL) {
         ESP_LOGE(TAG, "temp_json_str malloc fail");
         goto error_handle;
     }
+
     memset(temp_json_str, 0, ESP_BRIDGE_WEB_AP_RECORD_JSON_STR_LEN * sizeof(char));
 
     httpd_resp_set_type(req, "application/json");
     json_len += sprintf(temp_json_str + json_len, "{\"state\":0,\"message\":\"scan done\",\"aplist\":["); // to get a json array format str
 
     for (loop = 0; loop < ap_number; loop++) {
-        if (strlen((const char*)ap_info[loop].ssid) != 0) { // ingore hidden ssid
+        if (strlen((const char *)ap_info[loop].ssid) != 0) { // ingore hidden ssid
             json_len += sprintf(temp_json_str + json_len, "{\"ssid\":\"%s\",\"auth_mode\":%d},", (char *)ap_info[loop].ssid, ap_info[loop].authmode);
             valid_ap_count++;
         }
     }
+
     free(ap_info);
     ap_info = NULL;
 
@@ -1425,9 +1526,9 @@ static esp_err_t ota_info_get_handler(httpd_req_t *req)
 {
     // uint32_t version_uint32 =  esp_at_get_version();
     int32_t json_len = 0;
-    uint8_t version[4] = {0};
-    char *temp_json_str = ((web_server_context_t*) (req->user_ctx))->scratch;
-    
+    uint8_t version[4] = { 0 };
+    char *temp_json_str = ((web_server_context_t *)(req->user_ctx))->scratch;
+
     memset(temp_json_str, '\0', ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     // memcpy(version, &version_uint32, sizeof(version_uint32));
 
@@ -1450,51 +1551,58 @@ const esp_partition_t *esp_web_get_ota_update_partition(void)
 
     if (configured != running) {
         ESP_LOGW(TAG, "Configured OTA boot partition at offset 0x%08x, but running from offset 0x%08x",
-                 configured->address, running->address);
+                 (unsigned int)configured->address, (unsigned int)running->address);
         ESP_LOGW(TAG, "(This can happen if either the OTA boot data or preferred boot image become corrupted somehow.)");
     }
+
     ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
-             running->type, running->subtype, running->address);
-    
+             running->type, running->subtype, (unsigned int)running->address);
+
     update_partition = esp_ota_get_next_update_partition(NULL);
     ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x",
-             update_partition->subtype, update_partition->address);
+             update_partition->subtype, (unsigned int)update_partition->address);
     return update_partition;
 }
 
 esp_err_t esp_web_ota_end(esp_ota_handle_t handle, const esp_partition_t *partition)
 {
     esp_err_t err = esp_ota_end(handle);
+
     if (err != ESP_OK) {
         if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
             ESP_LOGE(TAG, "Image validation failed, image is corrupted");
         }
+
         ESP_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(err));
         return ESP_FAIL;
     }
 
     err = esp_ota_set_boot_partition(partition);
+
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
         return ESP_FAIL;
     }
+
     return err;
 }
 
 static esp_err_t ota_data_post_handler(httpd_req_t *req)
 {
-    char *buf = ((web_server_context_t*) (req->user_ctx))->scratch;
+    char *buf = ((web_server_context_t *)(req->user_ctx))->scratch;
     int total_len = req->content_len;
     int remaining_len = req->content_len;
     int received_len = 0;
     esp_err_t err = ESP_FAIL;
     esp_ota_handle_t update_handle = 0;
     const esp_partition_t *update_partition = esp_web_get_ota_update_partition();
+
     // check post data size
     if (update_partition->size < total_len) {
-        ESP_LOGE(TAG, "ota data too long, partition size is %u, bin size is %d", update_partition->size, total_len);
+        ESP_LOGE(TAG, "ota data too long, partition size is %u, bin size is %d", (unsigned int)update_partition->size, total_len);
         goto err_handler;
     }
+
     ESP_LOGI(TAG, "bin size is %d", total_len);
     memset(buf, 0x0, ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     // Send a message to MCU.
@@ -1502,35 +1610,44 @@ static esp_err_t ota_data_post_handler(httpd_req_t *req)
     printf("%s\r\n", s_ota_start_response);
     // start ota
     err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
+
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "ota begin failed (%s)", esp_err_to_name(err));
         goto err_handler;
     }
+
     // receive ota data
     while (remaining_len > 0) {
         received_len = httpd_req_recv(req, buf, MIN(remaining_len, ESP_BRIDGE_WEB_SCRATCH_BUFSIZE)); // Receive the file part by part into a buffer
+
         if (received_len <= 0) { // received error
             if (received_len == HTTPD_SOCK_ERR_TIMEOUT) {
                 /* Retry if timeout occurred */
                 continue;
             }
+
             ESP_LOGE(TAG, "Failed to receive post ota data, err = %d", received_len);
             esp_ota_end(update_handle);
             goto err_handler;
-        }else { // received successfully
+        } else { // received successfully
             err = esp_ota_write(update_handle, buf, received_len);
+
             if (err != ESP_OK) {
                 ESP_LOGE(TAG, "ota write failed (%s)", esp_err_to_name(err));
                 esp_ota_end(update_handle);
                 goto err_handler;
             }
+
             remaining_len -= received_len;
         }
     }
+
     err = esp_web_ota_end(update_handle, update_partition);
+
     if (err != ESP_OK) {
         goto err_handler;
     }
+
     esp_web_response_ok(req);
     // esp_at_port_write_data((uint8_t*)s_ota_receive_success_response, strlen(s_ota_receive_success_response));
     printf("%s\r\n", s_ota_receive_success_response);
@@ -1548,7 +1665,7 @@ err_handler:
 /* http 404/414 error handler that redirect all requests to the root page */
 static esp_err_t http_common_error_handler(httpd_req_t *req, httpd_err_code_t err)
 {
-     /* Set status */
+    /* Set status */
     httpd_resp_set_status(req, "302 Temporary Redirect");
 
     /* Redirect to the "/" root directory */
@@ -1592,7 +1709,7 @@ static esp_err_t start_web_server(const char *base_path, uint16_t server_port)
         {"/getaprecord", HTTP_GET, ap_record_get_handler, s_web_context},
         {"/getotainfo", HTTP_GET, ota_info_get_handler, s_web_context},
         {"/setotadata", HTTP_POST, ota_data_post_handler, s_web_context},
-        {"/", HTTP_GET, web_common_get_handler,s_web_context},
+        {"/", HTTP_GET, web_common_get_handler, s_web_context},
     };
 
     for (int i = 0; i < sizeof(httpd_uri_array) / sizeof(httpd_uri_t); i++) {
@@ -1600,6 +1717,7 @@ static esp_err_t start_web_server(const char *base_path, uint16_t server_port)
             ESP_LOGE(TAG, "httpd register uri_array[%d] fail", i);
         }
     }
+
 #ifdef CONFIG_WEB_CAPTIVE_PORTAL_ENABLE
     size_t redirect_url_sz = ESP_BRIDGE_WEB_REDIRECT_URL_PREFIX_LEN + strlen(ESP_BRIDGE_WEB_ROOT_DIR_DEFAULT) + 1; /* strlen(http://255.255.255.255) + strlen("/") + 1 for \0 */
     s_web_redirect_url = malloc(sizeof(char) * redirect_url_sz);
@@ -1607,7 +1725,7 @@ static esp_err_t start_web_server(const char *base_path, uint16_t server_port)
     esp_netif_ip_info_t ip_info;
     esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
     snprintf(s_web_redirect_url, redirect_url_sz, "http://"IPSTR"%s", IP2STR(&ip_info.ip), ESP_BRIDGE_WEB_ROOT_DIR_DEFAULT);
-    
+
     httpd_register_err_handler(s_server, HTTPD_404_NOT_FOUND, http_common_error_handler);
     httpd_register_err_handler(s_server, HTTPD_414_URI_TOO_LONG, http_common_error_handler);
     httpd_register_err_handler(s_server, HTTPD_405_METHOD_NOT_ALLOWED, http_common_error_handler);
@@ -1620,15 +1738,15 @@ err:
     return ESP_FAIL;
 }
 
-#ifdef CONFIG_WEB_USE_FATFS 
-static esp_err_t esp_web_fatfs_spiflash_mount(const char *base_path,
-    const char *partition_label,
-    const esp_vfs_fat_mount_config_t *mount_config,
-    wl_handle_t *wl_handle)
+#ifdef CONFIG_WEB_USE_FATFS
+static esp_err_t esp_web_fatfs_spiflash_mount(const char* base_path,
+    const char* partition_label,
+    const esp_vfs_fat_mount_config_t* mount_config,
+    wl_handle_t* wl_handle)
 {
     esp_err_t result = ESP_OK;
 
-    const esp_partition_t *data_partition = (esp_partition_t*) esp_at_custom_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, partition_label);
+    const esp_partition_t* data_partition = (esp_partition_t*)esp_at_custom_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, partition_label);
     if (data_partition == NULL) {
         ESP_LOGE(TAG, "Failed to find FATFS partition (type='data'(%d), subtype='fat'(%d), partition_label='%s'). Check the partition table.",
             ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, partition_label);
@@ -1647,14 +1765,14 @@ static esp_err_t esp_web_fatfs_spiflash_mount(const char *base_path,
         return ESP_ERR_NO_MEM;
     }
     ESP_LOGD(TAG, "using pdrv=%i", pdrv);
-    char drv[3] = { (char) ('0' + pdrv), ':', 0 };
+    char drv[3] = { (char)('0' + pdrv), ':', 0 };
 
     result = ff_diskio_register_wl_partition(pdrv, *wl_handle);
     if (result != ESP_OK) {
         ESP_LOGE(TAG, "ff_diskio_register_wl_partition failed pdrv=%i, error - 0x(%x)", pdrv, result);
         goto fail;
     }
-    FATFS *fs;
+    FATFS* fs;
     result = esp_vfs_fat_register(base_path, drv, mount_config->max_files, &fs);
     if (result == ESP_ERR_INVALID_STATE) {
         // it's okay, already registered with VFS

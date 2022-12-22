@@ -251,7 +251,7 @@ static _device_state_t _update_device_state(_device_state_t state)
     return device_state;
 }
 
-static bool _if_device_ready()
+static bool _if_device_ready(void)
 {
     if(!s_usb_event_group) return false;
     return xEventGroupGetBits(s_usb_event_group) & CDC_DEVICE_READY_BIT;

@@ -38,33 +38,36 @@
 #define DHCPS_NETIF_ID(netif) (ESP_NETIF_DHCP_SERVER & esp_netif_get_flags(netif))
 
 typedef struct bridge_netif {
-    esp_netif_t* netif;
+    esp_netif_t *netif;
     dhcps_change_cb_t dhcps_change_cb;
-    struct bridge_netif* next;
+    struct bridge_netif *next;
 } bridge_netif_t;
 
-static const char* TAG = "bridge_common";
-static bridge_netif_t* bridge_link = NULL;
+static const char *TAG = "bridge_common";
+static bridge_netif_t *bridge_link = NULL;
 
-esp_err_t _esp_bridge_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb, const char* commit_id)
+esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dhcps_change_cb_t dhcps_change_cb, const char *commit_id)
 {
-    bridge_netif_t* new = bridge_link;
-    bridge_netif_t* tail = NULL;
+    bridge_netif_t *new = bridge_link;
+    bridge_netif_t *tail = NULL;
 
     while (new) {
         if (new->netif == netif) {
             return ESP_ERR_DUPLICATE_ADDITION;
         }
+
         tail = new;
         new = new->next;
     }
 
     // not found, create a new
-    new = (bridge_netif_t*)malloc(sizeof(bridge_netif_t));
+    new = (bridge_netif_t *)malloc(sizeof(bridge_netif_t));
+
     if (new == NULL) {
         ESP_LOGE(TAG, "netif list add fail");
         return ESP_ERR_NO_MEM;
     }
+
     printf("Add netif %s with %s(commit id)\r\n", esp_netif_get_desc(netif), commit_id);
     new->netif = netif;
     new->dhcps_change_cb = dhcps_change_cb;
@@ -75,15 +78,16 @@ esp_err_t _esp_bridge_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps
     } else {
         tail->next = new;
     }
+
     ESP_LOGI(TAG, "netif list add success");
 
     return ESP_OK;
 }
 
-esp_err_t esp_bridge_netif_list_remove(esp_netif_t* netif)
+esp_err_t esp_bridge_netif_list_remove(esp_netif_t *netif)
 {
-    bridge_netif_t* current = bridge_link;
-    bridge_netif_t* prev = NULL;
+    bridge_netif_t *current = bridge_link;
+    bridge_netif_t *prev = NULL;
 
     while (current) {
         if (current->netif == netif) {
@@ -92,6 +96,7 @@ esp_err_t esp_bridge_netif_list_remove(esp_netif_t* netif)
             } else {
                 prev->next = current->next;
             }
+
             free(current);
             break;
         }
@@ -105,11 +110,13 @@ esp_err_t esp_bridge_netif_list_remove(esp_netif_t* netif)
 
 static bool esp_bridge_netif_network_segment_is_used(uint32_t ip)
 {
-    bridge_netif_t* p = bridge_link;
+    bridge_netif_t *p = bridge_link;
     esp_netif_ip_info_t netif_ip = { 0 };
+
     while (p) {
         esp_netif_get_ip_info(p->netif, &netif_ip);
-        if (esp_ip4_addr3_16((esp_ip4_addr_t*)&ip) == esp_ip4_addr3_16(&netif_ip.ip)) {
+
+        if (esp_ip4_addr3_16((esp_ip4_addr_t *)&ip) == esp_ip4_addr3_16(&netif_ip.ip)) {
             return true;
         }
 
@@ -123,13 +130,14 @@ typedef bool (*esp_bridge_network_segment_custom_check_cb_t)(uint32_t ip);
 
 typedef struct esp_bridge_network_segment_custom_check_type {
     esp_bridge_network_segment_custom_check_cb_t custom_check_cb;
-    struct esp_bridge_network_segment_custom_check_type* next;
+    struct esp_bridge_network_segment_custom_check_type *next;
 } esp_bridge_network_segment_custom_check_t;
-static esp_bridge_network_segment_custom_check_t* custom_check_list;
+static esp_bridge_network_segment_custom_check_t *custom_check_list;
 
 bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t ip))
 {
-    esp_bridge_network_segment_custom_check_t* list = (esp_bridge_network_segment_custom_check_t*)malloc(sizeof(esp_bridge_network_segment_custom_check_t));
+    esp_bridge_network_segment_custom_check_t *list = (esp_bridge_network_segment_custom_check_t *)malloc(sizeof(esp_bridge_network_segment_custom_check_t));
+
     if (list) {
         memset(list, 0x0, sizeof(esp_bridge_network_segment_custom_check_t));
         list->custom_check_cb = custom_check_cb;
@@ -140,17 +148,19 @@ bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t 
     return true;
 }
 
-esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t* ip_info)
+esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t *ip_info)
 {
     bool ip_segment_is_used = true;
 
     for (uint8_t bridge_ip = 4; bridge_ip < 255; bridge_ip++) {
-        esp_bridge_network_segment_custom_check_t* list = custom_check_list;
+        esp_bridge_network_segment_custom_check_t *list = custom_check_list;
         ip_segment_is_used = esp_bridge_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
+
         while (!ip_segment_is_used && list) {
             ip_segment_is_used = list->custom_check_cb(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
             list = list->next;
         }
+
         if (!ip_segment_is_used) {
             ip_info->ip.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
             ip_info->gw.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
@@ -168,11 +178,12 @@ esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t* ip_info)
 
 static bool esp_bridge_netif_mac_is_used(uint8_t mac[6])
 {
-    bridge_netif_t* p = bridge_link;
+    bridge_netif_t *p = bridge_link;
     uint8_t netif_mac[6] = { 0 };
 
     while (p) {
         esp_netif_get_mac(p->netif, netif_mac);
+
         if (!memcmp(netif_mac, mac, sizeof(netif_mac))) {
             return true;
         }
@@ -183,12 +194,13 @@ static bool esp_bridge_netif_mac_is_used(uint8_t mac[6])
     return false;
 }
 
-esp_err_t esp_bridge_netif_request_mac(uint8_t* mac)
+esp_err_t esp_bridge_netif_request_mac(uint8_t *mac)
 {
     uint8_t netif_mac[6] = { 0 };
     esp_read_mac(netif_mac, ESP_MAC_WIFI_STA);
+
     while (1) {
-        if (!esp_bridge_netif_mac_is_used(netif_mac)){
+        if (!esp_bridge_netif_mac_is_used(netif_mac)) {
             break;
         }
 
@@ -196,8 +208,10 @@ esp_err_t esp_bridge_netif_request_mac(uint8_t* mac)
             if (netif_mac[4] != 0xff) {
                 netif_mac[3] += 1;
             }
+
             netif_mac[4] += 1;
-        } 
+        }
+
         netif_mac[5] += 1;
     }
 
@@ -212,7 +226,7 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_neti
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
     esp_ip_addr_t esp_ip_addr_info;
-    esp_ip4_addr_t netmask = {.addr = ESP_IP4TOADDR(255, 255, 255, 0)};
+    esp_ip4_addr_t netmask = { .addr = ESP_IP4TOADDR(255, 255, 255, 0) };
     bool ip_segment_is_used = false;
 
     memset(&allocate_ip_info, 0x0, sizeof(esp_netif_ip_info_t));

@@ -30,7 +30,7 @@ extern "C"
 /* Definitions for error constants. */
 #define ESP_ERR_DUPLICATE_ADDITION    0x110   /*!< Netif was added repeatedly */
 
-typedef esp_err_t (*dhcps_change_cb_t)(esp_ip_addr_t *ip_info);
+typedef esp_err_t(*dhcps_change_cb_t)(esp_ip_addr_t *ip_info);
 
 /**
  * @brief  Cause the TCP/IP stack to bring up an interface
@@ -58,7 +58,7 @@ esp_err_t esp_netif_up(esp_netif_t *esp_netif);
  *     - instance: create netif instance successfully
  *     - NULL: create modem netif instance failed because some error occurred
  */
-esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool enable_dhcps);
+esp_netif_t *esp_bridge_create_netif(esp_netif_config_t *config, esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool enable_dhcps);
 
 /**
  * @brief  Add netif instance to the list.
@@ -71,9 +71,9 @@ esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_in
  *     - others: other failure occurred include netif duplicate addition or Out of memory
  */
 #define esp_bridge_netif_list_add(netif, dhcps_change_cb) \
-        _esp_bridge_netif_list_add(netif, dhcps_change_cb, COMMIT_ID)
+    _esp_bridge_netif_list_add(netif, dhcps_change_cb, COMMIT_ID)
 
-esp_err_t _esp_bridge_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps_change_cb, const char* commit_id);
+esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dhcps_change_cb_t dhcps_change_cb, const char *commit_id);
 
 /**
  * @brief  Remove netif instance to the list.
@@ -83,7 +83,7 @@ esp_err_t _esp_bridge_netif_list_add(esp_netif_t* netif, dhcps_change_cb_t dhcps
  * @return
  *     - ESP_OK: Remove netif instance successfully
  */
-esp_err_t esp_bridge_netif_list_remove(esp_netif_t* netif);
+esp_err_t esp_bridge_netif_list_remove(esp_netif_t *netif);
 
 /**
  * @brief  Request to allocate an ip information that does not conflict with the existing netif ip network segment.
@@ -94,7 +94,7 @@ esp_err_t esp_bridge_netif_list_remove(esp_netif_t* netif);
  *     - ESP_OK: request ip successfully
  *     - ESP_FAIL: request ip failure
  */
-esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t* ip_info);
+esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t *ip_info);
 
 /**
  * @brief  Request to allocate an mac that does not conflict with the existing netif ip network segment.
@@ -104,7 +104,7 @@ esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t* ip_info);
  * @return
  *     - ESP_OK: request mac successfully
  */
-esp_err_t esp_bridge_netif_request_mac(uint8_t* mac);
+esp_err_t esp_bridge_netif_request_mac(uint8_t *mac);
 
 #ifdef __cplusplus
 }
