@@ -1,6 +1,5 @@
 ## IDF Component Manager Manifest File
 dependencies:
-  espressif/qrcode: "^0.1.0"
   espressif/button: "==2.2.0"
   ## Required IDF version
   idf:
@@ -16,3 +15,7 @@ dependencies:
   #   # `public` flag doesn't have an effect dependencies of the `main` component.
   #   # All dependencies of `main` are public by default.
   #   public: true
+
+  iot_bridge:
+    version: "*"
+    override_path: "../../../components/iot_bridge"

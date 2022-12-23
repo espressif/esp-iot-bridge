@@ -12,9 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_netif.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #define ESP_MODEM_CHECK(a, str, goto_tag, ...)                                        \
     do                                                                                \
@@ -74,3 +81,7 @@ esp_netif_t *esp_bridge_modem_init(modem_config_t *config);
  *    - ESP_OK: request mac successfully
 */
 esp_err_t esp_modem_board_force_reset(void);
+
+#ifdef __cplusplus
+}
+#endif

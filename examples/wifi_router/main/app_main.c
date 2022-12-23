@@ -25,7 +25,9 @@
 #include "esp_event.h"
 
 #include "esp_bridge.h"
+#if defined(CONFIG_BRIDGE_USE_WEB_SERVER)
 #include "web_server.h"
+#endif
 #include "iot_button.h"
 #if defined(CONFIG_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE)
 #include "wifi_prov_mgr.h"

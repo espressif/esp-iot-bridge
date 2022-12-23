@@ -14,6 +14,11 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /**
  * @brief Maximum MAC size
  *
@@ -26,8 +31,11 @@
  */
 #define ESP_BRIDGE_SSID_MAX_LEN    (32)
 
-#define ESP_BRIDGE_SOFTAP_SSID     CONFIG_ESP_BRIDGE_SOFTAP_SSID
-#define ESP_BRIDGE_SOFTAP_PASSWORD CONFIG_ESP_BRIDGE_SOFTAP_PASSWORD
+#ifdef CONFIG_ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER
+#define ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER CONFIG_ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER
+#else
+#define ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER 8
+#endif
 
 enum {
     ESP_BRIDGE_EXTERNAL_NETIF_INVALID = -1,
@@ -42,3 +50,7 @@ enum {
 #endif
     ESP_BRIDGE_EXTERNAL_NETIF_MAX
 };
+
+#ifdef __cplusplus
+}
+#endif

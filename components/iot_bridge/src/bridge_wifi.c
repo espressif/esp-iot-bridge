@@ -30,6 +30,8 @@
 #include "esp_bridge_wifi.h"
 #include "esp_bridge_internal.h"
 
+#include "esp_bridge.h"
+
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 
 #define BRIDGE_EVENT_STA_CONNECTED  BIT0
@@ -75,7 +77,7 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
 #endif
         memcpy((char *)wifi_cfg.ap.ssid, softap_ssid, sizeof(wifi_cfg.ap.ssid));
         strlcpy((char *)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
-        wifi_cfg.ap.max_connection = CONFIG_ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER;
+        wifi_cfg.ap.max_connection = ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER;
         wifi_cfg.ap.authmode = strlen((char *)wifi_cfg.ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
 

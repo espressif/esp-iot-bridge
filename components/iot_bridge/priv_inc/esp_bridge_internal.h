@@ -106,17 +106,6 @@ esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t* ip_info);
  */
 esp_err_t esp_bridge_netif_request_mac(uint8_t* mac);
 
-/**
- * @brief  Check whether the other data-forwarding netif IP network segment conflicts with this one.
- *         If yes, it will update the data-forwarding netif to a new IP network segment, otherwise, do nothing.
- *
- * @param[in]  esp_netif the netif information
- *
- * @return
- *     - ESP_OK
- */
-esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_netif);
-
 #ifdef __cplusplus
 }
 #endif
