@@ -34,7 +34,7 @@ static void on_ppp_changed(void *arg, esp_event_base_t event_base,
 {
     esp_modem_dte_t *dte = arg;
     if (event_id < NETIF_PP_PHASE_OFFSET) {
-        ESP_LOGI(TAG, "PPP state changed event %d", event_id);
+        ESP_LOGI(TAG, "PPP state changed event %d", (int)event_id);
         // only notify the modem on state/error events, ignoring phase transitions
         esp_modem_notify_ppp_netif_closed(dte);
     }

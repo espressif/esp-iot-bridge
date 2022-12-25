@@ -38,7 +38,7 @@ static esp_err_t sim7600_handle_cbc(esp_modem_dce_t *dce, const char *line)
         esp_modem_dce_cbc_ctx_t *cbc = dce->handle_line_ctx;
         int32_t volts = 0, fraction = 0;
         /* +CBC: <voltage in Volts> V*/
-        sscanf(line, "+CBC: %d.%dV", &volts, &fraction);
+        sscanf(line, "+CBC: %d.%dV", (int *)&volts, (int *)&fraction);
         /* Since the "read_battery_status()" API (besides voltage) returns also values for BCS, BCL (charge status),
          * which are not applicable to this modem, we return -1 to indicate invalid value
          */

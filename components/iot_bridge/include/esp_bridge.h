@@ -41,7 +41,7 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_bridge_create_modem_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t *esp_bridge_create_modem_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
@@ -57,7 +57,7 @@ esp_netif_t* esp_bridge_create_modem_netif(esp_netif_ip_info_t* ip_info, uint8_t
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t *esp_bridge_create_station_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
@@ -73,7 +73,7 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t *esp_bridge_create_eth_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
@@ -89,7 +89,7 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t *esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
@@ -105,7 +105,7 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_bridge_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t *esp_bridge_create_usb_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
@@ -121,7 +121,7 @@ esp_netif_t* esp_bridge_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_bridge_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t *esp_bridge_create_sdio_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
@@ -137,7 +137,7 @@ esp_netif_t* esp_bridge_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t 
 *      - instance: the netif instance created successfully
 *      - NULL: failed because some error occurred
 */
-esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+esp_netif_t *esp_bridge_create_spi_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
 /**
@@ -165,7 +165,7 @@ bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t 
  * @return
  *     - ESP_OK
  */
-esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_netif);
+esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t *esp_netif);
 
 #ifdef __cplusplus
 }

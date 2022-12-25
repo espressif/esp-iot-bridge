@@ -1,0 +1,31 @@
+name: Build ESP-IoT-Bridge examples
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        idf_ver: ["latest"]
+    runs-on: ubuntu-20.04
+    container: espressif/idf:${{ matrix.idf_ver }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Build ESP-IoT-Bridge examples
+        shell: bash
+        run: |
+          . ${IDF_PATH}/export.sh
+          pip install idf-component-manager --upgrade
+          cd examples
+          exclude_examples=["spi_and_sdio_host/"]
+          for d in */; do
+            if [[ ! "$exclude_examples" =~ "$d" ]]; then
+              pushd $d
+              idf.py build
+              popd
+            fi
+          done
