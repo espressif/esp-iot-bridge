@@ -20,6 +20,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JIRA_PASS: ${{ secrets.JIRA_PASS }}
           JIRA_PROJECT: GATEWAY
-          JIRA_COMPONENT: GitHub
           JIRA_URL: ${{ secrets.JIRA_URL }}
           JIRA_USER: ${{ secrets.JIRA_USER }}
