@@ -65,7 +65,7 @@ static char *s_web_redirect_url = NULL;
 
 #include "esp_bridge.h"
 
-#define ESP_BRIDGE_WEB_SERVER_CHECK(a, str, goto_tag, ...)                                              \
+#define BRIDGE_WEB_SERVER_CHECK(a, str, goto_tag, ...)                                              \
     do                                                                                 \
     {                                                                                  \
         if (!(a))                                                                      \
@@ -75,31 +75,31 @@ static char *s_web_redirect_url = NULL;
         }                                                                              \
     } while (0)
 
-#define ESP_BRIDGE_WEB_FILE_PATH_MAX                       (ESP_VFS_PATH_MAX + 128)
-#define ESP_BRIDGE_WEB_SCRATCH_BUFSIZE                     320
-#define ESP_BRIDGE_WEB_WIFI_MAX_RECONNECT_TIMEOUT          60     // 60sec
-#define ESP_BRIDGE_WEB_WIFI_MIN_RECONNECT_TIMEOUT          21     // 21sec
-#define ESP_BRIDGE_WEB_MOUNT_POINT                         "/www"
-#define ESP_BRIDGE_WEB_TIMER_POLLING_PERIOD                500    // 500ms
-#define ESP_BRIDGE_WEB_BROADCAST_TIMES_DEFAULT             20     // When connect without ssid, for multicast wifi connect result
-#define ESP_BRIDGE_WEB_BROADCAST_INTERVAL_DEFAULT          500000 // 500000us
-#define ESP_BRIDGE_WEB_UDP_PORT_DEFAULT                    3339   // When connect without ssid, for multicast wifi connect result
-#define ESP_BRIDGE_WEB_IPV4_MAX_IP_LEN_DEFAULT             32
-#define ESP_BRIDGE_WEB_RECEIVED_ACK_MESSAGE                "received"
-#define ESP_BRIDGE_WEB_AP_SCAN_NUM_DEFAULT                 10
-#define ESP_BRIDGE_WEB_AP_RECORD_JSON_STR_LEN              600
-#define ESP_BRIDGE_WEB_WIFI_CONNECTED_BIT                  BIT0
-#define ESP_BRIDGE_WEB_WIFI_FAIL_BIT                       BIT1
-#define ESP_BRIDGE_WEB_SCAN_RSSI_THRESHOLD                 -50
-#define ESP_BRIDGE_WEB_SCAN_LIST_SIZE                      40
-#define ESP_BRIDGE_WEB_ENABLE_VIRTUAL_MAC_MATCH            1
-#define ESP_BRIDGE_WEB_ENABLE_CONNECT_HIGHEST_RSSI         1
-#define ESP_BRIDGE_WEB_HIGH_RSSI_CONNECT_COUNT             1
-#define ESP_BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT            8000 // try connect timeout is 8000ms
-#define ESP_BRIDGE_WEB_WIFI_SSID_LEN_DEFAULT               32
-#define ESP_BRIDGE_WEB_WIFI_LAST_SCAN_TIMEOUT              10   // 10s
-#define ESP_BRIDGE_WEB_ROOT_DIR_DEFAULT                    CONFIG_WEB_ROOT_DIR
-#define ESP_BRIDGE_WEB_REDIRECT_URL_PREFIX_LEN             24
+#define BRIDGE_WEB_FILE_PATH_MAX                       (ESP_VFS_PATH_MAX + 128)
+#define BRIDGE_WEB_SCRATCH_BUFSIZE                     320
+#define BRIDGE_WEB_WIFI_MAX_RECONNECT_TIMEOUT          60     // 60sec
+#define BRIDGE_WEB_WIFI_MIN_RECONNECT_TIMEOUT          21     // 21sec
+#define BRIDGE_WEB_MOUNT_POINT                         "/www"
+#define BRIDGE_WEB_TIMER_POLLING_PERIOD                500    // 500ms
+#define BRIDGE_WEB_BROADCAST_TIMES_DEFAULT             20     // When connect without ssid, for multicast wifi connect result
+#define BRIDGE_WEB_BROADCAST_INTERVAL_DEFAULT          500000 // 500000us
+#define BRIDGE_WEB_UDP_PORT_DEFAULT                    3339   // When connect without ssid, for multicast wifi connect result
+#define BRIDGE_WEB_IPV4_MAX_IP_LEN_DEFAULT             32
+#define BRIDGE_WEB_RECEIVED_ACK_MESSAGE                "received"
+#define BRIDGE_WEB_AP_SCAN_NUM_DEFAULT                 10
+#define BRIDGE_WEB_AP_RECORD_JSON_STR_LEN              600
+#define BRIDGE_WEB_WIFI_CONNECTED_BIT                  BIT0
+#define BRIDGE_WEB_WIFI_FAIL_BIT                       BIT1
+#define BRIDGE_WEB_SCAN_RSSI_THRESHOLD                 -50
+#define BRIDGE_WEB_SCAN_LIST_SIZE                      40
+#define BRIDGE_WEB_ENABLE_VIRTUAL_MAC_MATCH            1
+#define BRIDGE_WEB_ENABLE_CONNECT_HIGHEST_RSSI         1
+#define BRIDGE_WEB_HIGH_RSSI_CONNECT_COUNT             1
+#define BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT            8000 // try connect timeout is 8000ms
+#define BRIDGE_WEB_WIFI_SSID_LEN_DEFAULT               32
+#define BRIDGE_WEB_WIFI_LAST_SCAN_TIMEOUT              10   // 10s
+#define BRIDGE_WEB_ROOT_DIR_DEFAULT                    CONFIG_WEB_ROOT_DIR
+#define BRIDGE_WEB_REDIRECT_URL_PREFIX_LEN             24
 
 typedef struct router_obj {
     uint8_t ssid[32];
@@ -110,7 +110,7 @@ typedef struct router_obj {
 
 typedef struct web_server_context {
     char base_path[ESP_VFS_PATH_MAX + 1];
-    char scratch[ESP_BRIDGE_WEB_SCRATCH_BUFSIZE];
+    char scratch[BRIDGE_WEB_SCRATCH_BUFSIZE];
 } web_server_context_t;
 
 typedef struct {
@@ -119,17 +119,17 @@ typedef struct {
 } wifi_sta_connect_config_t;
 
 typedef enum {
-    ESP_BRIDGE_WIFI_STA_NOT_START = 0x0,
-    ESP_BRIDGE_WIFI_STA_CONFIG_DONE = 0x1,
-    ESP_BRIDGE_WIFI_STA_CONNECTING = 0x2,
-    ESP_BRIDGE_WIFI_STA_CONNECT_FAIL = 0x3,
-    ESP_BRIDGE_WIFI_STA_CONNECT_OK = 0x4,
-    ESP_BRIDGE_WIFI_STA_RESULT_CHECKED = 0x5,
+    BRIDGE_WIFI_STA_NOT_START = 0x0,
+    BRIDGE_WIFI_STA_CONFIG_DONE = 0x1,
+    BRIDGE_WIFI_STA_CONNECTING = 0x2,
+    BRIDGE_WIFI_STA_CONNECT_FAIL = 0x3,
+    BRIDGE_WIFI_STA_CONNECT_OK = 0x4,
+    BRIDGE_WIFI_STA_RESULT_CHECKED = 0x5,
 } esp_bridge_web_config_wifi_status;
 
 typedef struct {
     esp_bridge_web_config_wifi_status config_status;
-    char sta_ip[ESP_BRIDGE_WEB_IPV4_MAX_IP_LEN_DEFAULT];
+    char sta_ip[BRIDGE_WEB_IPV4_MAX_IP_LEN_DEFAULT];
 } wifi_sta_connection_info_t;
 
 typedef struct {
@@ -142,7 +142,7 @@ typedef struct {
 
 static web_server_context_t *s_web_context = NULL;
 static httpd_handle_t s_server = NULL;
-static int32_t s_web_wifi_reconnect_timeout = ESP_BRIDGE_WEB_WIFI_MAX_RECONNECT_TIMEOUT;
+static int32_t s_web_wifi_reconnect_timeout = BRIDGE_WEB_WIFI_MAX_RECONNECT_TIMEOUT;
 static wifi_sta_connection_info_t s_wifi_sta_connection_info = { 0 };
 static wifi_sta_connect_config_t s_wifi_sta_connect_config = { 0 };
 static TimerHandle_t s_wifi_sta_connect_timer_handler = NULL;
@@ -208,7 +208,7 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
 {
     esp_err_t ret;
     EventBits_t bits;
-    char temp_ssid[ESP_BRIDGE_WEB_WIFI_SSID_LEN_DEFAULT + 1] = { 0 };
+    char temp_ssid[BRIDGE_WEB_WIFI_SSID_LEN_DEFAULT + 1] = { 0 };
     wifi_sta_config_t sta = { 0 };
     memcpy(sta.ssid, ssid, sizeof(sta.ssid));
     memcpy(sta.password, password, sizeof(sta.password));
@@ -223,16 +223,16 @@ static esp_err_t esp_web_try_connect(uint8_t *ssid, uint8_t *password, uint8_t *
 
     if (connect_event != NULL) { // need to wait wifi connect result, now it's phone config wifi and ssid is null
         bits = xEventGroupWaitBits(connect_event,
-                                   ESP_BRIDGE_WEB_WIFI_CONNECTED_BIT | ESP_BRIDGE_WEB_WIFI_FAIL_BIT,
+                                   BRIDGE_WEB_WIFI_CONNECTED_BIT | BRIDGE_WEB_WIFI_FAIL_BIT,
                                    pdTRUE,
                                    pdFALSE,
-                                   ESP_BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT / portTICK_PERIOD_MS); // wait until timeout
+                                   BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT / portTICK_PERIOD_MS); // wait until timeout
 
-        if (bits & ESP_BRIDGE_WEB_WIFI_CONNECTED_BIT) {
+        if (bits & BRIDGE_WEB_WIFI_CONNECTED_BIT) {
             ESP_LOGI(TAG, "connected to ap SSID:%s", temp_ssid);
         }
 
-        if (bits & ESP_BRIDGE_WEB_WIFI_FAIL_BIT) {
+        if (bits & BRIDGE_WEB_WIFI_FAIL_BIT) {
             ESP_LOGI(TAG, "connecting to SSID:%s, reconnect timeout", temp_ssid);
             ret = ESP_ERR_TIMEOUT;
         }
@@ -414,7 +414,7 @@ static esp_err_t esp_web_check_ap_info(wifi_ap_record_t *ap_info)
     }
 
     // check rssi
-    if (ap_info->rssi < ESP_BRIDGE_WEB_SCAN_RSSI_THRESHOLD) {
+    if (ap_info->rssi < BRIDGE_WEB_SCAN_RSSI_THRESHOLD) {
         ESP_LOGD(TAG, "Ignore low rssi, ssid: %s", ap_info->ssid);
         goto check_err;
     }
@@ -443,7 +443,7 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
     router_obj_t *last = NULL;
     uint8_t try_connect_count = 0;
     // Calculate the max number of try to connect
-    uint8_t max_try_connect_num = (max_connect_time * 1000) / ESP_BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT;
+    uint8_t max_try_connect_num = (max_connect_time * 1000) / BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT;
     int32_t current_available_time = max_connect_time;
     uint16_t ap_scan_number = 0;
     int32_t loop = 0;
@@ -461,7 +461,7 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
         return ESP_ERR_INVALID_ARG;
     }
 
-    ap_info = (wifi_ap_record_t *)malloc(ESP_BRIDGE_WEB_SCAN_LIST_SIZE * sizeof(wifi_ap_record_t));
+    ap_info = (wifi_ap_record_t *)malloc(BRIDGE_WEB_SCAN_LIST_SIZE * sizeof(wifi_ap_record_t));
 
     if (ap_info == NULL) {
         ESP_LOGE(TAG, "ap info malloc fail");
@@ -473,14 +473,14 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
     while (max_try_connect_num > 0) {
         start = clock();
 
-        if (current_available_time <= ESP_BRIDGE_WEB_WIFI_LAST_SCAN_TIMEOUT) {
+        if (current_available_time <= BRIDGE_WEB_WIFI_LAST_SCAN_TIMEOUT) {
             last_scan = true;
         }
 
         // clear the value of the variable
         try_connect_count = 0;
-        ap_scan_number = ESP_BRIDGE_WEB_SCAN_LIST_SIZE;
-        memset(ap_info, 0, ESP_BRIDGE_WEB_SCAN_LIST_SIZE * sizeof(wifi_ap_record_t));
+        ap_scan_number = BRIDGE_WEB_SCAN_LIST_SIZE;
+        memset(ap_info, 0, BRIDGE_WEB_SCAN_LIST_SIZE * sizeof(wifi_ap_record_t));
 
         ret = esp_web_wifi_scan_get_ap_records(&ap_scan_number, ap_info);
 
@@ -552,7 +552,7 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
             }
         }
 
-#if ESP_BRIDGE_WEB_ENABLE_VIRTUAL_MAC_MATCH
+#if BRIDGE_WEB_ENABLE_VIRTUAL_MAC_MATCH
 
         // if connect fail, try to connect the router which has virtual mac
         if (last_scan == true && s_connect_success_flag == 0 && try_connect_count < max_try_connect_num) {
@@ -586,13 +586,13 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
 
 #endif
 
-#if ESP_BRIDGE_WEB_ENABLE_CONNECT_HIGHEST_RSSI
+#if BRIDGE_WEB_ENABLE_CONNECT_HIGHEST_RSSI
 
         // if connect fail, try to connect the router which has highest rssi
         if (last_scan == true && s_connect_success_flag == 0 && try_connect_count < max_try_connect_num) {
             ESP_LOGI(TAG, "Try to connect highest RSSI SSID");
             head_item = SLIST_FIRST(&s_router_all_list);
-            highest_rssi_connect_count = ESP_BRIDGE_WEB_HIGH_RSSI_CONNECT_COUNT;
+            highest_rssi_connect_count = BRIDGE_WEB_HIGH_RSSI_CONNECT_COUNT;
 
             while ((highest_rssi_connect_count > 0) && (try_connect_count < max_try_connect_num)) {
                 if (check_fail_list(head_item->mac)) {
@@ -656,7 +656,7 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
         if ((current_available_time <= 0) || (current_available_time > max_connect_time)) {
             break;
         } else {
-            max_try_connect_num = (current_available_time * 1000) / ESP_BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT;
+            max_try_connect_num = (current_available_time * 1000) / BRIDGE_WEB_WIFI_TRY_CONNECT_TIMEOUT;
             ESP_LOGI(TAG, "current avail time is %d, max_try_connect_num is %d", (int)current_available_time, max_try_connect_num);
         }
     }
@@ -782,7 +782,7 @@ static int esp_web_find_arg(char *line, char *arg, char *buff, int buffLen)
 /* Send HTTP response with the contents of the requested file */
 static esp_err_t web_common_get_handler(httpd_req_t *req)
 {
-    char filepath[ESP_BRIDGE_WEB_FILE_PATH_MAX];
+    char filepath[BRIDGE_WEB_FILE_PATH_MAX];
     esp_err_t err = ESP_FAIL;
     web_server_context_t *s_web_context = (web_server_context_t *)req->user_ctx;
     strlcpy(filepath, s_web_context->base_path, sizeof(filepath));
@@ -805,7 +805,7 @@ static esp_err_t web_common_get_handler(httpd_req_t *req)
 
     do {
         /* Read file in chunks into the scratch buffer */
-        read_bytes = read(fd, chunk, ESP_BRIDGE_WEB_SCRATCH_BUFSIZE);
+        read_bytes = read(fd, chunk, BRIDGE_WEB_SCRATCH_BUFSIZE);
 
         if (read_bytes == -1) {
             ESP_LOGE(TAG, "Failed to read file : %s", filepath);
@@ -860,7 +860,7 @@ static esp_err_t recv_post_data(httpd_req_t *req, char *buf)
     int cur_len = 0;
     int received = 0;
 
-    if (total_len >= ESP_BRIDGE_WEB_SCRATCH_BUFSIZE) {
+    if (total_len >= BRIDGE_WEB_SCRATCH_BUFSIZE) {
         /* Respond with 500 Internal Server Error */
         httpd_resp_send_500(req);
         ESP_LOGE(TAG, "context too long");
@@ -952,7 +952,7 @@ static void listen_sta_connect_status_timer_cb(TimerHandle_t timer)
 {
     wifi_sta_connection_info_t connection_info = { 0 };
     int32_t reconnnect_timeout = esp_web_get_sta_reconnect_timeout();
-    int32_t connect_max_count = (reconnnect_timeout * 1000) / ESP_BRIDGE_WEB_TIMER_POLLING_PERIOD;
+    int32_t connect_max_count = (reconnnect_timeout * 1000) / BRIDGE_WEB_TIMER_POLLING_PERIOD;
     esp_err_t ret = ESP_FAIL;
     bool sta_got_ip = false;
     static int connect_count = 1;
@@ -976,12 +976,12 @@ static void listen_sta_connect_status_timer_cb(TimerHandle_t timer)
 
             ESP_LOGI(TAG, "Congratulate, got ip:" IPSTR, IP2STR(&sta_ip.ip));
             sprintf(connection_info.sta_ip, IPSTR, IP2STR(&sta_ip.ip));
-            connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECT_OK;
+            connection_info.config_status = BRIDGE_WIFI_STA_CONNECT_OK;
             goto connect_finish;
         }
     } else {
         ESP_LOGW(TAG, "Listen connect %d times and connect fail", connect_count);
-        connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECT_FAIL;
+        connection_info.config_status = BRIDGE_WIFI_STA_CONNECT_FAIL;
         goto connect_finish;
     }
 
@@ -1056,7 +1056,7 @@ static void listen_sta_connect_success_timer_cb(TimerHandle_t timer)
     bool sta_got_ip = false;
     wifi_sta_connection_info_t *current_connection_info = esp_web_get_sta_connection_info();
 
-    if (current_connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECTING) {
+    if (current_connection_info->config_status == BRIDGE_WIFI_STA_CONNECTING) {
         sta_got_ip = esp_web_get_sta_got_ip_flag(); // to check whether sta has connnected to appointed ap(like at_wifi_station_get_connect_status())
 
         if (sta_got_ip != true) {
@@ -1064,7 +1064,7 @@ static void listen_sta_connect_success_timer_cb(TimerHandle_t timer)
         } else {
             ESP_LOGI(TAG, "Connect SSID success");
             esp_web_update_sta_got_ip_flag(false); // clear connect status flag
-            xEventGroupSetBits(s_wifi_sta_connect_event_group, ESP_BRIDGE_WEB_WIFI_CONNECTED_BIT);
+            xEventGroupSetBits(s_wifi_sta_connect_event_group, BRIDGE_WEB_WIFI_CONNECTED_BIT);
             return;
         }
     }
@@ -1086,16 +1086,16 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
     wifi_sta_connect_config_t *connect_config = esp_web_get_sta_connect_config();
     int32_t reconnnect_timeout = esp_web_get_sta_reconnect_timeout();
     wifi_sta_connection_info_t connection_info = { 0 };
-    int send_count = ESP_BRIDGE_WEB_BROADCAST_TIMES_DEFAULT;
+    int send_count = BRIDGE_WEB_BROADCAST_TIMES_DEFAULT;
     int udp_socket = -1;
     int len = 0;
-    char gateway[ESP_BRIDGE_WEB_IPV4_MAX_IP_LEN_DEFAULT] = { 0 };
+    char gateway[BRIDGE_WEB_IPV4_MAX_IP_LEN_DEFAULT] = { 0 };
     struct sockaddr_in broadcast_addr = { 0 };
     struct sockaddr_in unicast_addr = { 0 };
     char sendline[64] = { 0 };
     char rx_buffer[32] = { 0 };
     // Calculate the max connect time,unit: s
-    int32_t connect_timeout = reconnnect_timeout - ESP_BRIDGE_WEB_BROADCAST_TIMES_DEFAULT * ESP_BRIDGE_WEB_BROADCAST_INTERVAL_DEFAULT / 1000000;
+    int32_t connect_timeout = reconnnect_timeout - BRIDGE_WEB_BROADCAST_TIMES_DEFAULT * BRIDGE_WEB_BROADCAST_INTERVAL_DEFAULT / 1000000;
 
     // Clear connect status flag
     esp_web_update_sta_got_ip_flag(false);
@@ -1112,14 +1112,14 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
             goto err;
         } else {
             ESP_LOGI(TAG, "Apply connect success");
-            connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECTING;
+            connection_info.config_status = BRIDGE_WIFI_STA_CONNECTING;
             esp_web_update_sta_connection_info(&connection_info);
             // send a message to MCU
             // esp_at_port_write_data((uint8_t*)s_wifi_start_connect_response, strlen(s_wifi_start_connect_response));
             printf("%s\r\n", s_wifi_start_connect_response);
         }
 
-        s_wifi_sta_connect_timer_handler = xTimerCreate("listen_sta_connect_status", ESP_BRIDGE_WEB_TIMER_POLLING_PERIOD / portTICK_PERIOD_MS, pdTRUE,
+        s_wifi_sta_connect_timer_handler = xTimerCreate("listen_sta_connect_status", BRIDGE_WEB_TIMER_POLLING_PERIOD / portTICK_PERIOD_MS, pdTRUE,
                                            NULL, listen_sta_connect_status_timer_cb);
         xTimerStart(s_wifi_sta_connect_timer_handler, 5);
     } else {
@@ -1127,10 +1127,10 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         esp_wifi_disconnect();
         s_wifi_sta_connect_event_group = xEventGroupCreate();
 
-        s_wifi_sta_connect_timer_handler = xTimerCreate("listen_sta_connect_success", ESP_BRIDGE_WEB_TIMER_POLLING_PERIOD / portTICK_PERIOD_MS, pdTRUE,
+        s_wifi_sta_connect_timer_handler = xTimerCreate("listen_sta_connect_success", BRIDGE_WEB_TIMER_POLLING_PERIOD / portTICK_PERIOD_MS, pdTRUE,
                                            NULL, listen_sta_connect_success_timer_cb);
         xTimerStart(s_wifi_sta_connect_timer_handler, 5);
-        connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECTING;
+        connection_info.config_status = BRIDGE_WIFI_STA_CONNECTING;
         esp_web_update_sta_connection_info(&connection_info);
         // send a message to MCU
         // esp_at_port_write_data((uint8_t*)s_wifi_start_connect_response, strlen(s_wifi_start_connect_response));
@@ -1160,7 +1160,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         // according to connect result to update or report results
         if (ret != ESP_OK) { // connect fail
             ESP_LOGW(TAG, "Scan filter fail, timeout");
-            connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECT_FAIL;
+            connection_info.config_status = BRIDGE_WIFI_STA_CONNECT_FAIL;
             esp_web_update_sta_connection_info(&connection_info);
             // esp_at_port_write_data((uint8_t*)s_wifi_conncet_finish_response, strlen(s_wifi_conncet_finish_response));
             printf("%s\r\n", s_wifi_conncet_finish_response);
@@ -1178,13 +1178,13 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
             sprintf(connection_info.sta_ip, IPSTR, IP2STR(&sta_ip.ip));
             sprintf(gateway, IPSTR, IP2STR(&sta_ip.gw));
 
-            sprintf(sendline, "ip=%d.%d.%d.%d&port=%d", IP2STR(&sta_ip.ip), ESP_BRIDGE_WEB_UDP_PORT_DEFAULT);
+            sprintf(sendline, "ip=%d.%d.%d.%d&port=%d", IP2STR(&sta_ip.ip), BRIDGE_WEB_UDP_PORT_DEFAULT);
             ESP_LOGD(TAG, "udp send str is %s", sendline);
 
-            connection_info.config_status = ESP_BRIDGE_WIFI_STA_CONNECT_OK;
+            connection_info.config_status = BRIDGE_WIFI_STA_CONNECT_OK;
             esp_web_update_sta_connection_info(&connection_info);
             // creat udp to send wifi connect success to mobile phone.
-            udp_socket = udp_create(ESP_BRIDGE_WEB_UDP_PORT_DEFAULT, connection_info.sta_ip);
+            udp_socket = udp_create(BRIDGE_WEB_UDP_PORT_DEFAULT, connection_info.sta_ip);
 
             if (udp_socket == -1) {
                 goto err;
@@ -1213,7 +1213,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
 
                 ESP_LOGI(TAG, "send ok udp");
 
-                if (readable_check(udp_socket, 0, ESP_BRIDGE_WEB_BROADCAST_INTERVAL_DEFAULT) > 0) { // wait 500ms to check whether mobile phone send "received" ack
+                if (readable_check(udp_socket, 0, BRIDGE_WEB_BROADCAST_INTERVAL_DEFAULT) > 0) { // wait 500ms to check whether mobile phone send "received" ack
                     len = recvfrom(udp_socket, rx_buffer, sizeof(rx_buffer) - 1, 0, NULL, NULL);
 
                     if (len < 0) {
@@ -1222,7 +1222,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
                         rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
                         ESP_LOGI(TAG, "receive %s", rx_buffer);
 
-                        if (strcmp(rx_buffer, ESP_BRIDGE_WEB_RECEIVED_ACK_MESSAGE) == 0) {
+                        if (strcmp(rx_buffer, BRIDGE_WEB_RECEIVED_ACK_MESSAGE) == 0) {
                             ESP_LOGI(TAG, "Received expected message, finished");
                             break;
                         }
@@ -1249,7 +1249,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
     return ESP_OK;
 
 err:
-    connection_info.config_status = ESP_BRIDGE_WIFI_STA_NOT_START;
+    connection_info.config_status = BRIDGE_WIFI_STA_NOT_START;
     esp_web_update_sta_connection_info(&connection_info);
     return ESP_FAIL;
 }
@@ -1264,7 +1264,7 @@ static esp_err_t config_wifi_post_handler(httpd_req_t *req)
     bool ssid_is_null = false;
     wifi_mode_t current_wifi_mode;
     wifi_sta_connection_info_t *connection_info = esp_web_get_sta_connection_info();
-    memset(buf, '\0', ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
+    memset(buf, '\0', BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     esp_wifi_get_mode(&current_wifi_mode);
 
     if ((current_wifi_mode != WIFI_MODE_APSTA) && (current_wifi_mode != WIFI_MODE_STA)) {
@@ -1273,9 +1273,9 @@ static esp_err_t config_wifi_post_handler(httpd_req_t *req)
     }
 
     // only wifi config not start or have success apply one connection,allow to apply new connect
-    if ((connection_info->config_status == ESP_BRIDGE_WIFI_STA_NOT_START) ||
-            (connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECT_FAIL) ||
-            (connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECT_OK)) {
+    if ((connection_info->config_status == BRIDGE_WIFI_STA_NOT_START) ||
+            (connection_info->config_status == BRIDGE_WIFI_STA_CONNECT_FAIL) ||
+            (connection_info->config_status == BRIDGE_WIFI_STA_CONNECT_OK)) {
         if (recv_post_data(req, buf) != ESP_OK) {
             esp_web_response_error(req, HTTPD_500);
             ESP_LOGE(TAG, "recv post data error");
@@ -1357,13 +1357,13 @@ static esp_err_t config_wifi_get_handler(httpd_req_t *req)
     char temp_str[32] = { 0 };
     int32_t json_len = 0;
     char *temp_json_str = ((web_server_context_t *)(req->user_ctx))->scratch;
-    memset(temp_json_str, '\0', ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
+    memset(temp_json_str, '\0', BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     httpd_resp_set_type(req, "application/json");
 
     // according wifi connect status, update state
-    if (connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECT_OK) {
+    if (connection_info->config_status == BRIDGE_WIFI_STA_CONNECT_OK) {
         json_len += sprintf(temp_json_str + json_len, "{\"state\":1,"); // it means wifi connect success
-    } else if (connection_info->config_status == ESP_BRIDGE_WIFI_STA_CONNECT_FAIL) {
+    } else if (connection_info->config_status == BRIDGE_WIFI_STA_CONNECT_FAIL) {
         json_len += sprintf(temp_json_str + json_len, "{\"state\":2,"); // it means wifi connect fail
     } else {
         json_len += sprintf(temp_json_str + json_len, "{\"state\":0,"); // it means http context OK
@@ -1373,23 +1373,23 @@ static esp_err_t config_wifi_get_handler(httpd_req_t *req)
     json_len += sprintf(temp_json_str + json_len, "\"sta_password\":\"%s\",", (char *)connect_config->password);
 
     switch (connection_info->config_status) {
-    case ESP_BRIDGE_WIFI_STA_NOT_START:
+    case BRIDGE_WIFI_STA_NOT_START:
         strcpy(temp_str, "waiting config");
         break;
 
-    case ESP_BRIDGE_WIFI_STA_CONFIG_DONE:
+    case BRIDGE_WIFI_STA_CONFIG_DONE:
         strcpy(temp_str, "config done");
         break;
 
-    case ESP_BRIDGE_WIFI_STA_CONNECTING:
+    case BRIDGE_WIFI_STA_CONNECTING:
         strcpy(temp_str, "connecting");
         break;
 
-    case ESP_BRIDGE_WIFI_STA_CONNECT_FAIL:
+    case BRIDGE_WIFI_STA_CONNECT_FAIL:
         strcpy(temp_str, "connect fail");
         break;
 
-    case ESP_BRIDGE_WIFI_STA_CONNECT_OK:
+    case BRIDGE_WIFI_STA_CONNECT_OK:
         strcpy(temp_str, "connect OK");
         break;
 
@@ -1414,21 +1414,21 @@ static esp_err_t accept_wifi_result_post_handler(httpd_req_t *req)
 
     wifi_sta_connection_info_t wifi_connection_info = { 0 };
     wifi_sta_connection_info_t *connection_info = esp_web_get_sta_connection_info();
-    memset(buf, '\0', ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
+    memset(buf, '\0', BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     ESP_LOGD(TAG, "detect web close pages");
 
     switch (connection_info->config_status) {
-    case ESP_BRIDGE_WIFI_STA_NOT_START:
+    case BRIDGE_WIFI_STA_NOT_START:
         break;
 
-    case ESP_BRIDGE_WIFI_STA_CONFIG_DONE:
-    case ESP_BRIDGE_WIFI_STA_CONNECTING:
+    case BRIDGE_WIFI_STA_CONFIG_DONE:
+    case BRIDGE_WIFI_STA_CONNECTING:
         // esp_at_port_write_data((uint8_t*)s_wifi_conncet_finish_response, strlen(s_wifi_conncet_finish_response));
         printf("%s\r\n", s_wifi_conncet_finish_response);
         break;
 
-    case ESP_BRIDGE_WIFI_STA_CONNECT_FAIL:
-    case ESP_BRIDGE_WIFI_STA_CONNECT_OK:
+    case BRIDGE_WIFI_STA_CONNECT_FAIL:
+    case BRIDGE_WIFI_STA_CONNECT_OK:
         if (recv_post_data(req, buf) != ESP_OK) {
             esp_web_response_error(req, HTTPD_500);
             ESP_LOGE(TAG, "recv post data error");
@@ -1446,7 +1446,7 @@ static esp_err_t accept_wifi_result_post_handler(httpd_req_t *req)
         }
 
         // clear wifi connect config and status info
-        wifi_connection_info.config_status = ESP_BRIDGE_WIFI_STA_NOT_START;
+        wifi_connection_info.config_status = BRIDGE_WIFI_STA_NOT_START;
 
         esp_web_clear_sta_connect_config();
         esp_web_update_sta_connection_info(&wifi_connection_info);
@@ -1469,33 +1469,33 @@ error_handle:
 
 static esp_err_t ap_record_get_handler(httpd_req_t *req)
 {
-    uint16_t ap_number = ESP_BRIDGE_WEB_AP_SCAN_NUM_DEFAULT;
+    uint16_t ap_number = BRIDGE_WEB_AP_SCAN_NUM_DEFAULT;
     int loop = 0;
     int32_t json_len = 0;
     int valid_ap_count = 1;
     char *temp_json_str = NULL;
-    wifi_ap_record_t *ap_info = (wifi_ap_record_t *)malloc(ESP_BRIDGE_WEB_AP_SCAN_NUM_DEFAULT * sizeof(wifi_ap_record_t));
+    wifi_ap_record_t *ap_info = (wifi_ap_record_t *)malloc(BRIDGE_WEB_AP_SCAN_NUM_DEFAULT * sizeof(wifi_ap_record_t));
 
     if (ap_info == NULL) {
         ESP_LOGE(TAG, "ap info malloc fail");
         return ESP_FAIL;
     }
 
-    memset(ap_info, 0, ESP_BRIDGE_WEB_AP_SCAN_NUM_DEFAULT * sizeof(wifi_ap_record_t));
+    memset(ap_info, 0, BRIDGE_WEB_AP_SCAN_NUM_DEFAULT * sizeof(wifi_ap_record_t));
 
     if (esp_web_wifi_scan_get_ap_records(&ap_number, ap_info) != ESP_OK) {
         esp_web_response_error(req, HTTPD_500);
         goto error_handle;
     }
 
-    temp_json_str = (char *)malloc(ESP_BRIDGE_WEB_AP_RECORD_JSON_STR_LEN * sizeof(char));
+    temp_json_str = (char *)malloc(BRIDGE_WEB_AP_RECORD_JSON_STR_LEN * sizeof(char));
 
     if (temp_json_str == NULL) {
         ESP_LOGE(TAG, "temp_json_str malloc fail");
         goto error_handle;
     }
 
-    memset(temp_json_str, 0, ESP_BRIDGE_WEB_AP_RECORD_JSON_STR_LEN * sizeof(char));
+    memset(temp_json_str, 0, BRIDGE_WEB_AP_RECORD_JSON_STR_LEN * sizeof(char));
 
     httpd_resp_set_type(req, "application/json");
     json_len += sprintf(temp_json_str + json_len, "{\"state\":0,\"message\":\"scan done\",\"aplist\":["); // to get a json array format str
@@ -1529,7 +1529,7 @@ static esp_err_t ota_info_get_handler(httpd_req_t *req)
     uint8_t version[4] = { 0 };
     char *temp_json_str = ((web_server_context_t *)(req->user_ctx))->scratch;
 
-    memset(temp_json_str, '\0', ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
+    memset(temp_json_str, '\0', BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     // memcpy(version, &version_uint32, sizeof(version_uint32));
 
     httpd_resp_set_type(req, "application/json");
@@ -1604,7 +1604,7 @@ static esp_err_t ota_data_post_handler(httpd_req_t *req)
     }
 
     ESP_LOGI(TAG, "bin size is %d", total_len);
-    memset(buf, 0x0, ESP_BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
+    memset(buf, 0x0, BRIDGE_WEB_SCRATCH_BUFSIZE * sizeof(char));
     // Send a message to MCU.
     // esp_at_port_write_data((uint8_t*)s_ota_start_response, strlen(s_ota_start_response));
     printf("%s\r\n", s_ota_start_response);
@@ -1618,7 +1618,7 @@ static esp_err_t ota_data_post_handler(httpd_req_t *req)
 
     // receive ota data
     while (remaining_len > 0) {
-        received_len = httpd_req_recv(req, buf, MIN(remaining_len, ESP_BRIDGE_WEB_SCRATCH_BUFSIZE)); // Receive the file part by part into a buffer
+        received_len = httpd_req_recv(req, buf, MIN(remaining_len, BRIDGE_WEB_SCRATCH_BUFSIZE)); // Receive the file part by part into a buffer
 
         if (received_len <= 0) { // received error
             if (received_len == HTTPD_SOCK_ERR_TIMEOUT) {
@@ -1684,9 +1684,9 @@ static esp_err_t http_common_error_handler(httpd_req_t *req, httpd_err_code_t er
 
 static esp_err_t start_web_server(const char *base_path, uint16_t server_port)
 {
-    ESP_BRIDGE_WEB_SERVER_CHECK(base_path, "wrong base path", err);
+    BRIDGE_WEB_SERVER_CHECK(base_path, "wrong base path", err);
     s_web_context = calloc(1, sizeof(web_server_context_t));
-    ESP_BRIDGE_WEB_SERVER_CHECK(s_web_context, "No memory for rest context", err);
+    BRIDGE_WEB_SERVER_CHECK(s_web_context, "No memory for rest context", err);
     strlcpy(s_web_context->base_path, base_path, sizeof(s_web_context->base_path));
 
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -1700,7 +1700,7 @@ static esp_err_t start_web_server(const char *base_path, uint16_t server_port)
 #endif
 
     ESP_LOGD(TAG, "Starting HTTP Server");
-    ESP_BRIDGE_WEB_SERVER_CHECK(httpd_start(&s_server, &config) == ESP_OK, "Start server failed", err_start);
+    BRIDGE_WEB_SERVER_CHECK(httpd_start(&s_server, &config) == ESP_OK, "Start server failed", err_start);
 
     httpd_uri_t httpd_uri_array[] = {
         {"/getstainfo", HTTP_GET, config_wifi_get_handler, s_web_context},
@@ -1719,12 +1719,12 @@ static esp_err_t start_web_server(const char *base_path, uint16_t server_port)
     }
 
 #ifdef CONFIG_WEB_CAPTIVE_PORTAL_ENABLE
-    size_t redirect_url_sz = ESP_BRIDGE_WEB_REDIRECT_URL_PREFIX_LEN + strlen(ESP_BRIDGE_WEB_ROOT_DIR_DEFAULT) + 1; /* strlen(http://255.255.255.255) + strlen("/") + 1 for \0 */
+    size_t redirect_url_sz = BRIDGE_WEB_REDIRECT_URL_PREFIX_LEN + strlen(BRIDGE_WEB_ROOT_DIR_DEFAULT) + 1; /* strlen(http://255.255.255.255) + strlen("/") + 1 for \0 */
     s_web_redirect_url = malloc(sizeof(char) * redirect_url_sz);
     *s_web_redirect_url = '\0';
     esp_netif_ip_info_t ip_info;
     esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
-    snprintf(s_web_redirect_url, redirect_url_sz, "http://"IPSTR"%s", IP2STR(&ip_info.ip), ESP_BRIDGE_WEB_ROOT_DIR_DEFAULT);
+    snprintf(s_web_redirect_url, redirect_url_sz, "http://"IPSTR"%s", IP2STR(&ip_info.ip), BRIDGE_WEB_ROOT_DIR_DEFAULT);
 
     httpd_register_err_handler(s_server, HTTPD_404_NOT_FOUND, http_common_error_handler);
     httpd_register_err_handler(s_server, HTTPD_414_URI_TOO_LONG, http_common_error_handler);
@@ -1806,7 +1806,7 @@ static esp_err_t esp_web_fatfs_spiflash_init(void)
         .format_if_mount_failed = false // If cannot mount fs, no need to go down
     };
 
-    esp_err_t err = esp_web_fatfs_spiflash_mount(ESP_BRIDGE_WEB_MOUNT_POINT, "fatfs", &mount_config, &s_wl_handle);
+    esp_err_t err = esp_web_fatfs_spiflash_mount(BRIDGE_WEB_MOUNT_POINT, "fatfs", &mount_config, &s_wl_handle);
 
     if (err != ESP_OK) {
         printf("Failed to mount FATFS (0x%x)", err);
@@ -1823,7 +1823,7 @@ static esp_err_t esp_web_fatfs_spiflash_deinit(void)
     ff_diskio_unregister(pdrv);
     ff_diskio_clear_pdrv_wl(s_wl_handle);
     wl_unmount(s_wl_handle);
-    ret = esp_vfs_fat_unregister_path(ESP_BRIDGE_WEB_MOUNT_POINT);
+    ret = esp_vfs_fat_unregister_path(BRIDGE_WEB_MOUNT_POINT);
 
     return ret;
 }
@@ -1841,7 +1841,7 @@ static esp_err_t esp_web_start(uint16_t server_port)
             return err;
         }
 #endif
-        err = start_web_server(ESP_BRIDGE_WEB_MOUNT_POINT, server_port);
+        err = start_web_server(BRIDGE_WEB_MOUNT_POINT, server_port);
         if (err != ESP_OK) {
             return err;
         }

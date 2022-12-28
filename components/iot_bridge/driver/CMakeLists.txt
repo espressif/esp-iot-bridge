@@ -10,7 +10,7 @@ if(CONFIG_ESP_SPI_HOST_INTERFACE)
     list(APPEND sub_srcs "driver/src/spi_slave_api.c")
 endif()
 
-if(CONFIG_ESP_BRIDGE_BT_ENABLED)
+if(CONFIG_BRIDGE_BT_ENABLED)
     list(APPEND sub_srcs "driver/src/slave_bt.c")
 endif()
 

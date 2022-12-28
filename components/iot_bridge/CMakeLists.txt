@@ -10,12 +10,6 @@ endif()
 
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
     list(APPEND srcs "src/bridge_modem.c")
-    if(CONFIG_BRIDGE_MODEM_USB)
-        list(APPEND srcs "src/modem_board_usb.c")
-    endif()
-    if(CONFIG_BRIDGE_MODEM_CUSTOM_BOARD)
-        list(APPEND srcs "src/modem_board_sim7600.c")
-    endif()
 endif()
 
 if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
@@ -36,14 +30,12 @@ endif()
 
 list(APPEND requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer")
 
-if (DEFINED ENV{ESP_BRIDGE_COMPILATION_WORKAROUND})
-if ($ENV{ESP_BRIDGE_COMPILATION_WORKAROUND} STREQUAL "ON")
-    list(APPEND requires "esp_modem" "led")
-
-if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
-    list(APPEND requires "usb_device")
-endif()
-endif()
+if (DEFINED ENV{BRIDGE_COMPILATION_WORKAROUND})
+    if ($ENV{BRIDGE_COMPILATION_WORKAROUND} STREQUAL "ON")
+        if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
+            list(APPEND requires "usb_device")
+        endif()
+    endif()
 endif()
 
 if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)

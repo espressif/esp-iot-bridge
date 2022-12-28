@@ -80,7 +80,7 @@ ESP-IOT-Bridge 方案提供多个网络接口，不同的网络接口可以分�
 
 ESP-IOT-Bridge 设备通过 Wi-Fi 或者有线以太网网口连接至路由器，智能设备通过连接至 ESP-IOT-Bridge 设备的 SoftAP 热点进行上网。
 
-- 通过在 menuconfig（``Bridge Configuration`` > ``SoftAP Config``）中启用 ``ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC``，可在 SoftAP SSID 末尾增加 MAC 信息。
+- 通过在 menuconfig（``Bridge Configuration`` > ``SoftAP Config``）中启用 ``BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC``，可在 SoftAP SSID 末尾增加 MAC 信息。
 
 - 单个 Bridge 设备最多支持 10 个 Station 同时连接，多个 Station 设备共享带宽。
 

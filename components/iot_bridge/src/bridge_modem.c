@@ -1,335 +1,100 @@
-// Copyright 2022 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-#include <stdlib.h>
 #include <string.h>
+#include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
-#include "driver/gpio.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "esp_event.h"
-#include "esp_log.h"
-#include "esp_timer.h"
+#include "esp_netif.h"
 #include "esp_netif_ppp.h"
+#include "esp_modem_api.h"
+#include "esp_log.h"
 
-// #include "esp_modem_dce.h"
-#include "esp_modem_recov_helper.h"
-#include "esp_modem_dce_common_commands.h"
-#include "esp_bridge_modem.h"
-
-#include "esp_modem.h"
-#include "led_indicator.h"
-#include "sdkconfig.h"
-#if CONFIG_BRIDGE_MODEM_USB
-#include "esp_usbh_cdc.h"
+#define MODULE_BOOT_TIME_MS     5000
+#if defined(CONFIG_BRIDGE_FLOW_CONTROL_NONE)
+#define BRIDGE_FLOW_CONTROL ESP_MODEM_FLOW_CONTROL_NONE
+#elif defined(CONFIG_BRIDGE_FLOW_CONTROL_SW)
+#define BRIDGE_FLOW_CONTROL ESP_MODEM_FLOW_CONTROL_SW
+#elif defined(CONFIG_BRIDGE_FLOW_CONTROL_HW)
+#define BRIDGE_FLOW_CONTROL ESP_MODEM_FLOW_CONTROL_HW
 #endif
 
-#define MODULE_BOOT_TIME 8
+#if CONFIG_BRIDGE_MODEM_DEVICE_BG96 == 1
+#define ESP_BRIDGE_MODEM_DEVICE         ESP_MODEM_DCE_BG96
+#elif CONFIG_BRIDGE_MODEM_DEVICE_SIM800 == 1
+#define ESP_BRIDGE_MODEM_DEVICE         ESP_MODEM_DCE_SIM800
+#elif CONFIG_BRIDGE_MODEM_DEVICE_SIM7000 == 1
+#define ESP_BRIDGE_MODEM_DEVICE         ESP_MODEM_DCE_SIM7000
+#elif CONFIG_BRIDGE_MODEM_DEVICE_SIM7070 == 1
+#define ESP_BRIDGE_MODEM_DEVICE         ESP_MODEM_DCE_SIM7070
+#elif CONFIG_BRIDGE_MODEM_DEVICE_SIM7600 == 1
+#define ESP_BRIDGE_MODEM_DEVICE         ESP_MODEM_DCE_SIM7600
+#endif
+
 static const char *TAG = "bridge_modem";
-
+static EventGroupHandle_t event_group = NULL;
 static const int CONNECT_BIT = BIT0;
-static const int DISCONNECT_BIT = BIT1;
+static const int USB_DISCONNECTED_BIT = BIT3; // Used only with USB DTE but we define it unconditionally, to avoid too many #ifdefs in the code
 
-led_indicator_handle_t led_system_handle = NULL;
-static led_indicator_handle_t led_wifi_handle = NULL;
-static led_indicator_handle_t led_4g_handle = NULL;
-static int active_station_num = 0;
-typedef struct {
-    esp_modem_dte_t *dte;
-    EventGroupHandle_t events_handle;
-} ip_event_arg_t;
+#if defined(CONFIG_BRIDGE_SERIAL_VIA_USB)
+#include "esp_modem_usb_c_api.h"
+#include "esp_modem_usb_config.h"
+#include "freertos/task.h"
+static void usb_terminal_error_handler(esp_modem_terminal_error_t err)
+{
+    if (err == ESP_MODEM_TERMINAL_DEVICE_GONE) {
+        ESP_LOGI(TAG, "USB modem disconnected");
+        assert(event_group);
+        xEventGroupSetBits(event_group, USB_DISCONNECTED_BIT);
+    }
+}
+#endif
 
-extern esp_modem_dce_t *sim7600_board_create(esp_modem_dce_config_t *config);
-extern esp_modem_dce_t *usb_modem_board_create(esp_modem_dce_config_t *config);
-
-static void on_modem_event(void *arg, esp_event_base_t event_base,
+static void on_ppp_changed(void *arg, esp_event_base_t event_base,
                            int32_t event_id, void *event_data)
 {
-    if (event_base == IP_EVENT) {
-        ip_event_arg_t *p_ip_event_arg = (ip_event_arg_t *)arg;
-        ESP_LOGI(TAG, "IP event! %d", event_id);
-
-        if (event_id == IP_EVENT_PPP_GOT_IP) {
-            esp_netif_dns_info_t dns_info;
-
-            ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
-            esp_netif_t *netif = event->esp_netif;
-
-            ESP_LOGI(TAG, "Modem Connected to PPP Server");
-            ESP_LOGI(TAG, "%s ip: " IPSTR ", mask: " IPSTR ", gw: " IPSTR, esp_netif_get_desc(netif),
-                     IP2STR(&event->ip_info.ip),
-                     IP2STR(&event->ip_info.netmask),
-                     IP2STR(&event->ip_info.gw));
-            esp_netif_get_dns_info(netif, ESP_NETIF_DNS_MAIN, &dns_info);
-            ESP_LOGI(TAG, "Main DNS: " IPSTR, IP2STR(&dns_info.ip.u_addr.ip4));
-            esp_netif_get_dns_info(netif, ESP_NETIF_DNS_BACKUP, &dns_info);
-            ESP_LOGI(TAG, "Backup DNS: " IPSTR, IP2STR(&dns_info.ip.u_addr.ip4));
-
-            if (led_4g_handle) {
-                led_indicator_start(led_4g_handle, BLINK_CONNECTED);
-            }
-
-            xEventGroupClearBits(p_ip_event_arg->events_handle, DISCONNECT_BIT);
-            xEventGroupSetBits(p_ip_event_arg->events_handle, CONNECT_BIT);
-        } else if (event_id == IP_EVENT_PPP_LOST_IP) {
-            ESP_LOGI(TAG, "Modem Disconnect from PPP Server");
-
-            if (led_4g_handle) {
-                led_indicator_stop(led_4g_handle, BLINK_CONNECTED);
-            }
-
-            if (led_4g_handle) {
-                led_indicator_start(led_4g_handle, BLINK_CONNECTING);
-            }
-
-            xEventGroupClearBits(p_ip_event_arg->events_handle, CONNECT_BIT);
-            xEventGroupSetBits(p_ip_event_arg->events_handle, DISCONNECT_BIT);
-            esp_modem_stop_ppp(p_ip_event_arg->dte);
-            esp_modem_start_ppp(p_ip_event_arg->dte);
-            ESP_LOGW(TAG, "Lost IP, Restart PPP");
-        } else if (event_id == IP_EVENT_GOT_IP6) {
-            ESP_LOGI(TAG, "GOT IPv6 event!");
-            ip_event_got_ip6_t *event = (ip_event_got_ip6_t *)event_data;
-            ESP_LOGI(TAG, "Got IPv6 address " IPV6STR, IPV62STR(event->ip6_info.ip));
-        }
-    } else if (event_base == ESP_MODEM_EVENT) {
-        switch (event_id) {
-        case ESP_MODEM_EVENT_PPP_START:
-            ESP_LOGI(TAG, "Modem PPP Started");
-            break;
-
-        case ESP_MODEM_EVENT_PPP_STOP:
-            ESP_LOGI(TAG, "Modem PPP Stopped");
-            break;
-
-        default:
-            ESP_LOGW(TAG, "Modem event! %d", event_id);
-            break;
-        }
-    } else if (event_base == WIFI_EVENT) {
-        //wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        switch (event_id) {
-        case WIFI_EVENT_AP_STACONNECTED:
-            if (++active_station_num > 0) {
-                if (led_wifi_handle) {
-                    led_indicator_start(led_wifi_handle, BLINK_CONNECTED);
-                }
-            }
-
-            //ESP_LOGI(TAG, "station "MACSTR" join, AID=%d", MAC2STR(event->mac), event->aid);
-            break;
-
-        case WIFI_EVENT_AP_STADISCONNECTED:
-            if (--active_station_num == 0) {
-                if (led_wifi_handle) {
-                    led_indicator_stop(led_wifi_handle, BLINK_CONNECTED);
-                }
-
-                if (led_wifi_handle) {
-                    led_indicator_start(led_wifi_handle, BLINK_CONNECTING);
-                }
-            }
-
-            //ESP_LOGI(TAG, "station "MACSTR" join, AID=%d", MAC2STR(event->mac), event->aid);
-            break;
-
-        default:
-            break;
-        }
-    } else if (event_base == NETIF_PPP_STATUS) {
-        if (event_id < NETIF_PP_PHASE_OFFSET) {
-            ESP_LOGE(TAG, "PPP netif event = %d", event_id);
-            ESP_LOGE(TAG, "Just Force restart!");
-            esp_restart();
-        } else {
-            ESP_LOGW(TAG, "PPP netif event = %d", event_id);
-        }
+    ESP_LOGI(TAG, "PPP state changed event %d", event_id);
+    if (event_id == NETIF_PPP_ERRORUSER) {
+        /* User interrupted event from esp-netif */
+        esp_netif_t *netif = event_data;
+        ESP_LOGI(TAG, "User interrupted event from netif:%p", netif);
     }
 }
 
-#if CONFIG_BRIDGE_MODEM_UART
-esp_netif_t *esp_bridge_modem_init(modem_config_t *config)
+static void on_ip_event(void *arg, esp_event_base_t event_base,
+                        int32_t event_id, void *event_data)
 {
-    EventGroupHandle_t connection_events = xEventGroupCreate();
+    ESP_LOGD(TAG, "IP event! %d", event_id);
+    if (event_id == IP_EVENT_PPP_GOT_IP) {
+        esp_netif_dns_info_t dns_info;
 
-    // init the DTE
-    esp_modem_dte_config_t dte_config = ESP_MODEM_DTE_DEFAULT_CONFIG();
-    dte_config.tx_io_num = CONFIG_ESP_BRIDGE_MODEM_TX_GPIO;
-    dte_config.rx_io_num = CONFIG_ESP_BRIDGE_MODEM_RX_GPIO;
-    dte_config.baud_rate = CONFIG_ESP_BRIDGE_MODEM_BAUD_RATE;
-    dte_config.event_task_stack_size = 4096;
-    dte_config.rx_buffer_size = 16384;
-    dte_config.tx_buffer_size = 16384;
-    dte_config.event_queue_size = 256;
-    dte_config.event_task_priority = 15;
-    esp_modem_dce_config_t dce_config = ESP_MODEM_DCE_DEFAULT_CONFIG(CONFIG_BRIDGE_MODEM_PPP_APN);
-    dce_config.populate_command_list = true;
-    esp_netif_config_t ppp_netif_config = ESP_NETIF_DEFAULT_PPP();
+        ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+        esp_netif_t *netif = event->esp_netif;
 
-    // Initialize esp-modem units, DTE, DCE, ppp-netif
-    esp_modem_dte_t *dte = esp_modem_dte_new(&dte_config);
-#if defined(CONFIG_BRIDGE_MODEM_CUSTOM_BOARD)
-    esp_modem_dce_t *dce = sim7600_board_create(&dce_config);
-#else
-    esp_modem_dce_t *dce = esp_modem_dce_new(&dce_config);
-#endif
-    esp_netif_t *ppp_netif = esp_netif_new(&ppp_netif_config);
-    assert(ppp_netif);
+        ESP_LOGI(TAG, "Modem Connect to PPP Server");
+        ESP_LOGI(TAG, "~~~~~~~~~~~~~~");
+        ESP_LOGI(TAG, "IP          : " IPSTR, IP2STR(&event->ip_info.ip));
+        ESP_LOGI(TAG, "Netmask     : " IPSTR, IP2STR(&event->ip_info.netmask));
+        ESP_LOGI(TAG, "Gateway     : " IPSTR, IP2STR(&event->ip_info.gw));
+        esp_netif_get_dns_info(netif, 0, &dns_info);
+        ESP_LOGI(TAG, "Name Server1: " IPSTR, IP2STR(&dns_info.ip.u_addr.ip4));
+        esp_netif_get_dns_info(netif, 1, &dns_info);
+        ESP_LOGI(TAG, "Name Server2: " IPSTR, IP2STR(&dns_info.ip.u_addr.ip4));
+        ESP_LOGI(TAG, "~~~~~~~~~~~~~~");
+        xEventGroupSetBits(event_group, CONNECT_BIT);
 
-    ip_event_arg_t ip_event_arg;
-    ip_event_arg.dte = dte;
-    ip_event_arg.events_handle = connection_events;
+        ESP_LOGI(TAG, "GOT ip event!!!");
+    } else if (event_id == IP_EVENT_PPP_LOST_IP) {
+        ESP_LOGI(TAG, "Modem Disconnect from PPP Server");
+    } else if (event_id == IP_EVENT_GOT_IP6) {
+        ESP_LOGI(TAG, "GOT IPv6 event!");
 
-    ESP_ERROR_CHECK(esp_modem_set_event_handler(dte, on_modem_event, ESP_EVENT_ANY_ID, &ip_event_arg));
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, on_modem_event, &ip_event_arg));
-    ESP_ERROR_CHECK(esp_event_handler_register(NETIF_PPP_STATUS, ESP_EVENT_ANY_ID, on_modem_event, NULL));
-
-    ESP_ERROR_CHECK(esp_modem_default_attach(dte, dce, ppp_netif));
-
-    ESP_ERROR_CHECK(esp_modem_default_start(dte)); // use retry
-    ESP_ERROR_CHECK(esp_modem_start_ppp(dte));
-    /* Wait for the first connection */
-    EventBits_t bits;
-
-    do {
-        bits = xEventGroupWaitBits(connection_events, (CONNECT_BIT | DISCONNECT_BIT), pdTRUE, pdFALSE, portMAX_DELAY);
-
-        if (bits & DISCONNECT_BIT) {
-            // restart the PPP mode in DTE
-            ESP_ERROR_CHECK(esp_modem_stop_ppp(dte));
-            ESP_ERROR_CHECK(esp_modem_start_ppp(dte));
-        }
-    } while ((bits & CONNECT_BIT) == 0);
-
-    return ppp_netif;
-}
-#elif CONFIG_BRIDGE_MODEM_USB
-esp_netif_t *esp_bridge_modem_init(modem_config_t *config)
-{
-    led_indicator_config_t led_config = {
-        .off_level = 0,
-        .mode = LED_GPIO_MODE,
-    };
-
-    if (LED_RED_SYSTEM_GPIO) {
-        led_system_handle = led_indicator_create(LED_RED_SYSTEM_GPIO, &led_config);
+        ip_event_got_ip6_t *event = (ip_event_got_ip6_t *)event_data;
+        ESP_LOGI(TAG, "Got IPv6 address " IPV6STR, IPV62STR(event->ip6_info.ip));
     }
-
-    if (LED_BLUE_WIFI_GPIO) {
-        led_wifi_handle = led_indicator_create(LED_BLUE_WIFI_GPIO, &led_config);
-    }
-
-    if (LED_GREEN_4GMODEM_GPIO) {
-        led_4g_handle = led_indicator_create(LED_GREEN_4GMODEM_GPIO, &led_config);
-    }
-
-    EventGroupHandle_t connection_events = xEventGroupCreate();
-
-    // init the USB DTE
-    esp_modem_dte_config_t dte_config = ESP_MODEM_DTE_DEFAULT_CONFIG();
-    dte_config.rx_buffer_size = config->rx_buffer_size; //rx ringbuffer for usb transfer
-    dte_config.tx_buffer_size = config->tx_buffer_size; //tx ringbuffer for usb transfer
-    dte_config.line_buffer_size = config->line_buffer_size;
-    dte_config.event_task_stack_size = config->event_task_stack_size; //task to handle usb rx data
-    dte_config.event_task_priority = config->event_task_priority; //task to handle usb rx data
-    esp_modem_dce_config_t dce_config = ESP_MODEM_DCE_DEFAULT_CONFIG(CONFIG_BRIDGE_MODEM_PPP_APN);
-    dce_config.populate_command_list = true;
-    esp_netif_config_t ppp_netif_config = ESP_NETIF_DEFAULT_PPP();
-
-    // Initialize esp-modem units, DTE, DCE, ppp-netif
-    esp_modem_dte_t *dte = esp_modem_dte_new(&dte_config);
-    assert(dte != NULL);
-    esp_modem_dce_t *dce = usb_modem_board_create(&dce_config);
-    assert(dce != NULL);
-    esp_netif_t *ppp_netif = esp_netif_new(&ppp_netif_config);
-    assert(ppp_netif != NULL);
-
-    ip_event_arg_t ip_event_arg;
-    ip_event_arg.dte = dte;
-    ip_event_arg.events_handle = connection_events;
-
-    ESP_ERROR_CHECK(esp_modem_set_event_handler(dte, on_modem_event, ESP_EVENT_ANY_ID, &ip_event_arg));
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, on_modem_event, &ip_event_arg));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_modem_event, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(NETIF_PPP_STATUS, ESP_EVENT_ANY_ID, on_modem_event, NULL));
-
-    if (led_4g_handle) {
-        led_indicator_stop(led_4g_handle, BLINK_CONNECTED);
-    }
-
-    if (led_4g_handle) {
-        led_indicator_start(led_4g_handle, BLINK_CONNECTING);
-    }
-
-    if (led_wifi_handle) {
-        led_indicator_stop(led_wifi_handle, BLINK_CONNECTED);
-    }
-
-    if (led_wifi_handle) {
-        led_indicator_start(led_wifi_handle, BLINK_CONNECTING);
-    }
-
-    ESP_ERROR_CHECK(esp_modem_default_attach(dte, dce, ppp_netif));
-    ESP_ERROR_CHECK(esp_modem_default_start(dte));
-
-    esp_err_t ret = ESP_OK;
-    vTaskDelay(pdMS_TO_TICKS(2000));
-    ret = esp_modem_start_ppp(dte);
-    int dial_retry_times = CONFIG_MODEM_DIAL_RERTY_TIMES;
-
-    while (ret != ESP_OK && --dial_retry_times > 0) {
-        ret = esp_modem_stop_ppp(dte);
-        vTaskDelay(pdMS_TO_TICKS(2000));
-        ret = esp_modem_start_ppp(dte);
-        ESP_LOGI(TAG, "re-start ppp, retry=%d", dial_retry_times);
-    };
-
-    if (ret == ESP_OK) {
-        if (led_4g_handle) {
-            led_indicator_start(led_4g_handle, BLINK_CONNECTED);
-        }
-    } else {
-        if (led_system_handle) {
-            led_indicator_start(led_system_handle, BLINK_CONNECTED);    //solid red, internal error
-        }
-
-        ESP_LOGE(TAG, "4G modem dial failed");
-        ESP_LOGE(TAG, "Force restart!");
-        esp_restart();
-    }
-
-    /* Wait for the first connection */
-    xEventGroupWaitBits(connection_events, CONNECT_BIT, pdFALSE, pdTRUE, portMAX_DELAY);
-    return ppp_netif;
-}
-#endif
-
-esp_timer_handle_t modem_powerup_timer;
-static void modem_powerup_timer_callback(void *arg)
-{
-    esp_netif_t *ppp_netif = (esp_netif_t *)arg;
-    modem_config_t modem_config = MODEM_DEFAULT_CONFIG();
-    ESP_LOGI(TAG, "====================================");
-    ESP_LOGI(TAG, "     ESP 4G Cat.1 Wi-Fi Router");
-    ESP_LOGI(TAG, "====================================");
-
-    /* Initialize modem board. Dial-up internet */
-    ppp_netif = esp_bridge_modem_init(&modem_config);
-    assert(ppp_netif != NULL);
-
-    ESP_ERROR_CHECK(esp_timer_delete(modem_powerup_timer));
 }
 
 esp_netif_t *esp_bridge_create_modem_netif(esp_netif_ip_info_t *custom_ip_info, uint8_t custom_mac[6], bool data_forwarding, bool enable_dhcps)
@@ -342,22 +107,117 @@ esp_netif_t *esp_bridge_create_modem_netif(esp_netif_ip_info_t *custom_ip_info, 
 
     ESP_LOGW(TAG, "Force reset 4g board");
     gpio_config_t io_config = {
-        .pin_bit_mask = BIT64(MODEM_RESET_GPIO),
+        .pin_bit_mask = BIT64(CONFIG_MODEM_RESET_GPIO),
         .mode = GPIO_MODE_OUTPUT
     };
     gpio_config(&io_config);
-    gpio_set_level(MODEM_RESET_GPIO, 0);
+    gpio_set_level(CONFIG_MODEM_RESET_GPIO, 0);
     vTaskDelay(pdMS_TO_TICKS(500));
-    gpio_set_level(MODEM_RESET_GPIO, 1);
+    gpio_set_level(CONFIG_MODEM_RESET_GPIO, 1);
 
-    /* Waitting for modem powerup */
-    const esp_timer_create_args_t modem_powerup_timer_args = {
-        .callback = &modem_powerup_timer_callback,
-        .name = "modem-powerup",
-        .arg = netif
-    };
+    vTaskDelay(pdMS_TO_TICKS(MODULE_BOOT_TIME_MS));
 
-    ESP_ERROR_CHECK(esp_timer_create(&modem_powerup_timer_args, &modem_powerup_timer));
-    ESP_ERROR_CHECK(esp_timer_start_once(modem_powerup_timer, MODULE_BOOT_TIME * 1000000));
-    return netif;
+    event_group = xEventGroupCreate();
+
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &on_ip_event, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(NETIF_PPP_STATUS, ESP_EVENT_ANY_ID, &on_ppp_changed, NULL));
+
+   /* Configure the PPP netif */
+    esp_modem_dce_config_t dce_config = ESP_MODEM_DCE_DEFAULT_CONFIG(CONFIG_BRIDGE_MODEM_PPP_APN);
+    esp_netif_config_t netif_ppp_config = ESP_NETIF_DEFAULT_PPP();
+    esp_netif_t *esp_netif = esp_netif_new(&netif_ppp_config);
+    assert(esp_netif);
+
+    /* Configure the DTE */
+#if defined(CONFIG_BRIDGE_SERIAL_VIA_UART)
+    esp_modem_dte_config_t dte_config = ESP_MODEM_DTE_DEFAULT_CONFIG();
+    /* setup UART specific configuration based on kconfig options */
+    dte_config.uart_config.tx_io_num = CONFIG_BRIDGE_MODEM_UART_TX_PIN;
+    dte_config.uart_config.rx_io_num = CONFIG_BRIDGE_MODEM_UART_RX_PIN;
+    dte_config.uart_config.rts_io_num = CONFIG_BRIDGE_MODEM_UART_RTS_PIN;
+    dte_config.uart_config.cts_io_num = CONFIG_BRIDGE_MODEM_UART_CTS_PIN;
+    dte_config.uart_config.baud_rate = CONFIG_BRIDGE_MODEM_BAUD_RATE;
+    dte_config.uart_config.flow_control = BRIDGE_FLOW_CONTROL;
+    dte_config.uart_config.rx_buffer_size = CONFIG_BRIDGE_MODEM_UART_RX_BUFFER_SIZE;
+    dte_config.uart_config.tx_buffer_size = CONFIG_BRIDGE_MODEM_UART_TX_BUFFER_SIZE;
+    dte_config.uart_config.event_queue_size = CONFIG_BRIDGE_MODEM_UART_EVENT_QUEUE_SIZE;
+    dte_config.task_stack_size = CONFIG_BRIDGE_MODEM_UART_EVENT_TASK_STACK_SIZE;
+    dte_config.task_priority = CONFIG_BRIDGE_MODEM_UART_EVENT_TASK_PRIORITY;
+    dte_config.dte_buffer_size = CONFIG_BRIDGE_MODEM_UART_RX_BUFFER_SIZE / 2;
+
+#ifdef ESP_BRIDGE_MODEM_DEVICE
+    esp_modem_dce_t *dce = esp_modem_new_dev(ESP_BRIDGE_MODEM_DEVICE, &dte_config, &dce_config, esp_netif);
+#else
+    ESP_LOGI(TAG, "Initializing esp_modem for a generic module...");
+    esp_modem_dce_t *dce = esp_modem_new(&dte_config, &dce_config, esp_netif);
+#endif
+
+    assert(dce);
+    if (dte_config.uart_config.flow_control == ESP_MODEM_FLOW_CONTROL_HW) {
+        esp_err_t err = esp_modem_set_flow_control(dce, 2, 2);  //2/2 means HW Flow Control.
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to set the set_flow_control mode");
+            esp_modem_destroy(dce);
+            esp_netif_destroy(esp_netif);
+            vEventGroupDelete(event_group);
+            event_group = NULL;
+            return NULL;
+        }
+        ESP_LOGI(TAG, "HW set_flow_control OK");
+    }
+
+#elif defined(CONFIG_BRIDGE_SERIAL_VIA_USB)
+
+    ESP_LOGI(TAG, "Initializing esp_modem for the BG96 module...");
+    struct esp_modem_usb_term_config usb_config = ESP_MODEM_DEFAULT_USB_CONFIG(CONFIG_BRIDGE_MODEM_USB_VID, CONFIG_BRIDGE_MODEM_USB_PID, CONFIG_BRIDGE_MODEM_USB_INTERFACE_NUMBER); // VID, PID and interface num of 4G modem
+    const esp_modem_dte_config_t dte_usb_config = ESP_MODEM_DTE_DEFAULT_USB_CONFIG(usb_config);
+    ESP_LOGI(TAG, "Waiting for USB device connection...");
+    esp_modem_dce_t *dce = esp_modem_new_dev_usb(ESP_MODEM_DCE_BG96, &dte_usb_config, &dce_config, esp_netif);
+    assert(dce);
+    esp_modem_set_error_cb(dce, usb_terminal_error_handler);
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Although the DTE should be ready after USB enumeration, sometimes it fails to respond without this delay
+
+#else
+#error Invalid serial connection to modem.
+#endif
+
+    xEventGroupClearBits(event_group, CONNECT_BIT | USB_DISCONNECTED_BIT);
+
+#if CONFIG_BRIDGE_NEED_SIM_PIN == 1
+    // check if PIN needed
+    bool pin_ok = false;
+    if (esp_modem_read_pin(dce, &pin_ok) == ESP_OK && pin_ok == false) {
+        if (esp_modem_set_pin(dce, CONFIG_BRIDGE_SIM_PIN) == ESP_OK) {
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        } else {
+            abort();
+        }
+    }
+#endif
+
+    int rssi, ber;
+    esp_err_t err = esp_modem_get_signal_quality(dce, &rssi, &ber);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "esp_modem_get_signal_quality failed with %d %s", err, esp_err_to_name(err));
+        esp_modem_destroy(dce);
+        esp_netif_destroy(esp_netif);
+        vEventGroupDelete(event_group);
+        event_group = NULL;
+        return NULL;
+    }
+    ESP_LOGI(TAG, "Signal quality: rssi=%d, ber=%d", rssi, ber);
+
+    err = esp_modem_set_mode(dce, ESP_MODEM_MODE_DATA);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "esp_modem_set_mode(ESP_MODEM_MODE_DATA) failed with %d", err);
+        esp_modem_destroy(dce);
+        esp_netif_destroy(esp_netif);
+        vEventGroupDelete(event_group);
+        event_group = NULL;
+        return NULL;
+    }
+    /* Wait for IP address */
+    ESP_LOGI(TAG, "Waiting for IP address");
+    xEventGroupWaitBits(event_group, CONNECT_BIT | USB_DISCONNECTED_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    return esp_netif;
 }
