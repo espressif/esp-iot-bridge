@@ -8,8 +8,6 @@ add_definitions(-w)
 
 add_compile_options("-DIP_PORTMAP_MAX=255")
 
-set(EXTRA_COMPONENT_DIRS "../../components/web_server")
-
 string(REGEX REPLACE ".*/\(.*\)" "\\1" CURDIR ${CMAKE_CURRENT_SOURCE_DIR})
 project(${CURDIR})
 
