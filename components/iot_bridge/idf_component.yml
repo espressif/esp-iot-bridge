@@ -1,24 +1,7 @@
-## IDF Component Manager Manifest File
+version: "0.1.0"
+description: A smart bridge to make both ESP and the other MCU or smart device can access the Internet
+url: https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge
 dependencies:
-  ## Required IDF version
-  idf:
-    version: ">=4.4"
-  # # Put list of dependencies here
-  # # For components maintained by Espressif:
-  # component: "~1.0.0"
-  # espressif/esp_modem: "^0.1.25"
-  # espressif/esp_modem_usb_dte: "^1.0.0"
-  # espressif/esp_tinyusb:
-  #   version: "^1.0.0"
-  #   rules: 
-  #     - if: "idf_version >=5.0"
-  #     - if: "target in [esp32s2, esp32s3]"
-
-  # # For 3rd party components:
-  # username/component: ">=1.0.0,<2.0.0"
-  # username2/component2:
-  #   version: "~1.0.0"
-  #   # For transient dependencies `public` flag can be set.
-  #   # `public` flag doesn't have an effect dependencies of the `main` component.
-  #   # All dependencies of `main` are public by default.
-  #   public: true
+  idf: ">=4.4"
+examples:
+  - path: ../../examples/wifi_router
