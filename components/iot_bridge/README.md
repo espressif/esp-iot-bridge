@@ -39,3 +39,11 @@ ESP-IOT-Bridge solution is mainly aimed at bridging between various network inte
 ## Example
 
 - [examples/wifi_router](https://github.com/espressif/esp-iot-bridge/blob/master/examples/wifi_router): The device based on the ESP-IOT-Bridge solution connects to the router through Wi-Fi or ethernet, and the smart device such as the phone can access the internet by connecting to the SoftAP hotspot provided by the ESP-IOT-Bridge device.
+
+You can create a project from this example by the following command:
+
+```
+idf.py create-project-from-example "espressif/iot_bridge^0.1.0:wifi_router"
+```
+
+> Note: For the examples downloaded by using this command, you need to comment out the override_path line in the main/idf_component.yml.
