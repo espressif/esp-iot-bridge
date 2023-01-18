@@ -347,5 +347,4 @@ void esp_bridge_create_all_netif(void)
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
     esp_bridge_create_station_netif(NULL, NULL, false, false);
 #endif
-
 }

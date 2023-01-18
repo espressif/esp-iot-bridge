@@ -67,10 +67,10 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
     }
 
     if (mode & WIFI_MODE_AP) {
-        char softap_ssid[ESP_BRIDGE_SSID_MAX_LEN + 1];
+        char softap_ssid[BRIDGE_SSID_MAX_LEN + 1];
         memcpy(softap_ssid, ssid, sizeof(softap_ssid));
-#if CONFIG_ESP_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
-        uint8_t softap_mac[ESP_BRIDGE_MAC_MAX_LEN];
+#if CONFIG_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
+        uint8_t softap_mac[BRIDGE_MAC_MAX_LEN];
         char suffix[8];
         esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
         snprintf(suffix, sizeof(suffix), "_%02x%02x%02x", softap_mac[3], softap_mac[4], softap_mac[5]);
@@ -78,7 +78,7 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
 #endif
         memcpy((char*)wifi_cfg.ap.ssid, softap_ssid, sizeof(wifi_cfg.ap.ssid));
         strlcpy((char*)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
-        wifi_cfg.ap.max_connection = ESP_BRIDGE_SOFTAP_MAX_CONNECT_NUMBER;
+        wifi_cfg.ap.max_connection = BRIDGE_SOFTAP_MAX_CONNECT_NUMBER;
         wifi_cfg.ap.authmode = strlen((char*)wifi_cfg.ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
 

@@ -58,14 +58,14 @@ menu "Bridge Driver Configuration"
         help
             Enable/disable debug prints in wlan driver data path
 
-    config ESP_BRIDGE_BT_ENABLED
+    config BRIDGE_BT_ENABLED
         bool "Enable Bluetooth driver"
         default 0
         help
             Enable/disable debug prints in Bluetooth driver data path
 
     config ESP_BT_DEBUG
-        depends on ESP_BRIDGE_BT_ENABLED
+        depends on BRIDGE_BT_ENABLED
         bool "Debug Bluetooth driver data path"
         default 0
         help

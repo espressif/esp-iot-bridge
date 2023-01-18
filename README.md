@@ -9,3 +9,5 @@ The ESP-IOT Bridge scheme is mainly used to bridge various network interfaces in
 In the [examples](examples) directory, demos of some common application scenarios are implemented for users to quickly integrate into their own application projects.
 
 - [examples/wifi_router](examples/wifi_router): The device based on the ESP-IOT-Bridge solution connects to the router through Wi-Fi or ethernet, and the smart device such as the phone can access the internet by connecting to the SoftAP hotspot provided by the ESP-IOT-Bridge device.
+
+- [examples/4g_hotspot](examples/4g_hotspot): ESP-IOT-Bridge device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-IOT-Bridge device to gain Internet access.

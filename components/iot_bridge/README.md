@@ -1,6 +1,6 @@
 # ESP-IOT-Bridge Component
 
-- [User Guide](./User_Guide.md)
+- [User Guide](https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/User_Guide.md)
 
 ESP-IOT-Bridge solution is mainly aimed at bridging between various network interfaces in IoT application scenarios, such as SPI, SDIO, USB, Wi-Fi, Ethernet and other network interfaces. ESP-IOT-Bridge is a smart bridge solution offered by Espressif. 
 
@@ -39,6 +39,8 @@ ESP-IOT-Bridge solution is mainly aimed at bridging between various network inte
 ## Example
 
 - [examples/wifi_router](https://github.com/espressif/esp-iot-bridge/blob/master/examples/wifi_router): The device based on the ESP-IOT-Bridge solution connects to the router through Wi-Fi or ethernet, and the smart device such as the phone can access the internet by connecting to the SoftAP hotspot provided by the ESP-IOT-Bridge device.
+
+- [examples/4g_hotspot](https://github.com/espressif/esp-iot-bridge/blob/master/examples/4g_hotspot): ESP-IOT-Bridge device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-IOT-Bridge device to gain Internet access.
 
 You can create a project from this example by the following command:
 
