@@ -86,11 +86,11 @@ core_freq_min=250
 
 Please reboot Raspberry-Pi after changing this file.
 
-## 2. Load ESP-IOT-Bridge Solution
+## 2. Load ESP-IoT-Bridge Solution
 
 ### 2.1 Host Software
 
-- Execute following commands in root directory of cloned ESP-IOT-Bridge repository on Raspberry-Pi
+- Execute following commands in root directory of cloned ESP-IoT-Bridge repository on Raspberry-Pi
 
 ```
 $ cd esp-iot-bridge/examples/spi_and_sdio_host/host_driver/linux/host_control
@@ -117,7 +117,7 @@ $ . $HOME/esp/esp-idf/export.sh
 
 #### Source Compilation
 
-- In root directory of ESP-IOT-Bridge repository, execute below command
+- In root directory of ESP-IoT-Bridge repository, execute below command
 
 ```
 $ cd esp-iot-bridge
