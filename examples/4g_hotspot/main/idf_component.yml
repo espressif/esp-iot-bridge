@@ -4,6 +4,14 @@ dependencies:
     version: "*"
     # Please comment the following line, if this example is installed by idf.py create-project-from-example.
     override_path: "../../../components/iot_bridge"
+  # Wait until the `usb_device` component is listed in the package manager
+  # before adding the dependency to the `yml` file of the `iot_bridge` component.
+  #
+  usb_device:
+    path: components/usb/usb_device
+    git: https://github.com/espressif/esp-iot-bridge.git
+    rules:
+      - if: "target in [esp32s2, esp32s3]"
   # The "esp_modem_usb_dte" component is temporarily disabled in iot_bridge yml file,
   # as idf-component-manager doesn't support uploading components with "rules" entries to the registry.
   # So temporarily place the "esp_modem_usb_dte" "esp_modem" component under examples.

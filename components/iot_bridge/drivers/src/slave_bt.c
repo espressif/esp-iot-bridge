@@ -1,17 +1,8 @@
-// Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #ifdef CONFIG_BRIDGE_BT_ENABLED
 #include <string.h>
@@ -413,7 +404,7 @@ uint8_t get_bluetooth_capabilities(void)
 	uint8_t cap = 0;
 	ESP_LOGI(BT_TAG, "- BT/BLE");
 #if BLUETOOTH_HCI
-#if CONFIG_ESP_SPI_HOST_INTERFACE
+#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
 	ESP_LOGI(BT_TAG, "   - HCI Over SPI");
 	cap |= ESP_BT_SPI_SUPPORT;
 #else

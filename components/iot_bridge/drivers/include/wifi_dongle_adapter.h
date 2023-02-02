@@ -1,8 +1,10 @@
-// Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
-/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
+/*
+ * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-#ifndef __ESP_NETWORK_ADAPTER__H
-#define __ESP_NETWORK_ADAPTER__H
+#pragma once
 
 #define PRIO_Q_OTHERS           0
 #define PRIO_Q_BT               1
@@ -140,5 +142,3 @@ static inline uint16_t compute_checksum(uint8_t *buf, uint16_t len)
 
 	return checksum;
 }
-
-#endif

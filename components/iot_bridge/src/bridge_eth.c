@@ -25,6 +25,7 @@
 #include "esp_mac.h"
 #endif
 
+#include "esp_bridge.h"
 #include "esp_bridge_internal.h"
 
 #include "sdkconfig.h"
@@ -400,7 +401,6 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 {
     esp_netif_ip_info_t netif_ip_info = { 0 };
     esp_netif_inherent_config_t esp_netif_common_config = {
-        .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_SERVER | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
         .get_ip_event = IP_EVENT_ETH_GOT_IP,
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
         .lost_ip_event = IP_EVENT_ETH_LOST_IP,
@@ -408,8 +408,10 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         .if_key = "ETH_DEF",
         .if_desc = "eth",
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
+        .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_SERVER | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
         .route_prio = 10
 #elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
+        .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
         .route_prio = 50
 #endif
     };

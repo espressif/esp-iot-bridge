@@ -47,7 +47,6 @@ if(CONFIG_TINYUSB)
         list(APPEND srcs "additions/src/usbd_4.c")
         list(APPEND includes_public "${freertos_component_dir}/include/freertos")
     elseif(IDF_VERSION_MAJOR STREQUAL "5")
-        list(APPEND srcs "additions/src/usbd_5.c")
         list(APPEND includes_public
             "${freertos_component_dir}/esp_additions/include/freertos"
             "${freertos_component_dir}/FreeRTOS-Kernel/include/freertos"

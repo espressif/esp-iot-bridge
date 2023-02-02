@@ -7,7 +7,9 @@
 #include <string.h>
 #include "nvs.h"
 #include "nvs_flash.h"
-#include "esp_wifi_types.h"
+#include "esp_netif.h"
+#include "esp_event.h"
+#include "esp_bridge.h"
 
 static esp_err_t esp_storage_init(void)
 {

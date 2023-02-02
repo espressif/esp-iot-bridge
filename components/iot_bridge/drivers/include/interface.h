@@ -1,23 +1,14 @@
-// Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+/*
+ * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+#pragma once
 
-#ifndef __TRANSPORT_LAYER_INTERFACE_H
-#define __TRANSPORT_LAYER_INTERFACE_H
 #include "esp_err.h"
 
-#ifdef CONFIG_ESP_SDIO_HOST_INTERFACE
+#ifdef CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO
 
 #ifdef CONFIG_IDF_TARGET_ESP32
 	#include "driver/sdio_slave.h"
@@ -50,7 +41,7 @@ typedef enum {
 
 typedef struct {
 	union {
-#ifdef CONFIG_ESP_SDIO_HOST_INTERFACE
+#ifdef CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO
 #ifdef CONFIG_IDF_TARGET_ESP32
 		sdio_slave_buf_handle_t sdio_buf_handle;
 #endif
@@ -94,4 +85,3 @@ typedef struct {
 interface_context_t * interface_insert_driver(int (*callback)(uint8_t val));
 int interface_remove_driver();
 void generate_startup_event(uint8_t cap);
-#endif

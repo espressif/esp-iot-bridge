@@ -1,16 +1,8 @@
-// Copyright 2021-2022 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include <stdio.h>
 #include <string.h>
@@ -37,7 +29,6 @@
 #define BRIDGE_EVENT_STA_CONNECTED  BIT0
 
 static const char *TAG = "bridge_wifi";
-static bool esp_bridge_softap_dhcps = false;
 static EventGroupHandle_t s_wifi_event_group = NULL;
 
 esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
@@ -109,43 +100,6 @@ static void ip_event_sta_got_ip_handler(void* arg, esp_event_base_t event_base,
     xEventGroupSetBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
 }
 
-static void wifi_event_ap_start_handler(void* arg, esp_event_base_t event_base,
-    int32_t event_id, void* event_data)
-{
-    esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
-
-    if (netif) {
-        if (esp_bridge_softap_dhcps) {
-            esp_netif_dhcps_stop(netif);
-            esp_netif_dns_info_t dns;
-            dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
-            dns.ip.type = IPADDR_TYPE_V4;
-            dhcps_offer_t dhcps_dns_value = OFFER_DNS;
-            ESP_ERROR_CHECK(esp_netif_dhcps_option(netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value)));
-            ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, ESP_NETIF_DNS_MAIN, &dns));
-            ESP_ERROR_CHECK(esp_netif_dhcps_start(netif));
-        }
-
-        esp_netif_ip_info_t netif_ip;
-        esp_netif_get_ip_info(netif, &netif_ip);
-#if CONFIG_LWIP_IPV4_NAPT
-        ip_napt_enable(netif_ip.ip.addr, 1);
-#endif
-    }
-}
-
-static void wifi_event_ap_staconnected_handler(void* arg, esp_event_base_t event_base,
-    int32_t event_id, void* event_data)
-{
-    ESP_LOGI(TAG, "STA Connecting to the AP again...");
-}
-
-static void wifi_event_ap_stadisconnected_handler(void* arg, esp_event_base_t event_base,
-    int32_t event_id, void* event_data)
-{
-    ESP_LOGE(TAG, "STA Disconnect to the AP");
-}
-
 static esp_err_t esp_bridge_wifi_init(void)
 {
     if (s_wifi_event_group) {
@@ -204,6 +158,45 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
 #endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_STATION */
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
+static bool esp_bridge_softap_dhcps = false;
+
+static void wifi_event_ap_start_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
+{
+    esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
+
+    if (netif) {
+        if (esp_bridge_softap_dhcps) {
+            esp_netif_dhcps_stop(netif);
+            esp_netif_dns_info_t dns;
+            dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
+            dns.ip.type = IPADDR_TYPE_V4;
+            dhcps_offer_t dhcps_dns_value = OFFER_DNS;
+            ESP_ERROR_CHECK(esp_netif_dhcps_option(netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value)));
+            ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, ESP_NETIF_DNS_MAIN, &dns));
+            ESP_ERROR_CHECK(esp_netif_dhcps_start(netif));
+        }
+
+        esp_netif_ip_info_t netif_ip;
+        esp_netif_get_ip_info(netif, &netif_ip);
+#if CONFIG_LWIP_IPV4_NAPT
+        ip_napt_enable(netif_ip.ip.addr, 1);
+#endif
+    }
+}
+
+static void wifi_event_ap_staconnected_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
+{
+    ESP_LOGI(TAG, "STA Connecting to the AP again...");
+}
+
+static void wifi_event_ap_stadisconnected_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
+{
+    ESP_LOGE(TAG, "STA Disconnect to the AP");
+}
+
 static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t* ip_info)
 {
     esp_err_t ret = ESP_FAIL;

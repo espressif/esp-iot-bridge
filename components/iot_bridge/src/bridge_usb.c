@@ -283,7 +283,7 @@ esp_netif_t* esp_bridge_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         .get_ip_event = IP_EVENT_STA_GOT_IP,
         .lost_ip_event = IP_EVENT_STA_LOST_IP,
         .if_key = "USB_key",
-        .if_desc = "USB_Netif" 
+        .if_desc = "USB_Netif"
     };
 
     esp_netif_config_t usb_config = {

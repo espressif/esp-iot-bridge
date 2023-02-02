@@ -1,22 +1,15 @@
-// Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include "sdkconfig.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include "esp_log.h"
 #include "interface.h"
 #include "wifi_dongle_adapter.h"
@@ -522,7 +515,7 @@ static int32_t esp_spi_write(interface_handle_t *handle, interface_buffer_handle
 	}
 
 	if (total_len > SPI_BUFFER_SIZE) {
-		ESP_LOGE(TAG, "Max frame length exceeded %d.. drop it\n", total_len);
+		ESP_LOGE(TAG, "Max frame length exceeded %"PRId32".. drop it\n", total_len);
 		return ESP_FAIL;
 	}
 
