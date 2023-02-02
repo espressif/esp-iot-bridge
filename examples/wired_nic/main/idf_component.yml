@@ -1,0 +1,5 @@
+dependencies:
+  idf: ">=4.4"
+  iot_bridge:
+    version: "*"
+    override_path: "../../../components/iot_bridge"
