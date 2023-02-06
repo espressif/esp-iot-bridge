@@ -1,8 +1,9 @@
 dependencies:
-  espressif/button: "==2.2.0"
   idf: ">=4.4"
-  iot_bridge:
+  espressif/button: "==2.2.0"
+  espressif/iot_bridge:
     version: "*"
+    # Please comment the following line, if this example is installed by idf.py create-project-from-example.
     override_path: "../../../components/iot_bridge"
   wifi_prov_mgr:
     path: components/wifi_prov_mgr
