@@ -1,10 +1,10 @@
-# ESP-IoT-Bridge Solution
+- [中文版](./User_Guide_CN.md)
 
-- [中文版](User_Guide_CN.md)
+# ESP-IoT-Bridge Solution
 
 This document describes how to configure and use ESP-IoT-Bridge(the solution was originally named ESP-Gateway, because this solution does not involve protocol proxy conversion, but only data forwarding, so it is renamed to ESP-IoT-Bridge).
 
-ESP-IoT-Bridge is mainly aimed at bridging between various network interfaces in IoT application scenarios, such as SPI, SDIO, USB, Wi-Fi, Ethernet and other network interfaces. In this solution, the bridge device can not only provide net access for other devices, but also be a separate equipment to connect the remote server.
+ESP-IoT-Bridge solution focuses on connectivity and communication between various network interfaces in IoT application scenarios, such as SPI, SDIO, USB, Wi-Fi, Ethernet and other network interfaces. In this solution, the bridge device can not only provide net access for other devices, but also be a separate equipment to connect the remote server.
 
 
 # Table of Contents
@@ -38,20 +38,18 @@ The ESP-IoT-Bridge solution provides several network interfaces, which can be di
 
 - Interfaces for forwarding network packets for other devices so that they can access the Internet
 
-Users can realize personalized smart bridge solutions through different network interface combinations to maximize the network advantages of Espressif chips.
+Users can achieve personalized network interface connection solutions through a variety of different network interface combinations to maximize the network advantages of espressif chips.
 
-
-
-![esp_iot_bridge](./doc/_static/esp_iot_bridge_en.png)
+![esp_iot_bridge](./docs/_static/esp_iot_bridge_en.png)
 
 A variety of functions can be achieved depending on the combination of interfaces, as shown in the table below:
 
-|                    | Wireless Hotspot     | Ethernet Interface | USB Interface | SPI Interface | SDIO Interface | Bluetooth LE Interface | Thread Interface          |
-| ------------------ | ------------ | ---------- | -------- | -------- | --------- | -------- | -------------------- |
-| **Wi-Fi**     | Wi-Fi Router | Wireless NIC   | Wireless NIC | Wireless NIC | Wireless NIC  | Bluetooth LE Bridge | Thread Border Router |
-| **Ethernet**         | Wi-Fi Router | Unsupported     | Wired NIC | Wired NIC | Wired NIC  | Bluetooth LE Bridge | Thread Border Router |
-| **Cat.1 4G (UART)** | 4G Hotspot      | 4G NIC    | 4G NIC  | 4G NIC  | 4G NIC   | Bluetooth LE Bridge | Thread Border Router |
-| **Cat.1 4G (USB)**  | 4G Hotspot      | 4G NIC    | Unsupported   | 4G NIC  | 4G NIC   | Bluetooth LE Bridge | Thread Border Router |
+|                     | Wireless Hotspot | Ethernet Interface | USB Interface | SPI Interface | SDIO Interface | Bluetooth LE Interface | Thread Interface |
+| ------------------- | ------------     | ------------ | ------------ | ------------ | ------------- | ------------------- | -------------------- |
+| **Wi-Fi**           | Wi-Fi Router     | Wi-Fi Router | Wireless NIC | Wireless NIC | Wireless NIC  | Bluetooth LE Border Router | Thread Border Router |
+| **Ethernet**        | Wi-Fi Router     | Unsupported  | Wired NIC    | Wired NIC    | Wired NIC     | Bluetooth LE Border Router | Thread Border Router |
+| **Cat.1 4G (UART)** | 4G Router        | 4G Router   | 4G NIC       | 4G NIC       | 4G NIC        | Bluetooth LE Border Router | Thread Border Router |
+| **Cat.1 4G (USB)**  | 4G Router        | 4G Router   | Unsupported  | 4G NIC       | 4G NIC        | Bluetooth LE Border Router | Thread Border Router |
 
 Notes:
 
@@ -60,14 +58,14 @@ Notes:
 - **The wireless hotspot, Ethernet interface, USB interface, SPI interface, SDIO interface, Bluetooth LE interface, and Thread interface in the first row are the interfaces that provide Internet access to other devices.**
 
 
-To summarize, the above table mainly involves the following application scenarios: Wi-Fi Router, 4G hotspot, 4G NIC, wireless NIC, wired NIC, Bluetooth LE bridge and Thread Border Router. The table below shows what scenarios each specific ESP chip supports:
+To summarize, the above table mainly involves the following application scenarios: Wi-Fi Router, 4G Router, 4G NIC, wireless NIC, wired NIC, Bluetooth LE Border Router and Thread Border Router. The table below shows what scenarios each specific ESP chip supports:
 
-| ESP Chips | Wi-Fi Router                                                 | 4G Hotspot                                                      | 4G NIC                                                      | Wireless NIC                                                     | Wired NIC                                                     | Bluetooth LE Bridge | Thread Border Router |
+| ESP Chips | Wi-Fi Router                                                 | 4G Router                                                | 4G NIC                                                      | Wireless NIC                                                     | Wired NIC                                                     | Bluetooth LE Border Router | Thread Border Router |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | -------- | -------------------- |
-| ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SDIO/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SDIO/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SDIO/SPI) | TODO     | TODO                 |
-| ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/454168caab8b950c543c742ed575f11641ae9eb80be0ad511df3cb1c1b783baa/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d707265766965772d6f72616e6765)](https://camo.githubusercontent.com/454168caab8b950c543c742ed575f11641ae9eb80be0ad511df3cb1c1b783baa/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d707265766965772d6f72616e6765) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SPI) | TODO     | TODO                 |
-| ESP32-S2 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/SPI) | *N/A* | TODO                 |
-| ESP32-S3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/ETH/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/SPI) | TODO     | TODO                 |
+| ESP32    | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SDIO/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SDIO/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SDIO/SPI) | TODO     | TODO                 |
+| ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SPI) | TODO     | TODO                 |
+| ESP32-S2 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/SPI) | *N/A* | TODO                 |
+| ESP32-S3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/SPI) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)(USB/SPI) | TODO     | TODO                 |
 | ESP32-H2 | TODO                                                         | TODO                                                         | TODO                                                         | TODO                                                         | TODO                                                         | TODO     | TODO                 |
 
 Notes:
@@ -81,7 +79,7 @@ Notes:
 
 ### 1.1 Wi-Fi Router
 
-ESP-IoT-Bridge device can connect to the network by connecting to the router via Wi-Fi or by plugging the Ethernet cable into the LAN port of the router. Then other smart devices can connect to the SoftAP hotspot from the ESP-IoT-Bridge to access the Internet.
+ESP-IoT-Bridge device can connect to the network by connecting to the router via Wi-Fi or by plugging the Ethernet cable into the LAN port of the router. Then other smart devices or PC can connect to the SoftAP hotspot or LAN interface from the ESP-IoT-Bridge to access the Internet.
 
 - By enabling ``BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC`` in menuconfig (``Bridge Configuration`` > ``SoftAP Config``), users can add MAC information at the end of SoftAP SSID.
 
@@ -92,11 +90,11 @@ ESP-IoT-Bridge device can connect to the network by connecting to the router via
     > - [Configure the network on web page](#web)
     > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#wifi_provisioning)（ESP32-S2 not supported）
 
-<img src="./doc/_static/wifi_router_en.png" alt="wifi_router" style="zoom: 80%;" />
+<img src="./docs/_static/wifi_router_en.png" alt="wifi_router" style="zoom: 80%;" />
 
-### 1.2 4G Hotspot
+### 1.2 4G Router
 
-ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-IoT-Bridge device to gain Internet access.
+ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the Ethernet or SoftAP interface to gain Internet access.
 
 The table below shows modules that are compatible with 4G Cat.1.
 
@@ -108,19 +106,17 @@ The table below shows modules that are compatible with 4G Cat.1.
 |           | EC600N-CNLC-N06 |
 |           | SIMCom A7600C1  |
 
-<img src="./doc/_static/4G_hotpot_en.png" alt="4G_hotpot" style="zoom: 80%;" />
+<img src="./docs/_static/4g_router_en.png" alt="4g_router" style="zoom: 80%;" />
 
 ### 1.3 4G NIC
 
-ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface (ETH/SDIO/SPI) to gain Internet access.
+ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface(SDIO/SPI) to gain Internet access.
 
-<img src="./doc/_static/4G_dongle_en.png" alt="4G_dongle" style="zoom: 80%;" />
-
-<font color=red>**⚠️Note**</font>：
+<img src="./docs/_static/4g_nic_en.png" alt="4g_nic" style="zoom: 80%;" />
 
 ### 1.4 Wireless NIC
 
-ESP-IoT-Bridge device can be connected to the PC or MCU through multiple network interfaces (USB/ETH/SDIO/SPI). Once connected, the PC or MCU will have an additional network card. These devices can access the Internet after configuring the network.
+ESP-IoT-Bridge device can be connected to the PC or MCU through multiple network interfaces (USB/SDIO/SPI). Once connected, the PC or MCU will have an additional network card. These devices can access the Internet after configuring the network.
 
 - Use a USB cable to connect the GPIO19/20 of ESP32-S2 or ESP32-S3 with MCU.
 
@@ -128,20 +124,18 @@ ESP-IoT-Bridge device can be connected to the PC or MCU through multiple network
     | ----------- | ------ | ------ |
     | ESP32-S2/S3 | GPIO20 | GPIO19 |
 
-- When using SPI/SDIO interface, it is necessary to configure the MCU (Host). For specific dependencies configuration, please refer to **[Linux_based_readme](./doc/Linux_based_readme.md)**.
+- When using SPI/SDIO interface, it is necessary to configure the MCU (Host). For specific dependencies configuration, please refer to **[Linux_based_readme](./docs/Linux_based_readme.md)**.
 
-- For SDIO hardware connection and MCU (Host) configuration, please refer to **[SDIO_setup](./doc/SDIO_setup.md)**.
+- For SDIO hardware connection and MCU (Host) configuration, please refer to **[SDIO_setup](./docs/SDIO_setup.md)**.
 
-- For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./doc/SPI_setup.md)**.
+- For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./docs/SPI_setup.md)**.
 
 - This feature requires you to configure the network. Currently, the following ways are supported:
 
     > - [Configure the network on web page](#web)
     > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#wifi_provisioning)（not support ESP32-S2）
 
-<img src="./doc/_static/wireless_dongle_en.png" alt="wireless_dongle" style="zoom: 80%;" />
-
-<font color=red>**⚠️Note**</font>：
+<img src="./docs/_static/wireless_nic_en.png" alt="wireless_nic" style="zoom: 80%;" />
 
 ### 1.5 Wired NIC
 
@@ -153,15 +147,13 @@ ESP-IoT-Bridge device can connect to the network by plugging the Ethernet cable 
     | ----------- | ------ | ------ |
     | ESP32-S2/S3 | GPIO20 | GPIO19 |
 
-- Using SPI/SDIO interface needs to configure the MCU (Host). For specific dependencies configuration, please refer to **[Linux_based_readme](./doc/Linux_based_readme.md)**.
+- Using SPI/SDIO interface needs to configure the MCU (Host). For specific dependencies configuration, please refer to **[Linux_based_readme](./docs/Linux_based_readme.md)**.
 
-- For SDIO hardware connection and MCU (Host) configuration, please refer to **[SDIO_setup](./doc/SDIO_setup.md)**.
+- For SDIO hardware connection and MCU (Host) configuration, please refer to **[SDIO_setup](./docs/SDIO_setup.md)**.
 
-- For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./doc/SPI_setup.md)**.
+- For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./docs/SPI_setup.md)**.
 
-<img src="./doc/_static/dongle_en.png" alt="dongle" style="zoom: 80%;" />
-
-⚠️<font color=red>**Note:** </font>
+<img src="./docs/_static/wired_nic_en.png" alt="wired_nic" style="zoom: 80%;" />
 
 ## <span id = "2">2. Hardware</span>
 
@@ -207,7 +199,7 @@ $ ./components/esptool_py/esptool/esptool.py --help
 ### 3.3 Clone ESP-IoT-Bridge Repository
 
 ```
-$ git clone --recursive https://github.com/espressif/esp-iot-bridge.git
+$ git clone https://github.com/espressif/esp-iot-bridge.git
 ```
 
 ## <span id = "4">4. Get SDK </span>
@@ -216,20 +208,17 @@ $ git clone --recursive https://github.com/espressif/esp-iot-bridge.git
 
 - To ensure that the ESP-IDF is successfully obtained, please enter `idf.py --version` in the terminal. If the output is similar to `ESP-IDF v4.4-dev-3675-g35b20cadce`, ESP-IDF is installed successfully. For detailed installation and configuration instructions, please refer to [ESP-IDF Get Started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html).
 
-- After successfully obtaining ESP-IDF, please switch its version to the `release/v4.4` branch.
-
-- Patch the ESP-IDF, please refer to [Patch for ESP-IDF](./idf_patch/README.md).
-
+- After successfully obtaining ESP-IDF, please switch its version to the `release/v4.4` or `release/v5.0` version.
 
 ## <span id = "5">5. Configuration</span>
 
 **Select the interface for connecting to the Internet**
 
-![external](./doc/_static/external.png)
+![external](./docs/_static/external.png)
 
 **Select the interface for forwarding network packets for other devices**
 
-![data_forwarding](./doc/_static/data_forwarding.png)
+![data_forwarding](./docs/_static/data_forwarding.png)
 
 - Users can choose a combination of different interfaces to achieve different functions.
 
@@ -250,11 +239,11 @@ $ git clone --recursive https://github.com/espressif/esp-iot-bridge.git
 
 **ETH Configuration**
 
-![eth](./doc/_static/eth.png)
+![eth](./docs/_static/eth.png)
 
 **Modem Configuration**
 
-![modem](./doc/_static/modem.png)
+![modem](./docs/_static/modem.png)
 
 
 ## <span id = "6">6. Build & Flash & Monitor the Output</span>
@@ -297,7 +286,7 @@ $ idf.py monitor
 
 After the PC or MCU connects to the hotspot from the ESP-IoT-Bridge device and obtains the IP address successfully, it can configure the network on the web page by accessing the gateway IP.
 
-<img src="./doc/_static/web_server_en.png" alt="web_server" style="zoom: 67%;" />
+<img src="./docs/_static/web_server_en.png" alt="web_server" style="zoom: 67%;" />
 
 ### <span id = "wifi_provisioning">7.2 Configure Network through Wi-Fi Provisioning (Bluetooth LE)</span>
 
@@ -345,23 +334,93 @@ I (1798) esp_bridge_wifi_prov_mgr: If QR code is not visible, copy paste the bel
 https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"PROV_806314","pop":"abcd1234","transport":"ble"}
 ```
 
-<font color=red>**⚠️Note**</font>：
-
-Since ESP32-S2 does not support Bluetooth LE, this network configuration method is not applicable to ESP32-S2.
+> Since ESP32-S2 does not support Bluetooth LE, this network configuration method is not applicable to ESP32-S2.
 
 ## <span id = "8">8.Solution Highlights</span>
 
-| Features       | Highlights                                                                                                                |
-| ------------- | ----------------------------------------------------------------------------------------------------------------   |
-| Wi-Fi Router (Station) | Act as a Wi-Fi repeater or Wi-Fi signal amplifier, effectively reducing the burden of the router and expanding Wi-Fi coverage                                         |
-| Wi-Fi Router (ETH) | Reduce the number of routers used and lower the deployment cost  |
-| 4G Hotspot | Network provision is not required; strong mobility; can be used for shared massage chairs, shared power bank and other similar scenarios; low cost (only one shared device equipped with a mobile network module is required, and other devices can connect to the Internet by simply connecting to its hotspot |
-| Wireless NIC (ETH) | Driver-free; support using MCU that needs to connect to the network through network cables at any location |
-| Wireless NIC (USB) | Driver-free; hot-swappable; easy to use; low development cost|
-| Wireless NIC (SPI/SDIO) | High transfer rate|
+<table>
+    <tr> <!-- First row of data -->
+        <th colspan="2"> Function </th>
+        <th> Advantages </th>
+        <th> Application Scenarios </th>
+    </tr>
+    <tr> <!-- Second row of data -->
+        <th rowspan="2"> Wi-Fi Router </th> <!-- Centered display; merge 2 rows -->
+        <td> Ethernet/Station to SoftAP </td>
+        <td> Reduce router load and expand signal coverage </td>
+        <td>
+            ● Large and multi-story homes <br>
+            ● Large office spaces <br>
+            ● Conference venues <br>
+            ● Hotels <br>
+            ● Photovoltaic inverters, wind power <br>
+        </td>
+    </tr>
+    <tr> <!-- Third row of data -->
+        <td> Station to Ethernet </td>
+        <td> Plug-and-play, easy to use, low development cost </td>
+        <td> Deploy networks for devices without Wi-Fi capabilities that need to be connected via Ethernet.<br>
+            ● Attendance machines <br>
+            ● Payment machines <br>
+        </td>
+    </tr>
+    <tr> <!-- Fourth row of data -->
+        <th rowspan="3"> Network Card </th> <!-- Centered display; merge 3 rows -->
+        <td> Wired/Wireless Network Card (USB) </td>
+        <td> Plug-and-play, easy to use, low development cost </td>
+        <td>
+            ● Photovoltaic inverters, wind power <br>
+            ● Video surveillance, IP Camera <br>
+            ● Industrial control panels <br>
+        </td>
+    </tr>
+    <tr> <!-- Fifth row of data -->
+        <td> Wired/Wireless Network Card (SPI/SDIO) </td>
+        <td> Stable, high-speed rate </td>
+        <td>
+            ● Photovoltaic inverters, wind power <br>
+            ● Video surveillance, IP Camera <br>
+            ● Robots <br>
+            ● Industrial control panels <br>
+        </td>
+    </tr>
+    <tr> <!-- Sixth row of data -->
+        <td> 4G Network Card </td>
+        <td> Plug-and-play, no need to configure, highly mobile </td>
+        <td> Used in combination with wired/wireless network cards to provide devices with a wider range of internet options.<br>
+            ● Charging piles <br>
+            ● Attendance machines <br>
+            ● Video surveillance <br>
+            ● Environmental monitoring <br>
+        </td>
+    </tr>
+    <tr> <!-- Seventh row of data -->
+        <th colspan="2"> 4G Hotspot </th>
+        <td> Wireless connection, no need to configure, highly mobile </td>
+        <td>
+            ● Shared massage chairs, shared power banks, and other shared scenarios <br>
+            ● Unmanned convenience stores <br>
+        </td>
+    </tr>
+    <tr> <!-- Eighth row of data -->
+        <th colspan="2"> BLE Border Router </th>
+        <td> Connect BLE devices to other devices </td>
+        <td>
+            ● Building a BLE medical sensing ecosystem <br>
+            ● Management of electronic price tags in supermarkets <br>
+            ● Overall smart home solution <br>
+        </td>
+    </tr>
+    <tr> <!-- Ninth row of data -->
+        <th colspan="2"> Thread Border Router </th>
+        <td> Connect Thread devices to other devices </td>
+        <td> Interconnectivity of smart home devices <br>
+        </td>
+    </tr>
+<table>
 
 **Please refer to the [ESP-IoT-Bridge Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-IoT-Bridge.**
 
 ## <span id = "9">9.GPIO Map</span>
 
-![gpio_map](./doc/_static/gpio_map.png)
+![gpio_map](./docs/_static/gpio_map.png)
