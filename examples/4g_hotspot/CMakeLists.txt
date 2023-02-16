@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 
-# set(ENV{BRIDGE_COMPILATION_WORKAROUND} "ON")
-
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 add_definitions(-w)

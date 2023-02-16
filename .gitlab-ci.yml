@@ -24,13 +24,6 @@ variables: &global-variables
   - chmod 600 ~/.ssh/id_rsa
   - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - export IDF_PATH=/opt/esp/idf
-  - git submodule update --init --recursive
-
-.get_iot_bridge_priv: &get_iot_bridge_priv
-  - git clone ${GITLAB_PRIV_SRC_URL} components/iot_bridge/priv_src
-  - cd components/iot_bridge/priv_src
-  - git checkout ${CI_BUILD_REF_NAME} -- || echo "Using esp-iot-bridge default branch"
-  - cd -
 
 .build_wifi_router_examples: &build_wifi_router_examples
   - cd examples/wifi_router
@@ -65,7 +58,6 @@ esp32_v4.4_build:
     - *before_script_preparation
 
   script:
-    - *get_iot_bridge_priv
     - *setup_esp_idf
     - *build_iot_bridge_examples
 
@@ -84,7 +76,6 @@ esp32_v5.0_build:
     - *before_script_preparation
 
   script:
-    - *get_iot_bridge_priv
     - *setup_esp_idf
     - *build_iot_bridge_examples
 
@@ -103,7 +94,6 @@ esp32c3_v4.4_build:
     - *before_script_preparation
 
   script:
-    - *get_iot_bridge_priv
     - *setup_esp_idf
     - *build_iot_bridge_examples
 
@@ -122,7 +112,6 @@ esp32c3_v5.0_build:
     - *before_script_preparation
 
   script:
-    - *get_iot_bridge_priv
     - *setup_esp_idf
     - *build_iot_bridge_examples
 
@@ -141,7 +130,6 @@ esp32s2_v4.4_build:
     - *before_script_preparation
 
   script:
-    - *get_iot_bridge_priv
     - *setup_esp_idf
     - *build_iot_bridge_examples
 
@@ -160,7 +148,6 @@ esp32s2_v5.0_build:
     - *before_script_preparation
 
   script:
-    - *get_iot_bridge_priv
     - *setup_esp_idf
     - *build_iot_bridge_examples
 
@@ -179,7 +166,6 @@ esp32s3_v4.4_build:
     - *before_script_preparation
 
   script:
-    - *get_iot_bridge_priv
     - *setup_esp_idf
     - *build_iot_bridge_examples
 
@@ -198,7 +184,6 @@ esp32s3_v5.0_build:
     - *before_script_preparation
 
   script:
-    - *get_iot_bridge_priv
     - *setup_esp_idf
     - *build_iot_bridge_examples
 
