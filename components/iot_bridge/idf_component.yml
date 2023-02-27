@@ -3,12 +3,17 @@ description: A smart bridge to make both ESP and the other MCU or smart device c
 url: https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge
 dependencies:
   idf: ">=4.4"
-  espressif/esp_modem:
-    version: 0.*
-  espressif/esp_modem_usb_dte:
-    version: 1.*
-    rules:
-      - if: "target in [esp32s2, esp32s3]"
+  # The "esp_modem_usb_dte" component is temporarily disabled, as idf-component-manager
+  # doesn't support uploading components with "rules" entries to the registry.
+  # Re-enable this after the bug fix in idf-component-manager is released,
+  # and increase the component version to 0.2.1.
+  #
+  # espressif/esp_modem:
+  #   version: 0.*
+  # espressif/esp_modem_usb_dte:
+  #   version: 1.*
+  #   rules:
+  #     - if: "target in [esp32s2, esp32s3]"
 examples:
   - path: ../../examples/wifi_router
   - path: ../../examples/4g_hotspot

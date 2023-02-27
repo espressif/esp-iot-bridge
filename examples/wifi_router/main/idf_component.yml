@@ -11,3 +11,14 @@ dependencies:
   web_server:
     path: components/web_server
     git: https://github.com/espressif/esp-iot-bridge.git
+  # The "esp_modem_usb_dte" component is temporarily disabled in iot_bridge yml file,
+  # as idf-component-manager doesn't support uploading components with "rules" entries to the registry.
+  # So temporarily place the "esp_modem_usb_dte" "esp_modem" component under examples.
+  #
+  espressif/esp_modem:
+    version: 0.*
+  espressif/esp_modem_usb_dte:
+    version: 1.*
+    public: true
+    rules:
+      - if: "target in [esp32s2, esp32s3]"
