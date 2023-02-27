@@ -1,5 +1,5 @@
 set(srcs "src/bridge_common.c")
-set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer")
+set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "esp_modem")
 set(include_dirs "include" "include/priv_inc")
 
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_STATION OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
@@ -8,6 +8,10 @@ endif()
 
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
     list(APPEND srcs "src/bridge_modem.c")
+endif()
+
+if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
+    list(APPEND requires "esp_modem_usb_dte")
 endif()
 
 if (DEFINED ENV{BRIDGE_PRIV})

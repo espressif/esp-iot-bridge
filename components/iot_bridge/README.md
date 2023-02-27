@@ -45,7 +45,7 @@ ESP-IoT-Bridge solution is mainly aimed at bridging between various network inte
 You can create a project from this example by the following command:
 
 ```
-idf.py create-project-from-example "espressif/iot_bridge^0.1.0:wifi_router"
+idf.py create-project-from-example "espressif/iot_bridge^0.2.0:wifi_router"
 ```
 
 > Note: For the examples downloaded by using this command, you need to comment out the override_path line in the main/idf_component.yml.
