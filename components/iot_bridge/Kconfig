@@ -93,8 +93,9 @@ menu "Bridge Configuration"
     config BRIDGE_GPIO_RANGE_MAX
         int
         default 33 if IDF_TARGET_ESP32
-        default 46 if IDF_TARGET_ESP32S2
+        default 20 if IDF_TARGET_ESP32C2
         default 19 if IDF_TARGET_ESP32C3
+        default 46 if IDF_TARGET_ESP32S2
         default 48 if IDF_TARGET_ESP32S3
 
     menu "ETH Configuration"
@@ -212,7 +213,7 @@ menu "Bridge Configuration"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 14 if IDF_TARGET_ESP32
                 default 17 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-                default 6 if IDF_TARGET_ESP32C3
+                default 6 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI SCLK.
 
@@ -221,7 +222,7 @@ menu "Bridge Configuration"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 13 if IDF_TARGET_ESP32
                 default 16 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-                default 7 if IDF_TARGET_ESP32C3
+                default 7 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI MOSI.
 
@@ -230,7 +231,7 @@ menu "Bridge Configuration"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 12 if IDF_TARGET_ESP32
                 default 18 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-                default 2 if IDF_TARGET_ESP32C3
+                default 2 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI MISO.
 
@@ -246,14 +247,14 @@ menu "Bridge Configuration"
                 int "SPI CS0 GPIO number for SPI Ethernet module #1"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 15 if IDF_TARGET_ESP32
-                default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
+                default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by SPI CS0, i.e. Chip Select associated with the first SPI Eth module).
 
             config BRIDGE_ETH_SPI_INT0_GPIO
                 int "Interrupt GPIO number SPI Ethernet module #1"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
-                default 4 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
+                default 4 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3
                 help
                     Set the GPIO number used by the first SPI Ethernet module interrupt line.
 
@@ -394,7 +395,7 @@ menu "Bridge Configuration"
                 int "UART Tx GPIO number of Modem"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 32 if IDF_TARGET_ESP32
-                default 4 if IDF_TARGET_ESP32C3
+                default 4 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3
                 default 25
                 help
                     Set the GPIO number used by uart Tx
@@ -403,7 +404,7 @@ menu "Bridge Configuration"
                 int "UART Rx GPIO number of Modem"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 33 if IDF_TARGET_ESP32
-                default 5 if IDF_TARGET_ESP32C3
+                default 5 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3
                 default 26
                 help
                     Set the GPIO number used by uart Rx

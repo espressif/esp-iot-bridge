@@ -47,7 +47,7 @@ $ ./rpi_init.sh sdio
 
 ### 2.2 Peripheral Firmware for ESP Device
 
-⚠️<font color=red>**Note:** </font>
+<font color=red>**Note:** </font>
 
 > 1.Please check ESP-IDF Setup and use appropriate ESP-IDF version
 >
@@ -151,6 +151,6 @@ $ cd esp-iot-bridge/example/spi_and_sdio_host/host_driver/linux/host_control
 $ ./ethsta0_config.sh 12:34:56:78:9a:bc
 ```
 
-⚠️<font color=red>**Note:** </font>
+<font color=red>**Note:** </font>
 
 > MAC address can be customized

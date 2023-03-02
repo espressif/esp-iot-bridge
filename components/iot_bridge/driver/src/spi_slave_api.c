@@ -33,93 +33,54 @@
 #include "esp32s3/rom/gpio.h"
 #elif CONFIG_IDF_TARGET_ESP32C3
 #include "esp32c3/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32C2
+#include "esp32c2/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#include "esp32c6/rom/gpio.h"
 #endif
 
 static const char TAG[] = "SPI_DRIVER";
+/* SPI settings */
 #define SPI_BITS_PER_WORD          8
 #define SPI_MODE_0                 0
 #define SPI_MODE_1                 1
 #define SPI_MODE_2                 2
 #define SPI_MODE_3                 3
-#define SPI_CLK_MHZ_ESP32          10
 
-/* ESP32-S2 - Max supported SPI slave Clock = **40MHz**
- * Below value could be fine tuned to achieve highest
- * data rate in accordance with SPI Master
- * */
-#define SPI_CLK_MHZ_ESP32_S2       30
-
-/* ESP32-C3 - Max supported SPI slave Clock = **60MHz**
- * Below value could be fine tuned to achieve highest
- * data rate in accordance with SPI Master
- * */
-#define SPI_CLK_MHZ_ESP32_C3       30
-
+/* SPI-DMA settings */
 #define SPI_DMA_ALIGNMENT_BYTES    4
 #define SPI_DMA_ALIGNMENT_MASK     (SPI_DMA_ALIGNMENT_BYTES-1)
 #define IS_SPI_DMA_ALIGNED(VAL)    (!((VAL)& SPI_DMA_ALIGNMENT_MASK))
 #define MAKE_SPI_DMA_ALIGNED(VAL)  (VAL += SPI_DMA_ALIGNMENT_BYTES - \
 				((VAL)& SPI_DMA_ALIGNMENT_MASK))
 
+/* Chipset specific configurations */
+#define ESP_SPI_CONTROLLER         1
+#define GPIO_MOSI                  CONFIG_GPIO_MOSI
+#define GPIO_MISO                  CONFIG_GPIO_MISO
+#define GPIO_SCLK                  CONFIG_GPIO_SCLK
+#define GPIO_CS                    CONFIG_GPIO_CS
+#define SPI_CLK_MHZ                CONFIG_SPI_CLK_MHZ
 #ifdef CONFIG_IDF_TARGET_ESP32
-
-    #if (CONFIG_ESP_SPI_CONTROLLER == 3)
-        #define ESP_SPI_CONTROLLER 2
-        #define GPIO_MOSI          23
-        #define GPIO_MISO          19
-        #define GPIO_SCLK          18
-        #define GPIO_CS            5
-    #elif (CONFIG_ESP_SPI_CONTROLLER == 2)
-        #define ESP_SPI_CONTROLLER 1
-        #define GPIO_MISO          12
-        #define GPIO_MOSI          13
-        #define GPIO_SCLK          14
-        #define GPIO_CS            15
-    #else
-        #error "Please choose correct SPI controller"
-    #endif
-
     #define DMA_CHAN               ESP_SPI_CONTROLLER
-
 #elif defined CONFIG_IDF_TARGET_ESP32S2
-
-    #define ESP_SPI_CONTROLLER     1
-    #define GPIO_MOSI              11
-    #define GPIO_MISO              13
-    #define GPIO_SCLK              12
-    #define GPIO_CS                10
     #define DMA_CHAN               ESP_SPI_CONTROLLER
-
+#elif defined CONFIG_IDF_TARGET_ESP32C2
+    #define DMA_CHAN               SPI_DMA_CH_AUTO
 #elif defined CONFIG_IDF_TARGET_ESP32C3
-
-    #define ESP_SPI_CONTROLLER     1
-    #define GPIO_MOSI              7
-    #define GPIO_MISO              2
-    #define GPIO_SCLK              6
-    #define GPIO_CS                10
     #define DMA_CHAN               SPI_DMA_CH_AUTO
-
+#elif defined CONFIG_IDF_TARGET_ESP32C6
+    #define DMA_CHAN               SPI_DMA_CH_AUTO
 #elif defined CONFIG_IDF_TARGET_ESP32S3
-
-    #define ESP_SPI_CONTROLLER     1
-    #define GPIO_MOSI              11
-    #define GPIO_MISO              13
-    #define GPIO_SCLK              12
-    #define GPIO_CS                10
     #define DMA_CHAN               SPI_DMA_CH_AUTO
-
 #endif
 
-
+/* SPI internal configs */
 #define SPI_BUFFER_SIZE            1600
 #define SPI_QUEUE_SIZE             3
-#ifdef CONFIG_IDF_TARGET_ESP32
-    #define SPI_RX_QUEUE_SIZE      10
-    #define SPI_TX_QUEUE_SIZE      10
-#else
-    #define SPI_RX_QUEUE_SIZE      5
-    #define SPI_TX_QUEUE_SIZE      5
-#endif
+
+#define SPI_RX_QUEUE_SIZE          CONFIG_ESP_SPI_RX_Q_SIZE
+#define SPI_TX_QUEUE_SIZE          CONFIG_ESP_SPI_TX_Q_SIZE
 
 static interface_context_t context;
 static interface_handle_t if_handle_g;
@@ -136,8 +97,6 @@ static esp_err_t esp_spi_reset(interface_handle_t *handle);
 static void esp_spi_deinit(interface_handle_t *handle);
 static void esp_spi_read_done(void *handle);
 static void queue_next_transaction(void);
-
-
 
 if_ops_t if_ops = {
 	.init = esp_spi_init,
@@ -204,13 +163,7 @@ void generate_startup_event(uint8_t cap)
 	/* TLV - Peripheral clock in MHz */
 	*pos = ESP_PRIV_SPI_CLK_MHZ;        pos++;len++;
 	*pos = LENGTH_1_BYTE;               pos++;len++;
-#ifdef CONFIG_IDF_TARGET_ESP32
-	*pos = SPI_CLK_MHZ_ESP32;           pos++;len++;
-#elif defined CONFIG_IDF_TARGET_ESP32S2
-	*pos = SPI_CLK_MHZ_ESP32_S2;        pos++;len++;
-#elif defined CONFIG_IDF_TARGET_ESP32C3
-	*pos = SPI_CLK_MHZ_ESP32_C3;        pos++;len++;
-#endif
+	*pos = SPI_CLK_MHZ;                 pos++;len++;
 
 	/* TLV - Capability */
 	*pos = ESP_PRIV_CAPABILITY;         pos++;len++;
@@ -511,6 +464,13 @@ static interface_handle_t * esp_spi_init(void)
 	gpio_set_pull_mode(GPIO_MOSI, GPIO_PULLUP_ONLY);
 	gpio_set_pull_mode(GPIO_SCLK, GPIO_PULLUP_ONLY);
 	gpio_set_pull_mode(GPIO_CS, GPIO_PULLUP_ONLY);
+
+	ESP_LOGI(TAG, "SPI Ctrl:%u mode: %u, InitFreq: 10MHz, ReqFreq: %uMHz\nGPIOs: MOSI: %u, MISO: %u, CS: %u, CLK: %u HS: %u DR: %u\n",
+			ESP_SPI_CONTROLLER, slvcfg.mode, SPI_CLK_MHZ,
+			GPIO_MOSI, GPIO_MISO, GPIO_CS, GPIO_SCLK,
+			CONFIG_ESP_SPI_GPIO_HANDSHAKE, CONFIG_ESP_SPI_GPIO_DATA_READY);
+
+	ESP_LOGI(TAG, "Hosted SPI queue size: Tx:%u Rx:%u", SPI_TX_QUEUE_SIZE, SPI_RX_QUEUE_SIZE);
 
 	/* Initialize SPI slave interface */
 	ret=spi_slave_initialize(ESP_SPI_CONTROLLER, &buscfg, &slvcfg, DMA_CHAN);

@@ -4,9 +4,9 @@ menu "Bridge Driver Configuration"
     choice ESP_HOST_INTERFACE
         bool "Transport layer"
         default ESP_SDIO_HOST_INTERFACE if IDF_TARGET_ESP32
-        default ESP_SPI_HOST_INTERFACE if IDF_TARGET_ESP32S2
+        default ESP_SPI_HOST_INTERFACE
         help
-	    Bus interface to be used for communication with the host
+            Bus interface to be used for communication with the host
 
         config ESP_SDIO_HOST_INTERFACE
             bool "SDIO interface"
@@ -23,52 +23,97 @@ menu "Bridge Driver Configuration"
     menu "SPI Configuration"
         depends on ESP_SPI_HOST_INTERFACE
 
-        config ESP_SPI_CONTROLLER
-            int "SPI controller to use"
-            depends on IDF_TARGET_ESP32 && ESP_SPI_HOST_INTERFACE
-            default 2
-            range 2 3
+        config GPIO_MOSI
+            int "GPIO pin for MOSI"
+            default 13 if IDF_TARGET_ESP32
+            default 11 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default  7 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
             help
-                SPI controller to be used. HSPI->2, VSPI->3
+                Select the GPIO pin for MOSI
+
+        config GPIO_MISO
+            int "GPIO pin for MISO"
+            default 12 if IDF_TARGET_ESP32
+            default 13 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default  2 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            help
+                Select the GPIO pin for MISO
+
+        config GPIO_SCLK
+            int "GPIO pin for SCLK"
+            default 14 if IDF_TARGET_ESP32
+            default 12 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default  6 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            help
+                Select the GPIO pin for SCLK
+
+        config GPIO_CS
+            int "GPIO pin for CS"
+            default 15 if IDF_TARGET_ESP32
+            default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default 10 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            help
+                Select the GPIO pin for CS
 
         config ESP_SPI_GPIO_HANDSHAKE
             int "GPIO pin for handshake"
-            default 3 if IDF_TARGET_ESP32C3
+            default 3 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
             default 2
             help
                 GPIO pin to use for handshake with other spi controller
 
         config ESP_SPI_GPIO_DATA_READY
             int "GPIO pin for data ready interrupt"
-            default 4 if IDF_TARGET_ESP32C3
-            default 6
+            default 4
             help
                 GPIO pin for indicating host that SPI slave has data to be read by host
-	endmenu
 
-    config ESP_SERIAL_DEBUG
-        bool "Debug Serial driver data path"
-        default 0
-        help
-            Enable/disable debug prints in serial driver data path
+        config SPI_CLK_MHZ
+            int "SPI clock speed (MHz)"
+            default 10 if IDF_TARGET_ESP32
+            default 30
+            help
+                Set the clock speed (MHz) of SPI interface.
 
-    config ESP_WLAN_DEBUG
-        bool "Debug Wlan driver data path"
-        default 0
-        help
-            Enable/disable debug prints in wlan driver data path
+        config ESP_SPI_TX_Q_SIZE
+            int "ESP to Host SPI queue size"
+            default 10 if IDF_TARGET_ESP32
+            default 20
+            help
+                Smaller Tx queue sizes will reduce data throughput rates(ESP == SPI ==> Host)
 
-    config BRIDGE_BT_ENABLED
-        bool "Enable Bluetooth driver"
-        default 0
-        help
-            Enable/disable debug prints in Bluetooth driver data path
+        config ESP_SPI_RX_Q_SIZE
+            int "Host to ESP SPI queue size"
+            default 10 if IDF_TARGET_ESP32
+            default 20
+            help
+                Smaller Rx queue sizes will reduce data throughput rates(ESP <== SPI == Host)
+    endmenu
 
-    config ESP_BT_DEBUG
-        depends on BRIDGE_BT_ENABLED
-        bool "Debug Bluetooth driver data path"
-        default 0
-        help
-            Enable/disable debug prints in Bluetooth driver data path
+    menu "Enable Debug logs"
+        config ESP_SERIAL_DEBUG
+            bool "Debug Serial driver data path"
+            default 0
+            help
+                Enable/disable debug prints in serial driver data path
 
+        config ESP_WLAN_DEBUG
+            bool "Debug Wlan driver data path"
+            default 0
+            help
+                Enable/disable debug prints in wlan driver data path
+
+        config BRIDGE_BT_ENABLED
+            bool "Enable Bluetooth driver"
+            default 0
+            help
+                Enable/disable debug prints in Bluetooth driver data path
+
+        config ESP_BT_DEBUG
+            depends on BRIDGE_BT_ENABLED
+            bool "Debug Bluetooth driver data path"
+            default 0
+            help
+                Enable/disable debug prints in Bluetooth driver data path
+    endmenu
 endmenu
