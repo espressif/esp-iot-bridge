@@ -318,6 +318,8 @@ esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_in
 
 void esp_bridge_create_all_netif(void)
 {
+    ESP_LOGI(TAG, "esp-iot-bridge version: %d.%d.%d", IOT_BRIDGE_VER_MAJOR, IOT_BRIDGE_VER_MINOR, IOT_BRIDGE_VER_PATCH);
+
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
     esp_bridge_create_softap_netif(NULL, NULL, true, true);
 #endif

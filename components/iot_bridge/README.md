@@ -36,16 +36,32 @@ ESP-IoT-Bridge solution is mainly aimed at bridging between various network inte
 
 ​		Note: Generally, it is called in the event callback when external netif (Station, Ethernet, 4G) obtains IP.
 
-## Example
-
-- [examples/wifi_router](https://github.com/espressif/esp-iot-bridge/blob/master/examples/wifi_router): The device based on the ESP-IoT-Bridge solution connects to the router through Wi-Fi or ethernet, and the smart device such as the phone can access the internet by connecting to the SoftAP hotspot provided by the ESP-IoT-Bridge device.
-
-- [examples/4g_hotspot](https://github.com/espressif/esp-iot-bridge/blob/master/examples/4g_hotspot): ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-IoT-Bridge device to gain Internet access.
-
-You can create a project from this example by the following command:
+## Add component to your project
+Please use the component manager command `add-dependency` to add the `iot_bridge` to your project's dependency, during the CMake step the component will be downloaded automatically.
 
 ```
-idf.py create-project-from-example "espressif/iot_bridge^0.2.0:wifi_router"
+idf.py add-dependency "espressif/iot_bridge=*"
 ```
 
-> Note: For the examples downloaded by using this command, you need to comment out the override_path line in the main/idf_component.yml.
+## Examples
+
+Please use the component manager command `create-project-from-example` to create the project from example template.
+
+```
+idf.py create-project-from-example "espressif/iot_bridge=*:wifi_router"
+```
+
+Then the example will be downloaded in current folder, you can check into it for build and flash.
+
+> Or you can download examples from esp-iot-bridge repository: [wifi_router](https://github.com/espressif/esp-iot-bridge/tree/master/examples/wifi_router)
+
+## Q&A
+
+Q1. I encountered the following problems when using the package manager
+
+```
+Executing action: create-project-from-example
+CMakeLists.txt not found in project directory /home/username
+```
+
+A1. This is because an older version packege manager was used, please run `pip install -U idf-component-manager` in ESP-IDF environment to update.

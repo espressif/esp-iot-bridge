@@ -1,3 +1,9 @@
+# v0.3.0
+
+## Feature
+
+- Add multiple bridging interfaces(Ethernet, USB, SPI, SDIO)
+
 # v0.2.0
 
 ## Feature
