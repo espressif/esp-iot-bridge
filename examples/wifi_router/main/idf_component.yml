@@ -1,5 +1,5 @@
 dependencies:
-  idf: ">=4.4"
+  idf: ">=4.3"
   espressif/button: "==2.2.0"
   espressif/iot_bridge:
     version: "*"
@@ -22,3 +22,4 @@ dependencies:
     public: true
     rules:
       - if: "target in [esp32s2, esp32s3]"
+      - if: "idf_version >=4.4"

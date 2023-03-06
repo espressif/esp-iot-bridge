@@ -7,13 +7,11 @@
 #pragma once
 
 #include <esp_err.h>
-#include "esp_mac.h"
 #include "esp_wifi.h"
 
-#include "lwip/opt.h"
-#include "lwip/err.h"
-#include "lwip/sys.h"
-#include "lwip/lwip_napt.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+#include "esp_mac.h"
+#endif
 
 #ifdef __cplusplus
 extern "C"
