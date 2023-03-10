@@ -1,6 +1,6 @@
 set(srcs "src/bridge_common.c")
 set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "esp_modem")
-set(include_dirs "include" "include/priv_inc")
+set(include_dirs "include")
 
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_STATION OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
     list(APPEND srcs "src/bridge_wifi.c")
@@ -10,18 +10,27 @@ if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
     list(APPEND srcs "src/bridge_modem.c")
 endif()
 
-if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
-    list(APPEND requires "esp_modem_usb_dte")
+if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
+    list(APPEND srcs "src/bridge_usb.c")
 endif()
 
-if (DEFINED ENV{BRIDGE_PRIV})
-    if ($ENV{BRIDGE_PRIV} STREQUAL "ON")
-        list(APPEND requires "iot_bridge_priv")
-    endif()
+if (CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
+    list(APPEND srcs "src/bridge_eth.c")
 endif()
 
 if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
+    if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
+        list(APPEND srcs "src/bridge_sdio.c")
+    endif()
+
+    if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
+        list(APPEND srcs "src/bridge_spi.c")
+    endif()
     add_subdirectory(driver)
+endif()
+
+if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
+    list(APPEND requires "esp_modem_usb_dte")
 endif()
 
 idf_component_register(SRCS "${srcs}"
@@ -35,3 +44,6 @@ execute_process(COMMAND git rev-parse --short HEAD
 set_source_files_properties(SOURCE ${srcs}
                             PROPERTIES COMPILE_DEFINITIONS
                             "COMMIT_ID=\"${SRC_COMMIT_ID}\"")
+
+include(cmake_utilities)
+cu_pkg_define_version(${CMAKE_CURRENT_LIST_DIR})

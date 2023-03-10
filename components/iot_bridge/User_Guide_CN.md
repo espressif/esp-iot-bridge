@@ -116,8 +116,6 @@ ESP-IoT-Bridge 设备可搭载插有 SIM 卡的移动网络模块，网络模块
 
 <font color=red>**⚠️Note**</font>：
 
-> 如需使用 4G 网卡方案，请联系 sales@espressif.com 获取源码或固件。
-
 ### 1.4 无线网卡
 
 ESP-IoT-Bridge 设备可通过多个网络接口（USB/ETH/SDIO/SPI）接入 PC 或 MCU，在连接成功后，PC 或 MCU 等设备会新增一个网卡。待配网成功后，即可为设备提供上网能力。
@@ -143,8 +141,6 @@ ESP-IoT-Bridge 设备可通过多个网络接口（USB/ETH/SDIO/SPI）接入 PC 
 
 <font color=red>**⚠️Note**</font>：
 
-> 如需使用无线网卡方案，请联系 sales@espressif.com 获取源码或固件。
-
 ### 1.5 有线网卡
 
 ESP-IoT-Bridge 设备可通过将以太网网线插入路由器 LAN 口连接网络，并通过多个网络接口（USB/SDIO/SPI）接入 PC 或 MCU，为设备提供上网能力。
@@ -164,8 +160,6 @@ ESP-IoT-Bridge 设备可通过将以太网网线插入路由器 LAN 口连接网
 <img src="./doc/_static/dongle.png" alt="dongle" style="zoom: 80%;" />
 
 ⚠️<font color=red>**Note:** </font>
-
-> 如需使用有线网卡方案，请联系 sales@espressif.com 获取源码或固件。
 
 ## <span id = "2">2. 硬件准备</span>
 

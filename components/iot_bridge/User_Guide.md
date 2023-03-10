@@ -118,8 +118,6 @@ ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM ca
 
 <font color=red>**⚠️Note**</font>：
 
-> Please contact sales@espressif.com for source code or firmware for the 4G NIC solution.
-
 ### 1.4 Wireless NIC
 
 ESP-IoT-Bridge device can be connected to the PC or MCU through multiple network interfaces (USB/ETH/SDIO/SPI). Once connected, the PC or MCU will have an additional network card. These devices can access the Internet after configuring the network.
@@ -145,8 +143,6 @@ ESP-IoT-Bridge device can be connected to the PC or MCU through multiple network
 
 <font color=red>**⚠️Note**</font>：
 
-> Please contact sales@espressif.com for source code or firmware for wireless NIC solution.
-
 ### 1.5 Wired NIC
 
 ESP-IoT-Bridge device can connect to the network by plugging the Ethernet cable into the LAN port of router. PC or MCU can connect with the ESP-IoT-Bridge device through multiple interfaces (USB/SDIO/SPI) to gain internet access.
@@ -166,8 +162,6 @@ ESP-IoT-Bridge device can connect to the network by plugging the Ethernet cable 
 <img src="./doc/_static/dongle_en.png" alt="dongle" style="zoom: 80%;" />
 
 ⚠️<font color=red>**Note:** </font>
-
-> Please contact sales@espressif.com for source code or firmware for wired NIC solution.
 
 ## <span id = "2">2. Hardware</span>
 

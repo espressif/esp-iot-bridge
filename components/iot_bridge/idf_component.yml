@@ -1,8 +1,9 @@
-version: "0.2.0"
+version: "0.3.0"
 description: A smart bridge to make both ESP and the other MCU or smart device can access the Internet
 url: https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge
 dependencies:
   idf: ">=4.4"
+  espressif/cmake_utilities: 0.*
   # The "esp_modem_usb_dte" component is temporarily disabled, as idf-component-manager
   # doesn't support uploading components with "rules" entries to the registry.
   # Re-enable this after the bug fix in idf-component-manager is released,

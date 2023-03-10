@@ -18,7 +18,7 @@ menu "Bridge Configuration"
             default n
 
         config BRIDGE_EXTERNAL_NETIF_ETHERNET
-            bool "Use ethernet interface to connect to the external network (Please contact sales@espressif.com to apply for it)"
+            bool "Use ethernet interface to connect to the external network"
             default n
     endmenu
 
@@ -65,23 +65,23 @@ menu "Bridge Configuration"
             endmenu
 
         config BRIDGE_DATA_FORWARDING_NETIF_USB
-            bool "Use USB interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            bool "Use USB interface to provide network data forwarding for other devices"
             default n
             depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
             select TINYUSB
             select TINYUSB_NET_ENABLED
 
         config BRIDGE_DATA_FORWARDING_NETIF_ETHERNET
-            bool "Use ethernet interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            bool "Use ethernet interface to provide network data forwarding for other devices"
             default n
             depends on !BRIDGE_EXTERNAL_NETIF_ETHERNET
 
         config BRIDGE_DATA_FORWARDING_NETIF_SPI
-            bool "Use SPI interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            bool "Use SPI interface to provide network data forwarding for other devices"
             default n
 
         config BRIDGE_DATA_FORWARDING_NETIF_SDIO
-            bool "Use SDIO interface to provide network data forwarding for other devices (Please contact sales@espressif.com to apply for it)"
+            bool "Use SDIO interface to provide network data forwarding for other devices"
             default n
             depends on IDF_TARGET_ESP32
     endmenu
