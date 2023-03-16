@@ -30,7 +30,9 @@ if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO OR CONFIG_BRIDGE_DATA_FORWARDING_NE
 endif()
 
 if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
-    list(APPEND requires "esp_modem_usb_dte")
+    if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "4.4")
+        list(APPEND requires "esp_modem_usb_dte")
+    endif()
 endif()
 
 idf_component_register(SRCS "${srcs}"

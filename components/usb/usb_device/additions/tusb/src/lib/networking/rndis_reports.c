@@ -32,7 +32,9 @@
 #include "class/net/net_device.h"
 #include "rndis_protocol.h"
 #include "netif/ethernet.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
 #include "esp_mac.h"
+#endif
 
 #define RNDIS_LINK_SPEED 12000000                       /* Link baudrate (12Mbit/s for USB-FS) */
 #define RNDIS_VENDOR     CONFIG_TINYUSB_RNDIS_VENDOR                      /* NIC vendor name */

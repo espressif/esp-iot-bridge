@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "esp_mac.h"
 #include "esp_log.h"
 #include "esp_eth.h"
 #include "esp_event.h"
@@ -20,6 +19,10 @@
 #include "driver/gpio.h"
 #if CONFIG_BRIDGE_USE_SPI_ETHERNET
 #include "driver/spi_master.h"
+#endif
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+#include "esp_mac.h"
 #endif
 
 #include "esp_bridge_internal.h"
@@ -124,7 +127,9 @@ esp_bridge_eth_phy_model_t esp_bridge_eth_phy_model[] = {
 #if CONFIG_BRIDGE_ETH_PHY_KSZ80XX
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
     esp_eth_phy_new_ksz8041,
+#if ESP_IDF_VERSION == ESP_IDF_VERSION_VAL(4, 4, 0)
     esp_eth_phy_new_ksz8081,
+#endif
 #else
     esp_eth_phy_new_ksz80xx,
 #endif

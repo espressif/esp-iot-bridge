@@ -1,5 +1,5 @@
 dependencies:
-  idf: ">=4.4"
+  idf: ">=4.3"
   espressif/iot_bridge:
     version: "*"
     # Please comment the following line, if this example is installed by idf.py create-project-from-example.
@@ -15,3 +15,4 @@ dependencies:
     public: true
     rules:
       - if: "target in [esp32s2, esp32s3]"
+      - if: "idf_version >=4.4"
