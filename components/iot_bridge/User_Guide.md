@@ -340,84 +340,85 @@ https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"P
 
 <table>
     <tr> <!-- First row of data -->
-        <th colspan="2"> Function </th>
-        <th> Advantages </th>
-        <th> Application Scenarios </th>
+        <th colspan="2"> Feature </th>
+        <th> Advantage </th>
+        <th> Application Scenario </th>
     </tr>
     <tr> <!-- Second row of data -->
-        <th rowspan="2"> Wi-Fi Router </th> <!-- Centered display; merge 2 rows -->
+        <th rowspan="2"> Wi-Fi Router </th> <!-- for centered display; combining two rows -->
         <td> Ethernet/Station to SoftAP </td>
-        <td> Reduce router load and expand signal coverage </td>
+        <td> Reduce router load and extend signal coverage </td>
         <td>
-            ● Large and multi-story homes <br>
-            ● Large office spaces <br>
-            ● Conference venues <br>
-            ● Hotels <br>
-            ● Photovoltaic inverters, wind power <br>
+            ● Large-sized and multi-floor house <br>
+            ● Large-sized office space <br>
+            ● Conference site <br>
+            ● Hotel <br>
+            ● Photovoltaic inverter and wind power <br>
         </td>
     </tr>
     <tr> <!-- Third row of data -->
         <td> Station to Ethernet </td>
-        <td> Plug-and-play, easy to use, low development cost </td>
-        <td> Deploy networks for devices without Wi-Fi capabilities that need to be connected via Ethernet.<br>
-            ● Attendance machines <br>
-            ● Payment machines <br>
+        <td> Driver-free, hot-pluggable, user-friendly, and cost-effective to develop </td>
+        <td> Deploy networks for devices that do not support Wi-Fi and need to be networked via a network cable <br>
+            ● Attendance machine <br>
+            ● Cash register <br>
         </td>
     </tr>
     <tr> <!-- Fourth row of data -->
-        <th rowspan="3"> Network Card </th> <!-- Centered display; merge 3 rows -->
-        <td> Wired/Wireless Network Card (USB) </td>
-        <td> Plug-and-play, easy to use, low development cost </td>
+        <th rowspan="3"> Network Card </th> <!-- for centered display; combining three rows -->
+        <td> Wired/Wireless LAN card (USB) </td>
+        <td> Driver-free, hot-pluggable, user-friendly, and cost-effective to develop </td>
         <td>
-            ● Photovoltaic inverters, wind power <br>
-            ● Video surveillance, IP Camera <br>
-            ● Industrial control panels <br>
+            ● Photovoltaic inverter and wind power <br>
+            ● Closed Circuit Television (CCTV) and IP Camera <br>
+            ● Industrial control panel <br>
         </td>
     </tr>
     <tr> <!-- Fifth row of data -->
         <td> Wired/Wireless Network Card (SPI/SDIO) </td>
-        <td> Stable, high-speed rate </td>
+        <td> Stable with high speed </td>
         <td>
-            ● Photovoltaic inverters, wind power <br>
-            ● Video surveillance, IP Camera <br>
-            ● Robots <br>
-            ● Industrial control panels <br>
+            ● Photovoltaic inverter and wind power <br>
+            ● Closed Circuit Television (CCTV) and IP Camera <br>
+            ● Robot <br>
+            ● Industrial control panel <br>
         </td>
     </tr>
     <tr> <!-- Sixth row of data -->
         <td> 4G Network Card </td>
-        <td> Plug-and-play, no need to configure, highly mobile </td>
-        <td> Used in combination with wired/wireless network cards to provide devices with a wider range of internet options.<br>
-            ● Charging piles <br>
-            ● Attendance machines <br>
-            ● Video surveillance <br>
-            ● Environmental monitoring <br>
+        <td> Plug-and-play and no provisioning required with high mobility </td>
+        <td> Use with wired/wireless LAN cards to provide a wider range of Internet access options for devices <br>
+            ● Charging pile <br>
+            ● Attendance machine <br>
+            ● Closed Circuit Television (CCTV) <br>
+            ● Environmental Monitoring <br>
         </td>
     </tr>
     <tr> <!-- Seventh row of data -->
         <th colspan="2"> 4G Hotspot </th>
-        <td> Wireless connection, no need to configure, highly mobile </td>
+        <td> Wireless connection and no provisioning required with high mobility </td>
         <td>
-            ● Shared massage chairs, shared power banks, and other shared scenarios <br>
-            ● Unmanned convenience stores <br>
+            ● Shared scenarios such as shared massage chair and shared power bank <br>
+            ● Unmanned convenience store <br>
         </td>
     </tr>
     <tr> <!-- Eighth row of data -->
         <th colspan="2"> BLE Border Router </th>
-        <td> Connect BLE devices to other devices </td>
+        <td> Interconnect BLE devices with other devices  </td>
         <td>
-            ● Building a BLE medical sensing ecosystem <br>
-            ● Management of electronic price tags in supermarkets <br>
-            ● Overall smart home solution <br>
+            ● Establishing a BLE medical sensing ecosystem <br>
+            ● Supermarket electronic price tag management <br>
+            ● Overall smart home Solution <br>
         </td>
     </tr>
     <tr> <!-- Ninth row of data -->
         <th colspan="2"> Thread Border Router </th>
-        <td> Connect Thread devices to other devices </td>
-        <td> Interconnectivity of smart home devices <br>
+        <td> Interconnect Thread devices with other devices </td>
+        <td> Smart home device interconnection <br>
         </td>
     </tr>
 <table>
+
 
 **Please refer to the [ESP-IoT-Bridge Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-IoT-Bridge.**
 
