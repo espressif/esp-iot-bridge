@@ -333,7 +333,10 @@ I (1798) esp_bridge_wifi_prov_mgr: If QR code is not visible, copy paste the bel
 https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"PROV_806314","pop":"abcd1234","transport":"ble"}
 ```
 
-> 由于 ESP32-S2 不支持 BLE，故该配网方案不适用于 ESP32-S2
+Note：
+
+- 由于 ESP32-S2 不支持 BLE，故该配网方案不适用于 ESP32-S2
+- `PROV_MODE` 默认为 `PROV_SEC2_DEV_MODE`，量产固件建议选为 `PROV_SEC2_PROD_MODE`，并添加自己的 `salt` 和 `verifier`，具体请参考 [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41)。
 
 ## <span id = "8">8. 方案优势</span>
 

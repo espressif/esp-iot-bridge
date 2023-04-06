@@ -334,7 +334,10 @@ I (1798) esp_bridge_wifi_prov_mgr: If QR code is not visible, copy paste the bel
 https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"PROV_806314","pop":"abcd1234","transport":"ble"}
 ```
 
-> Since ESP32-S2 does not support Bluetooth LE, this network configuration method is not applicable to ESP32-S2.
+Note:
+
+- Since ESP32-S2 does not support Bluetooth LE, this network configuration method is not applicable to ESP32-S2.
+- By default, `PROV_MODE` is set to `PROV_SEC2_DEV_MODE`. For mass-produced firmware, it is recommended to choose `PROV_SEC2_PROD_MODE` and add your own `salt` and `verifier`. For specific instructions, please refer to [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41).
 
 ## <span id = "8">8.Solution Highlights</span>
 
