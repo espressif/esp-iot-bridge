@@ -1,0 +1,17 @@
+diff --git a/src/core/ipv4/ip4.c b/src/core/ipv4/ip4.c
+index a5c3dd55..d136b2c6 100644
+--- a/src/core/ipv4/ip4.c
++++ b/src/core/ipv4/ip4.c
+@@ -332,8 +332,10 @@ ip4_forward(struct pbuf *p, struct ip_hdr *iphdr, struct netif *inp)
+ 
+ #if ESP_LWIP
+ #if IP_NAPT
+-  if (ip_napt_forward(p, iphdr, inp, netif) != ERR_OK)
+-    return;
++  if (!netif->napt) {
++    if (ip_napt_forward(p, iphdr, inp, netif) != ERR_OK)
++      return;
++  }
+ #endif
+ #endif /* ESP_LWIP */
+ 
