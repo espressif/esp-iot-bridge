@@ -9,7 +9,9 @@ dependencies:
   # So temporarily place the "esp_modem_usb_dte" "esp_modem" component under examples.
   #
   espressif/esp_modem:
-    version: 0.*
+    version: 1.*
+    rules:
+      - if: "target not in [esp32s2, esp32s3]"
   espressif/esp_modem_usb_dte:
     version: 1.*
     public: true

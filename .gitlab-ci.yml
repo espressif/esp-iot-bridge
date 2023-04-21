@@ -44,18 +44,18 @@ variables: &global-variables
   - idf.py set-target esp32
   - idf.py build
 
-.build_iot_bridge_esp32c3: &build_iot_bridge_esp32c3
+.build_iot_bridge_esp32c: &build_iot_bridge_esp32c
   - cd examples/wifi_router
-  - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.esp32c3
-  - idf.py set-target esp32c3
+  - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.${idf_target}
+  - idf.py set-target ${idf_target}
   - idf.py build
 
   - rm -rf build sdkconfig
-  - sed -i '$d' sdkconfig.defaults.esp32c3
-  - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.esp32c3
-  - echo -e "\nCONFIG_APP_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.esp32c3
-  - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI=y" >> sdkconfig.defaults.esp32c3
-  - idf.py set-target esp32c3
+  - sed -i '$d' sdkconfig.defaults.${idf_target}
+  - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
+  - echo -e "\nCONFIG_APP_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.${idf_target}
+  - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
+  - idf.py set-target ${idf_target}
   - idf.py build
 
 .build_iot_bridge_esp32s2: &build_iot_bridge_esp32s2
@@ -162,6 +162,25 @@ esp32_v5.0_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_esp32
 
+esp32c2_v5.0_build:
+  stage: build
+  image: espressif/idf:release-v5.0
+  tags:
+    - build
+
+  variables:
+    <<: *global-variables
+    idf_target: esp32c2
+    idf_branch: release/v5.0
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *setup_esp_idf
+    - *build_iot_bridge_examples
+    - *build_iot_bridge_esp32c
+
 esp32c3_v4.3_build:
   stage: build
   image: espressif/idf:release-v4.3
@@ -179,7 +198,7 @@ esp32c3_v4.3_build:
   script:
     - *setup_esp_idf
     - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32c3
+    - *build_iot_bridge_esp32c
 
 esp32c3_v4.4_build:
   stage: build
@@ -198,7 +217,7 @@ esp32c3_v4.4_build:
   script:
     - *setup_esp_idf
     - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32c3
+    - *build_iot_bridge_esp32c
 
 esp32c3_v5.0_build:
   stage: build
@@ -217,29 +236,7 @@ esp32c3_v5.0_build:
   script:
     - *setup_esp_idf
     - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32c3
-
-esp32s2_v4.3_build:
-  stage: build
-  image: espressif/idf:release-v4.3
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32s2
-    idf_branch: release/v4.3
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - cd examples/4g_hotspot
-    - echo -e "\nCONFIG_BRIDGE_SERIAL_VIA_UART=y" >> sdkconfig.defaults.esp32s2
-    - cd -
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32s2
+    - *build_iot_bridge_esp32c
 
 esp32s2_v4.4_build:
   stage: build
