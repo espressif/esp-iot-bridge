@@ -8,7 +8,7 @@ menu "Bridge Driver Configuration"
             int "GPIO pin for MOSI"
             default 13 if IDF_TARGET_ESP32
             default 11 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-            default  7 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            default  7
             help
                 Select the GPIO pin for MOSI
 
@@ -16,7 +16,7 @@ menu "Bridge Driver Configuration"
             int "GPIO pin for MISO"
             default 12 if IDF_TARGET_ESP32
             default 13 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-            default  2 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            default  2
             help
                 Select the GPIO pin for MISO
 
@@ -24,7 +24,7 @@ menu "Bridge Driver Configuration"
             int "GPIO pin for SCLK"
             default 14 if IDF_TARGET_ESP32
             default 12 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-            default  6 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            default  6
             help
                 Select the GPIO pin for SCLK
 
@@ -32,13 +32,13 @@ menu "Bridge Driver Configuration"
             int "GPIO pin for CS"
             default 15 if IDF_TARGET_ESP32
             default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-            default 10 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            default 10
             help
                 Select the GPIO pin for CS
 
         config ESP_SPI_GPIO_HANDSHAKE
             int "GPIO pin for handshake"
-            default 3 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            default 3
             default 2
             help
                 GPIO pin to use for handshake with other spi controller
