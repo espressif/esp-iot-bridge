@@ -40,9 +40,9 @@ idf_component_register(SRCS "${srcs}"
                        REQUIRES "${requires}")
 
 if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "5.0")
-execute_process(COMMAND
-                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_forward.patch
-                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
+    execute_process(COMMAND
+                    git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_forward.patch
+                    WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
 endif()
 
 execute_process(COMMAND
@@ -56,8 +56,8 @@ set_source_files_properties(SOURCE ${srcs}
 
 set(FALLBACK_DNS_SERVER "8.8.8.8")
 target_compile_options(__idf_lwip PRIVATE 
-                    "-DIP_PORTMAP_MAX=255"
-                    "-DFALLBACK_DNS_SERVER_ADDRESS(p)=ipaddr_aton(\"${FALLBACK_DNS_SERVER}\",(p))")
+                       "-DIP_PORTMAP_MAX=255"
+                       "-DFALLBACK_DNS_SERVER_ADDRESS(p)=ipaddr_aton(\"${FALLBACK_DNS_SERVER}\",(p))")
 
 include(package_manager)
 cu_pkg_define_version(${CMAKE_CURRENT_LIST_DIR})

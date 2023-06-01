@@ -2,22 +2,22 @@
 
 # ESP-IoT-Bridge 方案
 
-本文档将介绍 ESP-IoT-Bridge 方案的配置流程和使用方法（该方案原名为 ESP-Gateway，因为本方案不涉及到协议的代理转换，仅仅为数据的转发，所以更改为 ESP-IoT-Bridge）。
+本文档将介绍 ESP-IoT-Bridge 方案的配置流程和使用方法。
 ESP-IoT-Bridge 方案主要针对 IoT 应用场景下的各种网络接口之间的连接与通信，如 SPI、SDIO、USB、Wi-Fi、以太网等网络接口。在该解决方案中，Bridge 设备既可以为其它设备提供上网功能，又可以作为连接远程服务器的独立设备。
 
 # 目录
 
-- [1. 概述](#1)
-- [2. 硬件准备](#2)
-- [3. 环境搭建](#3)
-- [4. SDK 准备](#4)
-- [5. 配置项介绍](#5)
-- [6. 编译 & 烧录 & 监视输出](#6)
-- [7. 配网](#7)
-- [8. 方案优势](#8)
-- [9. GPIO Map](#9)
+- [1 概述](#1-概述)
+- [2 硬件准备](#2-硬件准备)
+- [3 环境搭建](#3-环境搭建)
+- [4 SDK 准备](#4-sdk-准备)
+- [5 配置项介绍](#5-配置项介绍)
+- [6 编译 烧写 监视输出](#6-编译-烧写-监视输出)
+- [7 配网](#7-配网)
+- [8 方案优势](#8-方案优势)
+- [9 GPIO Map](#9-gpio-map)
 
-## <span id = "1">1. 概述</span>
+## 1 概述
 
 乐鑫 ESP-IoT-Bridge 方案已经适配乐鑫多种芯片：
 
@@ -28,7 +28,6 @@ ESP-IoT-Bridge 方案主要针对 IoT 应用场景下的各种网络接口之间
 | ESP32-S2 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 | ESP32-S3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 | ESP32-C2 | *N/A*                                                        | *N/A*                                                        | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
-| ESP32-H2 | *N/A*                                                        | TODO                                                         | TODO                                                         |
 
 ESP-IoT-Bridge 方案提供多个网络接口，不同的网络接口可以分为两大类：
 
@@ -86,8 +85,8 @@ ESP-IoT-Bridge 设备通过 Wi-Fi 或者有线以太网网口连接至路由器�
 
 - 若 ESP-IoT-Bridge 设备通过 Wi-Fi 连接至路由器，则需要进行配网操作，目前支持以下两种配网方式：
 
-    > - [网页配网](#web)
-    > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wifi_provisioning)（不支持 ESP32-S2）
+    > - [网页配网](#网页配网)
+    > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wi-fi-provisioning-配网)（不支持 ESP32-S2）
 
 <img src="./docs/_static/wifi_router.png" alt="wifi_router" style="zoom: 80%;" />
 
@@ -131,8 +130,8 @@ ESP-IoT-Bridge 设备可通过多个网络接口（USB/SDIO/SPI）接入 PC 或 
 
 - 该方案需要进行配网操作，目前支持以下两种配网方式:
 
-    > - [网页配网](#web)
-    > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wifi_provisioning)（不支持 ESP32-S2）
+    > - [网页配网](#网页配网)
+    > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wi-fi-provisioning-配网)（不支持 ESP32-S2）
 
 <img src="./docs/_static/wireless_nic.png" alt="wireless_nic" style="zoom: 80%;" />
 
@@ -154,7 +153,7 @@ ESP-IoT-Bridge 设备可通过将以太网网线插入路由器 LAN 口连接网
 
 <img src="./docs/_static/wired_nic.png" alt="wired_nic" style="zoom: 80%;" />
 
-## <span id = "2">2. 硬件准备</span>
+## 2 硬件准备
 
 - **Linux 环境**
 
@@ -176,7 +175,7 @@ ESP 设备包括 ESP 芯片，ESP 模组，ESP 开发板等。
 USB 线主要是用于连接 PC 和 ESP 设备、烧写/下载程序以及查看 log 等。
 
 
-## <span id = "3">3. 环境搭建</span>
+## 3 环境搭建
 
 **如果您熟悉 ESP 开发环境，则可以很轻松理解下面步骤; 如果您不熟悉某个部分，比如编译或烧录，请参考官方文档 [ESP-IDF 编程指南](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/index.html)。**
 
@@ -201,7 +200,7 @@ $ ./components/esptool_py/esptool/esptool.py --help
 $ git clone https://github.com/espressif/esp-iot-bridge.git
 ```
 
-## <span id = "4">4. SDK 准备</span>
+## 4 SDK 准备
 
 - 获取 Espressif SDK [ESP-IDF](https://github.com/espressif/esp-idf)。
 
@@ -210,7 +209,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 - 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v4.4`  或者 `release/v5.0`版本。
 
 
-## <span id = "5">5. 配置项</span>
+## 5 配置项介绍
 
 **选择连接外部网络的接口**
 
@@ -246,7 +245,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 ![modem](./docs/_static/modem.png)
 
 
-## <span id = "6">6. 编译 & 烧写 & 监视输出</span>
+## 6 编译 烧写 监视输出
 
 ### 6.1 编译
 
@@ -256,7 +255,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 $ idf.py menuconfig
 ```
 
-根据 [5.配置项](#5) 选择合适的配置选项，配置完成之后执行以下命令生成 bin。
+根据 [5.配置项介绍](#5-配置项介绍) 选择合适的配置选项，配置完成之后执行以下命令生成 bin。
 
 ```
 $ idf.py build
@@ -280,15 +279,15 @@ $ idf.py monitor
 
 > 也可使用组合命令 `idf.py build flash monitor` 一次性执行构建、烧录和监视过程。
 
-## <span id = "7">7. 配网</span>
+## 7 配网
 
-### <span id = "web">7.1 网页配网</span>
+### 网页配网
 
 PC 或 MCU 连接至 ESP-IoT-Bridge 设备热点并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页配网。
 
 <img src="./docs/_static/web_server.png" alt="web_server" style="zoom: 67%;" />
 
-### <span id = "wifi_provisioning">7.2 Wi-Fi Provisioning (Bluetooth LE) 配网</span>
+### Wi-Fi Provisioning 配网
 
 #### 7.2.1 获取 APP
 
@@ -339,7 +338,7 @@ Note：
 - 由于 ESP32-S2 不支持 BLE，故该配网方案不适用于 ESP32-S2
 - `PROV_MODE` 默认为 `PROV_SEC2_DEV_MODE`，量产固件建议选为 `PROV_SEC2_PROD_MODE`，并添加自己的 `salt` 和 `verifier`，具体请参考 [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41)。
 
-## <span id = "8">8. 方案优势</span>
+## 8 方案优势
 
 <table>
     <tr> <!-- 第一行数据 -->
@@ -422,8 +421,8 @@ Note：
     </tr>
 <table>
 
-**请参考 [ESP-IoT-Bridge 视频](https://www.bilibili.com/video/BV1wo4y1R7NG)，该视频演示了 ESP-IoT-Bridge 的部分功能。**
+**请参考 [ESP-IoT-Bridge 视频](https://www.bilibili.com/video/BV1VN411A7G3)，该视频演示了 ESP-IoT-Bridge 的部分功能。**
 
-## <span id = "9">9.GPIO Map</span>
+## 9 GPIO Map
 
 ![gpio_map](./docs/_static/gpio_map.png)

@@ -2,24 +2,24 @@
 
 # ESP-IoT-Bridge Solution
 
-This document describes how to configure and use ESP-IoT-Bridge(the solution was originally named ESP-Gateway, because this solution does not involve protocol proxy conversion, but only data forwarding, so it is renamed to ESP-IoT-Bridge).
+This document describes how to configure and use ESP-IoT-Bridge.
 
 ESP-IoT-Bridge solution focuses on connectivity and communication between various network interfaces in IoT application scenarios, such as SPI, SDIO, USB, Wi-Fi, Ethernet and other network interfaces. In this solution, the bridge device can not only provide net access for other devices, but also be a separate equipment to connect the remote server.
 
 
 # Table of Contents
 
-- [1. Overview](#1)
-- [2. Hardware](#2)
-- [3. Development Environment](#3)
-- [4. SDK](#4)
-- [5. Configuration](#5)
-- [6. Build & Flash & Monitor the Output](#6)
-- [7. Network Configuration](#7)
-- [8. Solution Highlights](#8)
-- [9. GPIO Map](#9)
+- [1 Overview](#1-overview)
+- [2 Hardware](#2-hardware)
+- [3 Development Environment](#3-set-up-development-environment)
+- [4 SDK](#4-get-sdk)
+- [5 Configuration](#5-configuration)
+- [6 Build Flash Monitor](#6-build-flash-monitor)
+- [7 Network Configuration](#7-network-configuration)
+- [8 Solution Highlights](#8-solution-highlights)
+- [9 GPIO Map](#9-gpio-map)
 
-## <span id = "1">1. Overview</span>
+## 1 Overview
 
 ESP-IoT-Bridge is supported by various Espressif chips, as shown in the table below:
 
@@ -30,7 +30,6 @@ ESP-IoT-Bridge is supported by various Espressif chips, as shown in the table be
 | ESP32-S2 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 | ESP32-S3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 | ESP32-C2 | *N/A*                                                        | *N/A*                                                        | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
-| ESP32-H2 | *N/A*                                                        | TODO                                                         | TODO                                                         |
 
 The ESP-IoT-Bridge solution provides several network interfaces, which can be divided into two main categories:
 
@@ -88,8 +87,8 @@ ESP-IoT-Bridge device can connect to the network by connecting to the router via
 
 - You need to configure your network if the ESP-IoT-Bridge device connects to the router via Wi-Fi. Currently, the following ways are supported:
 
-    > - [Configure the network on web page](#web)
-    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#wifi_provisioning)（ESP32-S2 not supported）
+    > - [Configure the network on web page](#configure-network-on-web-page)
+    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#configure-network-through-wi-fi-provisioning)（ESP32-S2 not supported）
 
 <img src="./docs/_static/wifi_router_en.png" alt="wifi_router" style="zoom: 80%;" />
 
@@ -133,8 +132,8 @@ ESP-IoT-Bridge device can be connected to the PC or MCU through multiple network
 
 - This feature requires you to configure the network. Currently, the following ways are supported:
 
-    > - [Configure the network on web page](#web)
-    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#wifi_provisioning)（not support ESP32-S2）
+    > - [Configure the network on web page](#configure-network-on-web-page)
+    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#configure-network-through-wi-fi-provisioning)（not support ESP32-S2）
 
 <img src="./docs/_static/wireless_nic_en.png" alt="wireless_nic" style="zoom: 80%;" />
 
@@ -156,7 +155,7 @@ ESP-IoT-Bridge device can connect to the network by plugging the Ethernet cable 
 
 <img src="./docs/_static/wired_nic_en.png" alt="wired_nic" style="zoom: 80%;" />
 
-## <span id = "2">2. Hardware</span>
+## 2 Hardware
 
 - **Linux Environment**
 
@@ -178,7 +177,7 @@ ESP devices include ESP chips, ESP modules, ESP development boards, etc.
 USB cable is used to connect PC with ESP devices, flash or download programs, and view logs, etc.
 
 
-## <span id = "3">3. Set Up Development Environment</span>
+## 3 Set Up Development Environment
 
 If you are familiar with the ESP development environment, you can easily understand the following steps. If you are not familiar with a certain part, such as building or flashing, please refer to [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/index.html).
 
@@ -203,7 +202,7 @@ $ ./components/esptool_py/esptool/esptool.py --help
 $ git clone https://github.com/espressif/esp-iot-bridge.git
 ```
 
-## <span id = "4">4. Get SDK </span>
+## 4 Get SDK 
 
 - Get Espressif SDK from [ESP-IDF](https://github.com/espressif/esp-idf).
 
@@ -211,7 +210,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - After successfully obtaining ESP-IDF, please switch its version to the `release/v4.4` or `release/v5.0` version.
 
-## <span id = "5">5. Configuration</span>
+## 5 Configuration
 
 **Select the interface for connecting to the Internet**
 
@@ -247,7 +246,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 ![modem](./docs/_static/modem.png)
 
 
-## <span id = "6">6. Build & Flash & Monitor the Output</span>
+## 6 Build Flash Monitor
 
 ### 6.1 Build the Project
 
@@ -257,7 +256,7 @@ Navigate to the ``esp-iot-bridge`` directory and run the following command:
 $ idf.py menuconfig
 ```
 
-After selecting the appropriate configuration items according to [Configuration Items](#5), run the following command to generate the bin file.
+After selecting the appropriate configuration items according to [Configuration](#5-configuration), run the following command to generate the bin file.
 
 ```
 $ idf.py build
@@ -281,15 +280,15 @@ $ idf.py monitor
 
 > You can combine building, flashing and monitoring into one step by running:  `idf.py build flash monitor`.
 
-## <span id = "7">7. Network Configuration</span>
+## 7 Network Configuration
 
-### <span id = "web">7.1 Configure Network on Web Page</span>
+### Configure Network on Web Page
 
 After the PC or MCU connects to the hotspot from the ESP-IoT-Bridge device and obtains the IP address successfully, it can configure the network on the web page by accessing the gateway IP.
 
 <img src="./docs/_static/web_server_en.png" alt="web_server" style="zoom: 67%;" />
 
-### <span id = "wifi_provisioning">7.2 Configure Network through Wi-Fi Provisioning (Bluetooth LE)</span>
+### Configure Network through Wi-Fi Provisioning
 
 #### 7.2.1 APP Get
 
@@ -340,7 +339,7 @@ Note:
 - Since ESP32-S2 does not support Bluetooth LE, this network configuration method is not applicable to ESP32-S2.
 - By default, `PROV_MODE` is set to `PROV_SEC2_DEV_MODE`. For mass-produced firmware, it is recommended to choose `PROV_SEC2_PROD_MODE` and add your own `salt` and `verifier`. For specific instructions, please refer to [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41).
 
-## <span id = "8">8.Solution Highlights</span>
+## 8 Solution Highlights
 
 <table>
     <tr> <!-- First row of data -->
@@ -424,8 +423,8 @@ Note:
 <table>
 
 
-**Please refer to the [ESP-IoT-Bridge Video](https://www.bilibili.com/video/BV1wo4y1R7NG) which demonstrates some of the features of the ESP-IoT-Bridge.**
+**Please refer to the [ESP-IoT-Bridge Video](https://www.bilibili.com/video/BV1VN411A7G3) which demonstrates some of the features of the ESP-IoT-Bridge.**
 
-## <span id = "9">9.GPIO Map</span>
+## 9 GPIO Map
 
 ![gpio_map](./docs/_static/gpio_map.png)

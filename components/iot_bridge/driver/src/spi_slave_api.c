@@ -20,6 +20,7 @@
 #include "esp_log.h"
 #include "interface.h"
 #include "wifi_dongle_adapter.h"
+#include "soc/gpio_reg.h"
 #include "driver/spi_slave.h"
 #include "driver/gpio.h"
 #include "endian.h"

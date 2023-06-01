@@ -2,11 +2,11 @@ set(sub_srcs "driver/src/network_adapter.c")
 
 set(driver_include "driver/include")
 
-if(CONFIG_ESP_SDIO_HOST_INTERFACE)
+if(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
     list(APPEND sub_srcs "driver/src/sdio_slave_api.c")
 endif()
 
-if(CONFIG_ESP_SPI_HOST_INTERFACE)
+if(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
     list(APPEND sub_srcs "driver/src/spi_slave_api.c")
 endif()
 
