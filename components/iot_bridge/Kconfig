@@ -57,11 +57,20 @@ menu "Bridge Configuration"
                     help
                         Add MAC to the end of SSID
 
+                config BRIDGE_SOFTAP_CONNECT_NUMBER_RANGE_MAX
+                    int
+                    default 4 if IDF_TARGET_ESP32C2
+                    default 15 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                    default 10
+
                 config BRIDGE_SOFTAP_MAX_CONNECT_NUMBER
                     int "Maximum number of connections per node"
                     default 6 if !BRIDGE_CUSTOM_SOFTAP
                     default BRIDGE_CUSTOM_MAX_CONNECT_NUMBER if BRIDGE_CUSTOM_SOFTAP
-                    range 1 10
+                    range 1 LWIP_DHCPS_MAX_STATION_NUM if LWIP_DHCPS_MAX_STATION_NUM < BRIDGE_SOFTAP_CONNECT_NUMBER_RANGE_MAX
+                    range 1 BRIDGE_SOFTAP_CONNECT_NUMBER_RANGE_MAX if LWIP_DHCPS_MAX_STATION_NUM >= BRIDGE_SOFTAP_CONNECT_NUMBER_RANGE_MAX
+                    help
+                        CONFIG_LWIP_DHCPS_MAX_STATION_NUM must be greater than or equal to BRIDGE_SOFTAP_MAX_CONNECT_NUMBER
             endmenu
 
         config BRIDGE_DATA_FORWARDING_NETIF_USB
