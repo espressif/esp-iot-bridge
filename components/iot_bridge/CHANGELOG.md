@@ -1,5 +1,24 @@
 # ChangeLog
 
+## v0.6.0 - 2023.6.19
+
+### Supported ESP-IDF Version
+
+- Add v5.1
+
+### Supported Socs
+
+- ESP32-C6
+- ESP32-H2
+
+### Enhancements
+
+- feature: Make sure SOFTAP_MAX_CONNECT_NUMBER is not larger than DHCPS_MAX_STATION_NUM
+
+### Docs
+
+- Update images and hyperlinks
+
 ## v0.5.0 - 2023.4.3
 
 ### Supported Socs
