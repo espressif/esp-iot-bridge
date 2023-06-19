@@ -41,10 +41,10 @@ Make sure that Raspberry-Pi is equipped with following:
 ### 2.1 Linux Host: Development Environment Setup
 
 - This section list downs environment setup and tools needed to make ESP-IoT-Bridge solution work with Linux based host.
-- If you are using Raspberry-Pi as a Linux host, both [section 2.1.1](#2.1.1) and [section 2.1.2](#2.1.2) are applicable.
-- If you are using other Linux platform, skip to [section 2.1.2](#2.1.2)
+- If you are using Raspberry-Pi as a Linux host, both [section 2.1.1](#raspberry-pi-specific-setup) and [section 2.1.2](#additional-setup) are applicable.
+- If you are using other Linux platform, skip to [section 2.1.2](#additional-setup)
 
-#### <span id = '2.1.1'>2.1.1 Raspberry-Pi Specific Setup</span>
+#### Raspberry-Pi Specific Setup
 
 This section identifies Raspberry-Pi specific setup requirements.
 
@@ -79,7 +79,7 @@ This section identifies Raspberry-Pi specific setup requirements.
          $ sudo apt install pi-bluetooth
         ```
 
-#### <span id = '2.1.2'>2.1.2 Additional Setup</span>
+#### Additional Setup
 
 - Linux Kernel setup on non Raspberry-Pi
 

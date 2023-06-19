@@ -1,27 +1,8 @@
 menu "Bridge Driver Configuration"
     depends on BRIDGE_DATA_FORWARDING_NETIF_SPI || BRIDGE_DATA_FORWARDING_NETIF_SDIO
 
-    choice ESP_HOST_INTERFACE
-        bool "Transport layer"
-        default ESP_SDIO_HOST_INTERFACE if IDF_TARGET_ESP32
-        default ESP_SPI_HOST_INTERFACE
-        help
-            Bus interface to be used for communication with the host
-
-        config ESP_SDIO_HOST_INTERFACE
-            bool "SDIO interface"
-            depends on IDF_TARGET_ESP32
-            help
-                Enable/Disable SDIO host interface
-
-        config ESP_SPI_HOST_INTERFACE
-            bool "SPI interface"
-            help
-                Enable/Disable SPI host interface
-    endchoice
-
     menu "SPI Configuration"
-        depends on ESP_SPI_HOST_INTERFACE
+        depends on BRIDGE_DATA_FORWARDING_NETIF_SPI
 
         config GPIO_MOSI
             int "GPIO pin for MOSI"
