@@ -316,6 +316,9 @@ void esp_bridge_create_all_netif(void)
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
     esp_bridge_create_softap_netif(NULL, NULL, true, true);
+#if defined(CONFIG_BRIDGE_WIFI_PMF_DISABLE)
+    esp_wifi_disable_pmf_config(WIFI_IF_AP);
+#endif
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
@@ -342,5 +345,8 @@ void esp_bridge_create_all_netif(void)
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
     esp_bridge_create_station_netif(NULL, NULL, false, false);
+#if defined(CONFIG_BRIDGE_WIFI_PMF_DISABLE)
+    esp_wifi_disable_pmf_config(WIFI_IF_STA);
+#endif
 #endif
 }
