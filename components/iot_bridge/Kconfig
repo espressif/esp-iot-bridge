@@ -3,6 +3,10 @@ menu "Bridge Configuration"
         bool "Bridge Enable"
         default y
 
+    config BRIDGE_WIFI_PMF_DISABLE
+        bool "Wi-Fi PMF Disable"
+        default y
+
     menu "The interface used to connect to the external network"
         config BRIDGE_EXTERNAL_NETIF_STATION
             bool "Use Wi-Fi station interface to connect to the external network"
