@@ -26,12 +26,12 @@ if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO OR CONFIG_BRIDGE_DATA_FORWARDING_NE
     if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
         list(APPEND srcs "src/bridge_spi.c")
     endif()
-    add_subdirectory(driver)
+    add_subdirectory(drivers)
 endif()
 
 if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
     if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "4.4")
-        list(APPEND requires "esp_modem_usb_dte")
+        list(APPEND requires "esp_modem_usb_dte" "usb_device")
     endif()
 endif()
 

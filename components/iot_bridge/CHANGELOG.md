@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.7.0 - 2023.6.20
+
+### Enhancements
+
+- Add 4g nic, wired nic, wireless nic examples
+
 ## v0.6.0 - 2023.6.19
 
 ### Supported ESP-IDF Version

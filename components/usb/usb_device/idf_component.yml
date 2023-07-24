@@ -1,6 +1,5 @@
-## IDF Component Manager Manifest File
 dependencies:
   espressif/esp_tinyusb:
-    version: "^0.0.1"
+    version: "^1.2.0"
     rules:
       - if: "idf_version >=5.0"

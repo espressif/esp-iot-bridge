@@ -1,25 +1,20 @@
 | Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C6 | ESP32-S2 | ESP32-S3 | ESP32-H2 |
 | ----------------- | ----- | -------- | -------- | -------- | -------- | -------- | -------- |
 
-# 4G to Hotspot example
+# Wi-Fi Router example
 
 ## Overview
 
-This example focuses on the networking part, enables forwarding packets between network interfaces. It creates a WiFi soft AP, which uses NAT to forward packets to and from the PPP network interface.
+This example focuses on the networking part, enables forwarding packets between network interfaces. It creates a WiFi soft AP, which uses NAT to forward packets to and from the Station network interface.
 
-![4G_hotpot_en](https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/doc/_static/4G_hotpot_en.png?raw=true)
+![wifi_router](https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/doc/_static/wifi_router_en.png?raw=true)
 
 ### How to use example
 #### Hardware Required
-- A 4G module
 - An esp32 series development board
 - A Micro-USB cable for power supply and programming
 
 Follow detailed instructions provided specifically for this example.
-
-#### Choose the interface of the modem
-
-You can select the interface (UART or USB) connected to the Modem in `Component config → Bridge Configuration → Modem Configuration` of `menuconfig`.
 
 #### Build and Flash
 Run `idf.py flash monitor` to build, flash and monitor the project.

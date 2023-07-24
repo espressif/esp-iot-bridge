@@ -11,6 +11,8 @@ extern "C"
 {
 #endif
 
+#include "esp_netif.h"
+
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 #include "esp_wifi_types.h"
 

@@ -1,17 +1,8 @@
-// Copyright 2015-2022 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+/*
+ * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -76,7 +67,7 @@ interface_handle_t *if_handle = NULL;
 
 QueueHandle_t to_host_queue[MAX_PRIORITY_QUEUES] = {NULL};
 
-#if CONFIG_ESP_SPI_HOST_INTERFACE
+#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
 #ifdef CONFIG_IDF_TARGET_ESP32S2
 #define TO_HOST_QUEUE_SIZE      5
 #else
@@ -92,7 +83,7 @@ QueueHandle_t to_host_queue[MAX_PRIORITY_QUEUES] = {NULL};
 static void print_firmware_version()
 {
 	ESP_LOGI(TAG, "*********************************************************************");
-#if CONFIG_ESP_SPI_HOST_INTERFACE
+#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
 	ESP_LOGI(TAG, "                Transport used :: SPI                           ");
 #else
 	ESP_LOGI(TAG, "                Transport used :: SDIO                          ");
@@ -105,7 +96,7 @@ static uint8_t get_capabilities()
 	uint8_t cap = 0;
 
 	ESP_LOGI(TAG, "Supported features are:");
-#if CONFIG_ESP_SPI_HOST_INTERFACE
+#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
 	ESP_LOGI(TAG, "- WLAN over SPI");
 	cap |= ESP_WLAN_SPI_SUPPORT;
 #else
