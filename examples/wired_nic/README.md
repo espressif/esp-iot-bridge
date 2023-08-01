@@ -7,7 +7,7 @@
 
 This example focuses on the networking part, implementing packet forwarding between network interfaces. It can be connected to PC or MCU through various network interfaces (USB/SPI/SDIO). ESP32 series chips use NAT to forward data packets in and out of the Ethernet network interface.
 
-![wired_nic_en](https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/doc/_static/wired_nic_en.png?raw=true)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wired_nic_en.png" style="zoom:80%;" />
 
 ### How to use example
 #### Hardware Required

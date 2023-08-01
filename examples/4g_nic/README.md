@@ -7,7 +7,7 @@
 
 This example focuses on the networking part, enabling packet forwarding between network interfaces. It can be connected to PC or MCU through multiple network interfaces (ETH/SPI/SDIO), and ESP32 series chips use NAT to forward data packets in and out of the PPP network interface.
 
-![4G_nic_en](https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/doc/_static/4G_nic_en.png?raw=true)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/4g_nic_en.png" style="zoom:80%;" />
 
 ### How to use example
 

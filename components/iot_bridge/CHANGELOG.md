@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v0.7.1 - 2023.8.1
+
+### Enhancements
+
+- Add limit to the length of the SoftAP SSID and password strings
+
+### Docs
+
+- Update images url
+
 ## v0.7.0 - 2023.6.20
 
 ### Enhancements
