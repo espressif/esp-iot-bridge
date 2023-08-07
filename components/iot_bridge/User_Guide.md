@@ -41,7 +41,7 @@ The ESP-IoT-Bridge solution provides several network interfaces, which can be di
 
 Users can achieve personalized network interface connection solutions through a variety of different network interface combinations to maximize the network advantages of espressif chips.
 
-![esp_iot_bridge](./docs/_static/esp_iot_bridge_en.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/esp_iot_bridge_en.png" style="zoom:80%;" />
 
 A variety of functions can be achieved depending on the combination of interfaces, as shown in the table below:
 
@@ -93,7 +93,7 @@ ESP-IoT-Bridge device can connect to the network by connecting to the router via
     > - [Configure the network on web page](#configure-network-on-web-page)
     > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#configure-network-through-wi-fi-provisioning)（ESP32-S2 not supported）
 
-<img src="./docs/_static/wifi_router_en.png" alt="wifi_router" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wifi_router_en.png" alt="wifi_router_en" style="zoom: 80%;" />
 
 ### 1.2 4G Router
 
@@ -109,13 +109,13 @@ The table below shows modules that are compatible with 4G Cat.1.
 |           | EC600N-CNLC-N06 |
 |           | SIMCom A7600C1  |
 
-<img src="./docs/_static/4g_router_en.png" alt="4g_router" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/4g_router_en.png" alt="4g_router_en" style="zoom: 80%;" />
 
 ### 1.3 4G NIC
 
 ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface(SDIO/SPI) to gain Internet access.
 
-<img src="./docs/_static/4g_nic_en.png" alt="4g_nic" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/4g_nic_en.png" alt="4g_nic_en" style="zoom: 80%;" />
 
 ### 1.4 Wireless NIC
 
@@ -138,7 +138,7 @@ ESP-IoT-Bridge device can be connected to the PC or MCU through multiple network
     > - [Configure the network on web page](#configure-network-on-web-page)
     > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#configure-network-through-wi-fi-provisioning)（not support ESP32-S2）
 
-<img src="./docs/_static/wireless_nic_en.png" alt="wireless_nic" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wireless_nic_en.png" alt="wireless_nic_en" style="zoom: 80%;" />
 
 ### 1.5 Wired NIC
 
@@ -156,7 +156,7 @@ ESP-IoT-Bridge device can connect to the network by plugging the Ethernet cable 
 
 - For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./docs/SPI_setup.md)**.
 
-<img src="./docs/_static/wired_nic_en.png" alt="wired_nic" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wired_nic_en.png" alt="wired_nic_en" style="zoom: 80%;" />
 
 ## 2 Hardware
 
@@ -217,11 +217,11 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 **Select the interface for connecting to the Internet**
 
-![external](./docs/_static/external.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/external.png" alt="external" style="zoom: 80%;" />
 
 **Select the interface for forwarding network packets for other devices**
 
-![data_forwarding](./docs/_static/data_forwarding.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/data_forwarding.png" alt="data_forwarding" style="zoom: 80%;" />
 
 - Users can choose a combination of different interfaces to achieve different functions.
 
@@ -242,11 +242,11 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 **ETH Configuration**
 
-![eth](./docs/_static/eth.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/eth.png" alt="eth" style="zoom: 80%;" />
 
 **Modem Configuration**
 
-![modem](./docs/_static/modem.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/modem.png" alt="modem" style="zoom: 80%;" />
 
 
 ## 6 Build Flash Monitor
@@ -289,7 +289,7 @@ $ idf.py monitor
 
 After the PC or MCU connects to the hotspot from the ESP-IoT-Bridge device and obtains the IP address successfully, it can configure the network on the web page by accessing the gateway IP.
 
-<img src="./docs/_static/web_server_en.png" alt="web_server" style="zoom: 67%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/web_server_en.png" alt="web_server_en" style="zoom: 67%;" />
 
 ### Configure Network through Wi-Fi Provisioning
 
@@ -430,4 +430,4 @@ Note:
 
 ## 9 GPIO Map
 
-![gpio_map](./docs/_static/gpio_map.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/gpio_map.png" alt="gpio_map" style="zoom: 67%;" />

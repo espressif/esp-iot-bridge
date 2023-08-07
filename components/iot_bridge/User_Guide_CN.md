@@ -39,7 +39,7 @@ ESP-IoT-Bridge 方案提供多个网络接口，不同的网络接口可以分�
 
 用户可以通过多种不同的网络接口组合来实现个性化的网络接口连接方案，最大程度地发挥乐鑫芯片的网络优势。
 
-![esp_iot_bridge](./docs/_static/esp_iot_bridge.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/esp_iot_bridge.png" style="zoom:80%;" />
 
 根据接口的不同组合可以实现多种功能，如下表：
 
@@ -91,7 +91,7 @@ ESP-IoT-Bridge 设备通过 Wi-Fi 或者有线以太网网口连接至路由器�
     > - [网页配网](#网页配网)
     > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wi-fi-provisioning-配网)（不支持 ESP32-S2）
 
-<img src="./docs/_static/wifi_router.png" alt="wifi_router" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wifi_router.png" alt="wifi_router" style="zoom: 80%;" />
 
 ### 1.2 4G 路由器
 
@@ -107,13 +107,13 @@ ESP-IoT-Bridge 设备可搭载插有 SIM 卡的移动网络模块，移动网络
 |           | EC600N-CNLC-N06 |
 |           | SIMCom A7600C1  |
 
-<img src="./docs/_static/4g_router.png" alt="4g_router" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/4g_router.png" alt="4g_router" style="zoom: 80%;" />
 
 ### 1.3 4G 网卡
 
 ESP-IoT-Bridge 设备可搭载插有 SIM 卡的移动网络模块，网络模块联网后，可通过多个网络接口（SDIO/SPI）接入 PC 或 MCU，为设备提供上网能力。
 
-<img src="./docs/_static/4g_nic.png" alt="4g_nic" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/4g_nic.png" alt="4g_nic" style="zoom: 80%;" />
 
 ### 1.4 无线网卡
 
@@ -136,7 +136,7 @@ ESP-IoT-Bridge 设备可通过多个网络接口（USB/SDIO/SPI）接入 PC 或 
     > - [网页配网](#网页配网)
     > - [Wi-Fi Provisioning (Bluetooth LE) 配网](#wi-fi-provisioning-配网)（不支持 ESP32-S2）
 
-<img src="./docs/_static/wireless_nic.png" alt="wireless_nic" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wireless_nic.png" alt="wireless_nic" style="zoom: 80%;" />
 
 ### 1.5 有线网卡
 
@@ -154,7 +154,7 @@ ESP-IoT-Bridge 设备可通过将以太网网线插入路由器 LAN 口连接网
 
 - 关于 SPI 硬件连线和 MCU(Host) 配置，请参考 **[SPI_setup](./docs/SPI_setup.md)**。
 
-<img src="./docs/_static/wired_nic.png" alt="wired_nic" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wired_nic.png" alt="wired_nic" style="zoom: 80%;" />
 
 ## 2 硬件准备
 
@@ -216,11 +216,11 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 **选择连接外部网络的接口**
 
-![external](./docs/_static/external.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/external.png" alt="external" style="zoom: 80%;" />
 
 **选择为其它设备提供网络数据转发的接口**
 
-![data_forwarding](./docs/_static/data_forwarding.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/data_forwarding.png" alt="data_forwarding" style="zoom: 80%;" />
 
 - 用户可选择不同的接口组合来实现相应的功能。
 
@@ -241,11 +241,11 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 **ETH 配置项**
 
-![eth](./docs/_static/eth.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/eth.png" alt="eth" style="zoom: 80%;" />
 
 **Modem 配置项**
 
-![modem](./docs/_static/modem.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/modem.png" alt="modem" style="zoom: 80%;" />
 
 
 ## 6 编译 烧写 监视输出
@@ -288,7 +288,8 @@ $ idf.py monitor
 
 PC 或 MCU 连接至 ESP-IoT-Bridge 设备热点并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页配网。
 
-<img src="./docs/_static/web_server.png" alt="web_server" style="zoom: 67%;" />
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/web_server.png" alt="web_server" style="zoom: 67%;" />
+
 
 ### Wi-Fi Provisioning 配网
 
@@ -428,4 +429,4 @@ Note：
 
 ## 9 GPIO Map
 
-![gpio_map](./docs/_static/gpio_map.png)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/gpio_map.png" alt="gpio_map" style="zoom: 67%;" />

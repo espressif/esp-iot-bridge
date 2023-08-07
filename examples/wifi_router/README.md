@@ -7,7 +7,7 @@
 
 This example focuses on the networking part, enables forwarding packets between network interfaces. It creates a WiFi soft AP, which uses NAT to forward packets to and from the Station network interface.
 
-![wifi_router](https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/doc/_static/wifi_router_en.png?raw=true)
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wifi_router_en.png" style="zoom:80%;" />
 
 ### How to use example
 #### Hardware Required
