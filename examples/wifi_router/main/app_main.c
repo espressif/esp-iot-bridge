@@ -25,6 +25,9 @@
 #include "esp_event.h"
 
 #include "esp_bridge.h"
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
+#include "esp_wifi.h"
+#endif
 #if defined(CONFIG_BRIDGE_USE_WEB_SERVER)
 #include "web_server.h"
 #endif
