@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.7.2 - 2023.8.10
+
+### Enhancements
+
+- Update iot_bridge component yml, the idf component manager now supports uploading components with rules.
+
 ## v0.7.1 - 2023.8.1
 
 ### Enhancements
