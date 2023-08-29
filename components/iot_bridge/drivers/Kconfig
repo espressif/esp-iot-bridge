@@ -31,14 +31,13 @@ menu "Bridge Driver Configuration"
         config GPIO_CS
             int "GPIO pin for CS"
             default 15 if IDF_TARGET_ESP32
-            default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
             default 10
             help
                 Select the GPIO pin for CS
 
         config ESP_SPI_GPIO_HANDSHAKE
             int "GPIO pin for handshake"
-            default 3
+            default 3 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
             default 2
             help
                 GPIO pin to use for handshake with other spi controller
@@ -71,29 +70,66 @@ menu "Bridge Driver Configuration"
                 Smaller Rx queue sizes will reduce data throughput rates(ESP <== SPI == Host)
     endmenu
 
+    menu "SDIO Configuration"
+        depends on BRIDGE_DATA_FORWARDING_NETIF_SDIO
+
+        config ESP_SDIO_CHECKSUM
+            bool "SDIO checksum ENABLE/DISABLE"
+            default n
+            help
+                ENABLE/DISABLE software SDIO checksum
+    endmenu
+
+    config EXAMPLE_HCI_UART_BAUDRATE
+        int "UART Baudrate for HCI: Only applicable for ESP32-C3/ESP32-S3"
+        range 115200 921600
+        depends on IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C6
+        depends on BT_CTRL_HCI_MODE_UART_H4
+        default 921600
+        help
+            UART Baudrate for HCI over ESP32C2/C3/C6/S3. Please use standard baudrate.
+
+    config ESP_DEFAULT_TASK_STACK_SIZE
+        int "ESP-Hosted task stack size"
+        default 4096
+        help
+            Default task size of ESP-Hosted tasks
+
+    config ESP_DEFAULT_TASK_PRIO
+        int "ESP-Hosted task priority"
+        default 22
+        help
+            Default task priority of ESP-Hosted tasks
+
+    config ESP_CACHE_MALLOC
+        bool "Cache allocated memory like mempool - helps to reduce malloc calls"
+        default y
+        help
+            Cache allocated memory - reduces number of malloc calls
+
     menu "Enable Debug logs"
         config ESP_SERIAL_DEBUG
             bool "Debug Serial driver data path"
-            default 0
+            default n
             help
                 Enable/disable debug prints in serial driver data path
 
         config ESP_WLAN_DEBUG
             bool "Debug Wlan driver data path"
-            default 0
+            default n
             help
                 Enable/disable debug prints in wlan driver data path
 
         config BRIDGE_BT_ENABLED
             bool "Enable Bluetooth driver"
-            default 0
+            default n
             help
                 Enable/disable debug prints in Bluetooth driver data path
 
         config ESP_BT_DEBUG
             depends on BRIDGE_BT_ENABLED
             bool "Debug Bluetooth driver data path"
-            default 0
+            default n
             help
                 Enable/disable debug prints in Bluetooth driver data path
     endmenu

@@ -1,29 +1,33 @@
 /*
- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "sdkconfig.h"
+
 #ifdef CONFIG_BRIDGE_BT_ENABLED
 #include <string.h>
-#include "driver/periph_ctrl.h"
 #include "driver/gpio.h"
 #include "driver/uart.h"
-#include "soc/lldesc.h"
 #include "esp_bt.h"
 #include "esp_log.h"
 #include "slave_bt.h"
+#include "soc/lldesc.h"
+#include "interface.h"
 #include "wifi_dongle_adapter.h"
 
-#ifdef CONFIG_IDF_TARGET_ESP32C3
-#include "esp_private/gdma.h"
-#if BLUETOOTH_UART
-#include "hal/uhci_ll.h"
-#endif
+#if BT_OVER_C3_S3
+
+  #include "esp_private/gdma.h"
+
+  #if BLUETOOTH_UART
+    #include "hal/uhci_ll.h"
+  #endif
+
 #endif
 
 static const char BT_TAG[] = "ESP_BT";
-extern QueueHandle_t to_host_queue[MAX_PRIORITY_QUEUES];
 
 #if BLUETOOTH_HCI
 /* ***** HCI specific part ***** */
@@ -39,7 +43,6 @@ static void controller_rcv_pkt_ready(void)
 
 static int host_rcv_pkt(uint8_t *data, uint16_t len)
 {
-	esp_err_t ret = ESP_OK;
 	interface_buffer_handle_t buf_handle;
 	uint8_t *buf = NULL;
 
@@ -64,10 +67,8 @@ static int host_rcv_pkt(uint8_t *data, uint16_t len)
 #if CONFIG_ESP_BT_DEBUG
 	ESP_LOG_BUFFER_HEXDUMP("bt_tx", data, len, ESP_LOG_INFO);
 #endif
-	ret = xQueueSend(to_host_queue[PRIO_Q_BT], &buf_handle, portMAX_DELAY);
 
-	if (ret != pdTRUE) {
-		ESP_LOGE(BT_TAG, "HCI send packet: Failed to send buffer\n");
+	if (send_to_host_queue(&buf_handle, PRIO_Q_BT)) {
 		free(buf);
 		return ESP_FAIL;
 	}
@@ -93,6 +94,9 @@ void process_hci_rx_pkt(uint8_t *payload, uint16_t payload_len) {
 		ESP_LOGD(BT_TAG, "VHCI not available");
 	}
 
+#if SOC_ESP_NIMBLE_CONTROLLER
+	esp_vhci_host_send_packet(payload, payload_len);
+#else
 	if (vhci_send_sem) {
 		if (xSemaphoreTake(vhci_send_sem, VHCI_MAX_TIMEOUT_MS) == pdTRUE) {
 			esp_vhci_host_send_packet(payload, payload_len);
@@ -100,12 +104,13 @@ void process_hci_rx_pkt(uint8_t *payload, uint16_t payload_len) {
 			ESP_LOGI(BT_TAG, "VHCI sem timeout");
 		}
 	}
+#endif
 }
 
 #elif BLUETOOTH_UART
 /* ***** UART specific part ***** */
 
-#ifdef CONFIG_IDF_TARGET_ESP32C3
+#if BT_OVER_C3_S3
 // Operation functions for HCI UART Transport Layer
 static bool hci_uart_tl_init(void);
 static void hci_uart_tl_deinit(void);
@@ -246,8 +251,10 @@ static IRAM_ATTR bool hci_uart_tl_tx_eof_callback(gdma_channel_handle_t dma_chan
 }
 #endif
 
-static void init_uart(void)
+#if BT_OVER_C3_S3
+static void init_uart_c3_s3(void)
 {
+    ESP_LOGD(BT_TAG, "Set-up BLE for ESP32-C3/ESP32-S3");
 #if BLUETOOTH_UART == 1
 	periph_module_enable(PERIPH_UART1_MODULE);
     periph_module_reset(PERIPH_UART1_MODULE);
@@ -259,36 +266,35 @@ static void init_uart(void)
 	periph_module_enable(PERIPH_UHCI0_MODULE);
     periph_module_reset(PERIPH_UHCI0_MODULE);
 
-#ifdef CONFIG_IDF_TARGET_ESP32C3
     gpio_config_t io_output_conf = {
-        .intr_type = GPIO_PIN_INTR_DISABLE,    //disable interrupt
-        .mode = GPIO_MODE_OUTPUT,    // output mode
-        .pin_bit_mask = GPIO_OUTPUT_PIN_SEL,    // bit mask of the output pins
-        .pull_down_en = 0,    // disable pull-down mode
-        .pull_up_en = 0,    // disable pull-up mode
+        .intr_type = DISABLE_INTR_ON_GPIO,    /* Disable interrupt */
+        .mode = GPIO_MODE_OUTPUT,             /* Output mode */
+        .pin_bit_mask = GPIO_OUTPUT_PIN_SEL,  /* Bit mask of the output pins */
+        .pull_down_en = 0,                    /* Disable pull-down mode */
+        .pull_up_en = 0,                      /* Disable pull-up mode */
     };
     gpio_config(&io_output_conf);
 
     gpio_config_t io_input_conf = {
-        .intr_type = GPIO_PIN_INTR_DISABLE,    //disable interrupt
-        .mode = GPIO_MODE_INPUT,    // input mode
-        .pin_bit_mask = GPIO_INPUT_PIN_SEL,  // bit mask of the input pins
-        .pull_down_en = 0,    // disable pull-down mode
-        .pull_up_en = 0,    // disable pull-down mode
+        .intr_type = DISABLE_INTR_ON_GPIO,    /* Disable interrupt */
+        .mode = GPIO_MODE_INPUT,              /* Input mode */
+        .pin_bit_mask = GPIO_INPUT_PIN_SEL,   /* Bit mask of the input pins */
+        .pull_down_en = 0,                    /* Disable pull-down mode */
+        .pull_up_en = 0,                      /* Disable pull-down mode */
     };
     gpio_config(&io_input_conf);
-#endif
 
 	ESP_ERROR_CHECK( uart_set_pin(BLUETOOTH_UART, BT_TX_PIN,
 				BT_RX_PIN, BT_RTS_PIN, BT_CTS_PIN) );
+	ESP_LOGI(BT_TAG, "UART Pins: Tx:%u Rx:%u RTS:%u CTS:%u",
+			BT_TX_PIN, BT_RX_PIN, BT_RTS_PIN, BT_CTS_PIN);
 
-#ifdef CONFIG_IDF_TARGET_ESP32C3
     // configure UART1
-    ESP_LOGI(BT_TAG, "baud rate for HCI uart :: %d \n", 
-                                    CONFIG_EXAMPLE_ESP32C3_HCI_UART_BAUDRATE);
+    ESP_LOGI(BT_TAG, "baud rate for HCI uart :: %d \n",
+			CONFIG_EXAMPLE_HCI_UART_BAUDRATE);
 
     uart_config_t uart_config = {
-        .baud_rate = CONFIG_EXAMPLE_ESP32C3_HCI_UART_BAUDRATE,
+        .baud_rate = CONFIG_EXAMPLE_HCI_UART_BAUDRATE,
 
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
@@ -337,8 +343,130 @@ static void init_uart(void)
     // disable software flow control
     s_uhci_hw->escape_conf.val = 0;
     uhci_ll_attach_uart_port(s_uhci_hw, 1);
+}
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32
+static void init_uart_esp32(void)
+{
+	ESP_LOGD(BT_TAG, "Set-up BLE for ESP32");
+#if BLUETOOTH_UART == 1
+	periph_module_enable(PERIPH_UART1_MODULE);
+	periph_module_reset(PERIPH_UART1_MODULE);
+#elif BLUETOOTH_UART == 2
+	periph_module_enable(PERIPH_UART2_MODULE);
+	periph_module_reset(PERIPH_UART2_MODULE);
+#endif
+
+	periph_module_enable(PERIPH_UHCI0_MODULE);
+	periph_module_reset(PERIPH_UHCI0_MODULE);
+
+
+	ESP_ERROR_CHECK( uart_set_pin(BLUETOOTH_UART, BT_TX_PIN,
+		BT_RX_PIN, BT_RTS_PIN, BT_CTS_PIN) );
+	ESP_LOGI(BT_TAG, "UART Pins: Tx:%u Rx:%u RTS:%u CTS:%u",
+			BT_TX_PIN, BT_RX_PIN, BT_RTS_PIN, BT_CTS_PIN);
+
+}
+#endif
+
+#if (defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C6))
+static void init_uart_c2_c6(void)
+{
+    ESP_LOGD(BT_TAG, "Set-up BLE for ESP32-C2/C6");
+
+#if defined(CONFIG_IDF_TARGET_ESP32C2)
+    ESP_LOGI(BT_TAG, "UART Pins: Tx:%u Rx:%u", BT_TX_PIN, BT_RX_PIN);
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+    //ESP_ERROR_CHECK( uart_set_pin(BLUETOOTH_UART, BT_TX_PIN,
+    //  BT_RX_PIN, BT_RTS_PIN, BT_CTS_PIN) );
+    ESP_LOGI(BT_TAG, "UART Pins: Tx:%u Rx:%u", BT_TX_PIN, BT_RX_PIN);
+    //ESP_LOGI(BT_TAG, "UART Pins: Tx:%u Rx:%u RTS:%u CTS:%u",
+            //BT_TX_PIN, BT_RX_PIN, BT_RTS_PIN, BT_CTS_PIN);
 #endif
 }
+#endif
+
+void init_uart(void)
+{
+#if CONFIG_IDF_TARGET_ESP32
+	init_uart_esp32();
+#elif (defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C6))
+	init_uart_c2_c6();
+#elif BT_OVER_C3_S3
+	init_uart_c3_s3();
+#endif
+}
+#endif
+
+#if BLUETOOTH_HCI
+#if SOC_ESP_NIMBLE_CONTROLLER
+#include "nimble/ble_hci_trans.h"
+
+typedef enum {
+    DATA_TYPE_COMMAND = 1,
+    DATA_TYPE_ACL     = 2,
+    DATA_TYPE_SCO     = 3,
+    DATA_TYPE_EVENT   = 4
+} serial_data_type_t;
+
+/* Host-to-controller command. */
+#define BLE_HCI_TRANS_BUF_CMD       3
+
+/* ACL_DATA_MBUF_LEADINGSPCAE: The leadingspace in user info header for ACL data */
+#define ACL_DATA_MBUF_LEADINGSPCAE    4
+
+void esp_vhci_host_send_packet(uint8_t *data, uint16_t len)
+{
+    if (*(data) == DATA_TYPE_COMMAND) {
+        struct ble_hci_cmd *cmd = NULL;
+        cmd = (struct ble_hci_cmd *) ble_hci_trans_buf_alloc(BLE_HCI_TRANS_BUF_CMD);
+        memcpy((uint8_t *)cmd, data + 1, len - 1);
+        ble_hci_trans_hs_cmd_tx((uint8_t *)cmd);
+    }
+
+    if (*(data) == DATA_TYPE_ACL) {
+        struct os_mbuf *om = os_msys_get_pkthdr(len, ACL_DATA_MBUF_LEADINGSPCAE);
+        assert(om);
+        os_mbuf_append(om, &data[1], len - 1);
+        ble_hci_trans_hs_acl_tx(om);
+    }
+
+}
+
+bool esp_vhci_host_check_send_available() {
+    // not need to check in esp new controller
+    return true;
+}
+
+int
+ble_hs_hci_rx_evt(uint8_t *hci_ev, void *arg)
+{
+    uint16_t len = hci_ev[1] + 3;
+    uint8_t *data = (uint8_t *)malloc(len);
+    data[0] = 0x04;
+    memcpy(&data[1], hci_ev, len - 1);
+    ble_hci_trans_buf_free(hci_ev);
+    vhci_host_cb.notify_host_recv(data, len);
+    free(data);
+    return 0;
+}
+
+
+int
+ble_hs_rx_data(struct os_mbuf *om, void *arg)
+{
+    uint16_t len = om->om_len + 1;
+    uint8_t *data = (uint8_t *)malloc(len);
+    data[0] = 0x02;
+    os_mbuf_copydata(om, 0, len - 1, &data[1]);
+    vhci_host_cb.notify_host_recv(data, len);
+    free(data);
+    os_mbuf_free_chain(om);
+    return 0;
+}
+
+#endif
 
 #endif
 
@@ -348,8 +476,8 @@ esp_err_t initialise_bluetooth(void)
 
 
 #ifdef BLUETOOTH_UART
-  #ifdef CONFIG_IDF_TARGET_ESP32C3
-    bt_cfg.hci_tl_funcs = &s_hci_uart_tl_funcs;
+  #if BT_OVER_C3_S3
+	bt_cfg.hci_tl_funcs = &s_hci_uart_tl_funcs;
   #endif
 
 	init_uart();
@@ -365,7 +493,13 @@ esp_err_t initialise_bluetooth(void)
 
 #if BLUETOOTH_HCI
 	esp_err_t ret = ESP_OK;
+
+#if SOC_ESP_NIMBLE_CONTROLLER
+    ble_hci_trans_cfg_hs((ble_hci_trans_rx_cmd_fn *)ble_hs_hci_rx_evt,NULL,
+                         (ble_hci_trans_rx_acl_fn *)ble_hs_rx_data,NULL);
+#else
 	ret = esp_vhci_host_register_callback(&vhci_host_cb);
+#endif
 
 	if (ret != ESP_OK) {
 		ESP_LOGE(BT_TAG, "Failed to register VHCI callback");
@@ -428,6 +562,5 @@ uint8_t get_bluetooth_capabilities(void)
 #endif
 	return cap;
 }
-
 
 #endif

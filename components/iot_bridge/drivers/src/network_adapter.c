@@ -35,9 +35,8 @@
 #endif
 
 extern esp_netif_t* network_adapter_netif;
-static bool flag = true;
+static bool init_done = false;
 
-#define EV_STR(s) "================ "s" ================"
 static const char TAG[] = "NETWORK_ADAPTER";
 
 #if CONFIG_ESP_WLAN_DEBUG
@@ -46,47 +45,48 @@ static const char TAG_TX[] = "S -> H";
 #endif
 
 #ifdef CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
-#define STATS_TICKS         pdMS_TO_TICKS(1000*2)
-#define ARRAY_SIZE_OFFSET   5
+#define STATS_TICKS                      pdMS_TO_TICKS(1000*2)
+#define ARRAY_SIZE_OFFSET                5
 #endif
 
-volatile uint8_t action = 0;
+#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
+  #ifdef CONFIG_IDF_TARGET_ESP32S2
+    #define TO_HOST_QUEUE_SIZE           5
+  #else
+    #define TO_HOST_QUEUE_SIZE           20
+  #endif
+#else
+  #define TO_HOST_QUEUE_SIZE             100
+#endif
+
+#define MAC_LEN                 6
+
 volatile uint8_t datapath = 0;
 volatile uint8_t station_connected = 0;
 volatile uint8_t softap_started = 0;
 volatile uint8_t ota_ongoing = 0;
 
-#ifdef ESP_DEBUG_STATS
-uint32_t from_wlan_count = 0;
-uint32_t to_host_count = 0;
-uint32_t to_host_sent_count = 0;
-#endif
-
 interface_context_t *if_context = NULL;
 interface_handle_t *if_handle = NULL;
 
-QueueHandle_t to_host_queue[MAX_PRIORITY_QUEUES] = {NULL};
-
-#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
-#ifdef CONFIG_IDF_TARGET_ESP32S2
-#define TO_HOST_QUEUE_SIZE      5
-#else
-#define TO_HOST_QUEUE_SIZE      20
-#endif
-#else
-#define TO_HOST_QUEUE_SIZE      100
-#endif
-
-#define MAC_LEN      6
-#define BSSID_LENGTH 19
+static QueueHandle_t meta_to_host_queue = NULL;
+static QueueHandle_t to_host_queue[MAX_PRIORITY_QUEUES] = {NULL};
 
 static void print_firmware_version()
 {
 	ESP_LOGI(TAG, "*********************************************************************");
 #if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
-	ESP_LOGI(TAG, "                Transport used :: SPI                           ");
+  #if BLUETOOTH_UART
+	ESP_LOGI(TAG, "                Transport used :: SPI + UART                    ");
+  #else
+	ESP_LOGI(TAG, "                Transport used :: SPI only                      ");
+  #endif
 #else
-	ESP_LOGI(TAG, "                Transport used :: SDIO                          ");
+  #if BLUETOOTH_UART
+	ESP_LOGI(TAG, "                Transport used :: SDIO + UART                   ");
+  #else
+	ESP_LOGI(TAG, "                Transport used :: SDIO only                     ");
+  #endif
 #endif
 	ESP_LOGI(TAG, "*********************************************************************");
 }
@@ -103,9 +103,15 @@ static uint8_t get_capabilities()
 	ESP_LOGI(TAG, "- WLAN over SDIO");
 	cap |= ESP_WLAN_SDIO_SUPPORT;
 #endif
+
+#if CONFIG_ESP_SPI_CHECKSUM || CONFIG_ESP_SDIO_CHECKSUM
+	cap |= ESP_CHECKSUM_ENABLED;
+#endif
+
 #ifdef CONFIG_BRIDGE_BT_ENABLED
 	cap |= get_bluetooth_capabilities();
 #endif
+	ESP_LOGI(TAG, "capabilities: 0x%x", cap);
 
 	return cap;
 }
@@ -136,7 +142,10 @@ static esp_err_t compose_sta_if_pkt(interface_buffer_handle_t *buf_handle, void 
 
 esp_err_t pkt_netif2driver(void *buffer, uint16_t len)
 {
-	if (flag) return ESP_FAIL;
+	if (!init_done) {
+		return ESP_FAIL;
+	}
+
 	esp_err_t ret = ESP_OK;
 	interface_buffer_handle_t buf_handle;
 	memset(&buf_handle, 0x0, sizeof(interface_buffer_handle_t));
@@ -150,18 +159,17 @@ esp_err_t pkt_netif2driver(void *buffer, uint16_t len)
 		return ESP_FAIL;
 	}
 
-	ret = xQueueSend(to_host_queue[PRIO_Q_OTHERS], &buf_handle, portMAX_DELAY);
-	if (ret != pdTRUE) {
-		ESP_LOGE(TAG, "Slave -> Host: Failed to send buffer\n");
-		return ESP_FAIL;
-	}
+	ret = send_to_host_queue(&buf_handle, PRIO_Q_OTHERS);
 
-	return ESP_OK;
+	return ret;
 }
 
 esp_err_t pkt_dhcp_status_change(void *buffer, uint16_t len)
 {
-	if (flag) return ESP_FAIL;
+	if (!init_done) {
+		return ESP_FAIL;
+	}
+
 	esp_err_t ret = ESP_OK;
 	interface_buffer_handle_t buf_handle;
 	memset(&buf_handle, 0x0, sizeof(interface_buffer_handle_t));
@@ -175,27 +183,21 @@ esp_err_t pkt_dhcp_status_change(void *buffer, uint16_t len)
 		return ESP_FAIL;
 	}
 
-	ret = xQueueSend(to_host_queue[PRIO_Q_OTHERS], &buf_handle, portMAX_DELAY);
-	if (ret != pdTRUE) {
-		ESP_LOGE(TAG, "Slave -> Host: Failed to send buffer\n");
-		return ESP_FAIL;
-	}
+	ret = send_to_host_queue(&buf_handle, PRIO_Q_OTHERS);
 
-	return ESP_OK;
+	return ret;
 }
 
 void process_tx_pkt(interface_buffer_handle_t *buf_handle)
 {
 	/* Check if data path is not yet open */
 	if (!datapath) {
-#if CONFIG_ESP_WLAN_DEBUG
-		ESP_LOGD (TAG_TX, "Data path stopped");
-#endif
 		/* Post processing */
 		if (buf_handle->free_buf_handle && buf_handle->priv_buffer_handle) {
 			buf_handle->free_buf_handle(buf_handle->priv_buffer_handle);
 			buf_handle->priv_buffer_handle = NULL;
 		}
+		ESP_LOGD(TAG, "Data path stopped");
 		usleep(100*1000);
 		return;
 	}
@@ -212,27 +214,19 @@ void process_tx_pkt(interface_buffer_handle_t *buf_handle)
 /* Send data to host */
 void send_task(void* pvParameters)
 {
-#ifdef ESP_DEBUG_STATS
-	int t1, t2, t_total = 0;
-	int d_total = 0;
-#endif
+	uint8_t queue_type = 0;
 	interface_buffer_handle_t buf_handle = {0};
-	uint16_t bt_pkts_waiting = 0;
-	uint16_t other_pkts_waiting = 0;
 
 	while (1) {
-		other_pkts_waiting = uxQueueMessagesWaiting(to_host_queue[PRIO_Q_OTHERS]);
-		bt_pkts_waiting = uxQueueMessagesWaiting(to_host_queue[PRIO_Q_BT]);
 
-		if (other_pkts_waiting) {
-			if (xQueueReceive(to_host_queue[PRIO_Q_OTHERS], &buf_handle, portMAX_DELAY))
-				process_tx_pkt(&buf_handle);
-		} else if (bt_pkts_waiting) {
-			if (xQueueReceive(to_host_queue[PRIO_Q_BT], &buf_handle, portMAX_DELAY))
-				process_tx_pkt(&buf_handle);
-		} else {
-			vTaskDelay(1);
+		if (!datapath) {
+			usleep(100*1000);
+			continue;
 		}
+
+		if (xQueueReceive(meta_to_host_queue, &queue_type, portMAX_DELAY))
+			if (xQueueReceive(to_host_queue[queue_type], &buf_handle, portMAX_DELAY))
+				process_tx_pkt(&buf_handle);
 	}
 }
 
@@ -250,11 +244,9 @@ void process_rx_pkt(interface_buffer_handle_t *buf_handle)
 	ESP_LOG_BUFFER_HEXDUMP(TAG_RX, payload, 8, ESP_LOG_INFO);
 #endif
 
-	if (buf_handle->if_type == ESP_STA_IF) {
+	if ((buf_handle->if_type == ESP_STA_IF) && network_adapter_netif) {
 		/* Forward data to lwip */
-		if (network_adapter_netif) {
-			esp_netif_receive(network_adapter_netif, payload, payload_len, NULL);
-		}
+		esp_netif_receive(network_adapter_netif, payload, payload_len, NULL);
 		// ESP_LOG_BUFFER_HEXDUMP("host -> slave", payload, payload_len, ESP_LOG_INFO);
 	} else if (buf_handle->if_type == ESP_AP_IF && softap_started) {
 		/* Forward data to wlan driver */
@@ -286,7 +278,7 @@ void recv_task(void* pvParameters)
 			continue;
 		}
 
-		// receive data from transport layer
+		/* receive data from transport layer */
 		if (if_context && if_context->if_ops && if_context->if_ops->read) {
 			int len = if_context->if_ops->read(if_handle, &buf_handle);
 			if (len <= 0) {
@@ -299,13 +291,30 @@ void recv_task(void* pvParameters)
 	}
 }
 
+esp_err_t send_to_host_queue(interface_buffer_handle_t *buf_handle, uint8_t queue_type)
+{
+	int ret = xQueueSend(to_host_queue[queue_type], buf_handle, portMAX_DELAY);
+	if (ret != pdTRUE) {
+		ESP_LOGE(TAG, "Failed to send buffer into queue[%u]\n",queue_type);
+		return ESP_FAIL;
+	}
+
+	ret = xQueueSend(meta_to_host_queue, &queue_type, portMAX_DELAY);
+	if (ret != pdTRUE) {
+		ESP_LOGE(TAG, "Failed to send buffer into meta queue[%u]\n",queue_type);
+		return ESP_FAIL;
+	}
+
+	return ESP_OK;
+}
+
 int event_handler(uint8_t val)
 {
 	switch(val) {
 		case ESP_OPEN_DATA_PATH:
-			datapath = 1;
 			if (if_handle) {
 				if_handle->state = ACTIVE;
+				datapath = 1;
 				ESP_EARLY_LOGI(TAG, "Start Data Path");
 			} else {
 				ESP_EARLY_LOGI(TAG, "Failed to Start Data Path");
@@ -453,7 +462,9 @@ void network_adapter_driver_init(void)
 #endif
 
 	if_context = interface_insert_driver(event_handler);
+#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
 	datapath = 1;
+#endif
 
 	if (!if_context || !if_context->if_ops) {
 		ESP_LOGE(TAG, "Failed to insert driver\n");
@@ -467,24 +478,29 @@ void network_adapter_driver_init(void)
 		return;
 	}
 
-	sleep(1);
+	meta_to_host_queue = xQueueCreate(TO_HOST_QUEUE_SIZE*3, sizeof(uint8_t));
+	assert(meta_to_host_queue);
+	for (prio_q_idx=0; prio_q_idx<MAX_PRIORITY_QUEUES; prio_q_idx++) {
+		to_host_queue[prio_q_idx] = xQueueCreate(TO_HOST_QUEUE_SIZE,
+				sizeof(interface_buffer_handle_t));
+		assert(to_host_queue[prio_q_idx]);
+	}
+
+	assert(xTaskCreate(recv_task , "recv_task" ,
+			CONFIG_ESP_DEFAULT_TASK_STACK_SIZE, NULL ,
+			CONFIG_ESP_DEFAULT_TASK_PRIO, NULL) == pdTRUE);
+	assert(xTaskCreate(send_task , "send_task" ,
+			CONFIG_ESP_DEFAULT_TASK_STACK_SIZE, NULL ,
+			CONFIG_ESP_DEFAULT_TASK_PRIO, NULL) == pdTRUE);
+
+	while (!datapath) {
+		sleep(1);
+	}
 
 	/* send capabilities to host */
 	generate_startup_event(capa);
 
-	for (prio_q_idx=0; prio_q_idx<MAX_PRIORITY_QUEUES; prio_q_idx++) {
-		to_host_queue[prio_q_idx] = xQueueCreate(TO_HOST_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
-		assert(to_host_queue[prio_q_idx] != NULL);
-	}
-
-	assert(xTaskCreate(recv_task , "recv_task" , 4096 , NULL , 22 , NULL) == pdTRUE);
-	assert(xTaskCreate(send_task , "send_task" , 4096 , NULL , 22 , NULL) == pdTRUE);
-#ifdef CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
-	assert(xTaskCreate(task_runtime_stats_task, "task_runtime_stats_task",
-				4096, NULL, 1, NULL) == pdTRUE);
-#endif
-
-	flag = false;
-
 	ESP_LOGI(TAG,"Initial set up done");
+
+	init_done = true;
 }

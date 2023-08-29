@@ -17,12 +17,28 @@
  * this warranty disclaimer.
  */
 
-#ifndef _ESP_SERIAL_H_
-#define _ESP_SERIAL_H_
+#ifndef __ESP_STAT__H__
+#define __ESP_STAT__H__
 
-int esp_serial_init(void * priv);
-void esp_serial_cleanup(void);
-int esp_serial_reinit(void *priv);
+#include "esp.h"
 
-int esp_serial_data_received(int dev_index, const char *data, size_t len);
+#ifdef CONFIG_TEST_RAW_TP
+#define TEST_RAW_TP 1
+#else
+#define TEST_RAW_TP 0
+#endif
+
+#if TEST_RAW_TP
+
+#define TEST_RAW_TP__BUF_SIZE    1460
+
+#define ESP_TEST_RAW_TP__RX      0
+#define ESP_TEST_RAW_TP__TX      1
+
+void esp_raw_tp_queue_resume(void);
+#endif
+
+void test_raw_tp_cleanup(void);
+void update_test_raw_tp_rx_stats(u16 len);
+
 #endif
