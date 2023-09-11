@@ -24,6 +24,7 @@ variables: &global-variables
   - chmod 600 ~/.ssh/id_rsa
   - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - export IDF_PATH=/opt/esp/idf
+  - python -m pip install --upgrade idf-component-manager
 
 .build_iot_bridge_default: &build_iot_bridge_default
   - cd examples/wireless_nic
