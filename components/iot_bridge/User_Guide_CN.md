@@ -14,8 +14,9 @@ ESP-IoT-Bridge 方案主要针对 IoT 应用场景下的各种网络接口之间
 - [5 配置项介绍](#5-配置项介绍)
 - [6 编译 烧写 监视输出](#6-编译-烧写-监视输出)
 - [7 配网](#7-配网)
-- [8 方案优势](#8-方案优势)
-- [9 GPIO Map](#9-gpio-map)
+- [8 OTA](#8-ota)
+- [9 方案优势](#9-方案优势)
+- [10 GPIO Map](#10-gpio-map)
 
 ## 1 概述
 
@@ -286,7 +287,7 @@ $ idf.py monitor
 
 ### 网页配网
 
-PC 或 MCU 连接至 ESP-IoT-Bridge 设备热点并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页配网。
+PC 或 MCU 通过热点、USB、SPI、SDIO 或以太网连接至 ESP-IoT-Bridge 设备并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页配网。
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/web_server.png" alt="web_server" style="zoom: 67%;" />
 
@@ -342,7 +343,17 @@ Note：
 - 由于 ESP32-S2 不支持 BLE，故该配网方案不适用于 ESP32-S2
 - `PROV_MODE` 默认为 `PROV_SEC2_DEV_MODE`，量产固件建议选为 `PROV_SEC2_PROD_MODE`，并添加自己的 `salt` 和 `verifier`，具体请参考 [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41)。
 
-## 8 方案优势
+## 8 OTA
+
+### 使用浏览器进行 OTA 固件升级
+
+#### 简介
+
+PC 或 MCU 通过热点、USB、SPI、SDIO 或以太网连接至 ESP-IoT-Bridge 设备并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页 OTA。浏览器打开 Web Server 的网页后，可以选择进入 OTA 升级页面，通过网页升级固件。
+
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/web_ota.png" alt="web_ota" style="zoom: 67%;" />
+
+## 9 方案优势
 
 <table>
     <tr> <!-- 第一行数据 -->
@@ -427,6 +438,6 @@ Note：
 
 **请参考 [ESP-IoT-Bridge 视频](https://www.bilibili.com/video/BV1VN411A7G3)，该视频演示了 ESP-IoT-Bridge 的部分功能。**
 
-## 9 GPIO Map
+## 10 GPIO Map
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/gpio_map.png" alt="gpio_map" style="zoom: 67%;" />
