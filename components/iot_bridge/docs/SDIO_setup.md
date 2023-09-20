@@ -8,16 +8,16 @@ In this setup, ESP device acts as a SDIO peripheral and provides Wi-Fi capabilit
 
 Raspberry-Pi pinout can be found [here!](https://pinout.xyz/pinout/sdio)
 
-| Raspberry-Pi Pin | ESP Pin | Function  |
-| ---------------- | ------- | --------- |
-| 13               | IO13    | DAT3      |
-| 15               | IO14    | CLK       |
-| 16               | IO15    | CMD       |
-| 18               | IO2     | DAT0      |
-| 22               | IO4     | DAT1      |
-| 31               | EN      | ESP Reset |
-| 37               | IO12    | DAT2      |
-| 39               | GND     | GND       |
+| Raspberry-Pi Pin | ESP32 Pin | ESP32-C6 Pin | Function |
+|:-------:|:---------:|:--------:|:--------:|
+| 13 | IO13+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html)| IO23+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c6/api-reference/peripherals/sd_pullup_requirements.html) | DAT3 |
+| 15 | IO14 | IO19 | CLK |
+| 16 | IO15+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html) | IO18+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c6/api-reference/peripherals/sd_pullup_requirements.html) | CMD |
+| 18 | IO2+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html)| IO20+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c6/api-reference/peripherals/sd_pullup_requirements.html) | DAT0 |
+| 22 | IO4+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html)| IO21+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c6/api-reference/peripherals/sd_pullup_requirements.html) | DAT1 |
+| 31 | EN  | ESP Reset |
+| 37 | IO12+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html)| IO22+[pull-up](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c6/api-reference/peripherals/sd_pullup_requirements.html) | DAT2 |
+| 39 | GND | GND | GND|
 
 Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
 

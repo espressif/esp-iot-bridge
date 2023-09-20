@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.8.0 - 2023.9-15
+
+### Enhancements
+
+- Update SPI and SDIO drivers
+
 ## v0.7.2 - 2023.8.10
 
 ### Enhancements

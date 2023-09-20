@@ -26,6 +26,7 @@
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
 #include "wifi_dongle_adapter.h"
+#include "esp_kernel_port.h"
 
 #define ESP_IF_TYPE_SDIO        1
 #define ESP_IF_TYPE_SPI         2

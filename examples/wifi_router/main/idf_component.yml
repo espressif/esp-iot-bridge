@@ -11,3 +11,11 @@ dependencies:
   web_server:
     path: components/web_server
     git: https://github.com/espressif/esp-iot-bridge.git
+  # Wait until the `usb_device` component is listed in the package manager
+  # before adding the dependency to the `yml` file of the `iot_bridge` component.
+  #
+  usb_device:
+    path: components/usb/usb_device
+    git: https://github.com/espressif/esp-iot-bridge.git
+    rules:
+      - if: "target in [esp32s2, esp32s3]"

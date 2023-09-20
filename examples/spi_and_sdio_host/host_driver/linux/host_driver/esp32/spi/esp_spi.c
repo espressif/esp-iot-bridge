@@ -19,6 +19,7 @@
 #include <linux/gpio.h>
 #include <linux/mutex.h>
 #include <linux/delay.h>
+#include <linux/timer.h>
 #include "esp_spi.h"
 #include "esp_if.h"
 #include "esp_api.h"
@@ -26,6 +27,8 @@
 #ifdef CONFIG_SUPPORT_ESP_SERIAL
 #include "esp_serial.h"
 #endif
+#include "esp_kernel_port.h"
+#include "esp_stats.h"
 
 #define SPI_INITIAL_CLK_MHZ     10
 #define NUMBER_1M               1000000
@@ -38,6 +41,8 @@
 #define ESP_PRIV_FIRMWARE_CHIP_ESP32        (0x0)
 #define ESP_PRIV_FIRMWARE_CHIP_ESP32S2      (0x2)
 #define ESP_PRIV_FIRMWARE_CHIP_ESP32C3      (0x5)
+#define ESP_PRIV_FIRMWARE_CHIP_ESP32S3      (0x9)
+#define ESP_PRIV_FIRMWARE_CHIP_ESP32C2      (0xC)
 
 static struct sk_buff * read_packet(struct esp_adapter *adapter);
 static int write_packet(struct esp_adapter *adapter, struct sk_buff *skb);
@@ -46,7 +51,7 @@ static void adjust_spi_clock(u8 spi_clk_mhz);
 
 volatile u8 data_path = 0;
 static struct esp_spi_context spi_context;
-static char hardware_type = 0;
+static char hardware_type = ESP_PRIV_FIRMWARE_CHIP_UNRECOGNIZED;
 static atomic_t tx_pending;
 
 static struct esp_if_ops if_ops = {
@@ -104,7 +109,11 @@ static struct sk_buff * read_packet(struct esp_adapter *adapter)
 	context = adapter->if_context;
 
 	if (context->esp_spi_dev) {
-		skb = skb_dequeue(&(context->rx_q[PRIO_Q_OTHERS]));
+		skb = skb_dequeue(&(context->rx_q[PRIO_Q_SERIAL]));
+		if (!skb)
+			skb = skb_dequeue(&(context->rx_q[PRIO_Q_BT]));
+		if (!skb)
+			skb = skb_dequeue(&(context->rx_q[PRIO_Q_OTHERS]));
 	} else {
 		printk (KERN_ERR "%s: Invalid args\n", __func__);
 		return NULL;
@@ -115,7 +124,7 @@ static struct sk_buff * read_packet(struct esp_adapter *adapter)
 
 static int write_packet(struct esp_adapter *adapter, struct sk_buff *skb)
 {
-	u32 max_pkt_size = SPI_BUF_SIZE - sizeof(struct esp_payload_header);
+	u32 max_pkt_size = SPI_BUF_SIZE;
 	struct esp_payload_header *payload_header = (struct esp_payload_header *) skb->data;
 
 	if (!adapter || !adapter->if_context || !skb || !skb->data || !skb->len) {
@@ -136,8 +145,11 @@ static int write_packet(struct esp_adapter *adapter, struct sk_buff *skb)
 		return -EPERM;
 	}
 
+
 	/* Enqueue SKB in tx_q */
-	if (payload_header->if_type == ESP_HCI_IF) {
+	if (payload_header->if_type == ESP_SERIAL_IF) {
+		skb_queue_tail(&spi_context.tx_q[PRIO_Q_SERIAL], skb);
+	} else if (payload_header->if_type == ESP_HCI_IF) {
 		skb_queue_tail(&spi_context.tx_q[PRIO_Q_BT], skb);
 	} else {
 		if (atomic_read(&tx_pending) >= TX_MAX_PENDING_COUNT) {
@@ -158,13 +170,13 @@ static int write_packet(struct esp_adapter *adapter, struct sk_buff *skb)
 }
 
 
-void process_init_event(u8 *evt_buf, u8 len)
+int process_init_event(u8 *evt_buf, u8 len)
 {
 	u8 len_left = len, tag_len;
 	u8 *pos;
 
 	if (!evt_buf)
-		return;
+		return -1;
 
 	pos = evt_buf;
 
@@ -177,6 +189,8 @@ void process_init_event(u8 *evt_buf, u8 len)
 			adjust_spi_clock(*(pos + 2));
 		} else if (*pos == ESP_PRIV_FIRMWARE_CHIP_ID){
 			hardware_type = *(pos+2);
+		// } else if (*pos == ESP_PRIV_TEST_RAW_TP) {
+		// 	process_test_capabilities(*(pos + 2));
 		} else {
 			printk (KERN_WARNING "Unsupported tag in event");
 		}
@@ -185,10 +199,15 @@ void process_init_event(u8 *evt_buf, u8 len)
 	}
 	if ((hardware_type != ESP_PRIV_FIRMWARE_CHIP_ESP32) &&
 	    (hardware_type != ESP_PRIV_FIRMWARE_CHIP_ESP32S2) &&
-	    (hardware_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C3)) {
+	    (hardware_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C2) &&
+	    (hardware_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C3) &&
+	    (hardware_type != ESP_PRIV_FIRMWARE_CHIP_ESP32S3)) {
 		printk(KERN_INFO "ESP board type is not mentioned, ignoring [%d]\n", hardware_type);
 		hardware_type = ESP_PRIV_FIRMWARE_CHIP_UNRECOGNIZED;
+		return -1;
 	}
+
+	return 0;
 }
 
 
@@ -233,7 +252,9 @@ static int process_rx_buf(struct sk_buff *skb)
 		return -EPERM;
 
 	/* enqueue skb for read_packet to pick it */
-	if (header->if_type == ESP_HCI_IF)
+	if (header->if_type == ESP_SERIAL_IF)
+		skb_queue_tail(&spi_context.rx_q[PRIO_Q_SERIAL], skb);
+	else if (header->if_type == ESP_HCI_IF)
 		skb_queue_tail(&spi_context.rx_q[PRIO_Q_BT], skb);
 	else
 		skb_queue_tail(&spi_context.rx_q[PRIO_Q_OTHERS], skb);
@@ -259,13 +280,20 @@ static void esp_spi_work(struct work_struct *work)
 
 	if (trans_ready) {
 		if (data_path) {
-			tx_skb = skb_dequeue(&spi_context.tx_q[PRIO_Q_OTHERS]);
+			tx_skb = skb_dequeue(&spi_context.tx_q[PRIO_Q_SERIAL]);
+			if (!tx_skb)
+				tx_skb = skb_dequeue(&spi_context.tx_q[PRIO_Q_BT]);
+			if (!tx_skb)
+				tx_skb = skb_dequeue(&spi_context.tx_q[PRIO_Q_OTHERS]);
 			if (tx_skb) {
 				if (atomic_read(&tx_pending))
 					atomic_dec(&tx_pending);
 
 				if (atomic_read(&tx_pending) < TX_RESUME_THRESHOLD) {
 					esp_tx_resume();
+					#if TEST_RAW_TP
+						esp_raw_tp_queue_resume();
+					#endif
 				}
 			}
 		}

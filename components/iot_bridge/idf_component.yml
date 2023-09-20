@@ -1,4 +1,4 @@
-version: "0.7.2"
+version: "0.8.0"
 description: A smart bridge to make both ESP and the other MCU or smart device can access the Internet
 url: https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge
 repository: https://github.com/espressif/esp-iot-bridge.git
@@ -16,11 +16,6 @@ dependencies:
     rules:
       - if: "target in [esp32s2, esp32s3]"
       - if: "idf_version >=4.4"
-  usb_device:
-    path: components/usb/usb_device
-    git: https://github.com/espressif/esp-iot-bridge.git
-    rules:
-      - if: "target in [esp32s2, esp32s3]"
 examples:
   - path: ../../examples/wifi_router
   - path: ../../examples/wireless_nic

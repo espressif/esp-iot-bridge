@@ -1,19 +1,27 @@
 /*
- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef __ESP_NETWORK_ADAPTER__H
-#define __ESP_NETWORK_ADAPTER__H
+#pragma once
 
-#define PRIO_Q_OTHERS           0
-#define PRIO_Q_BT               1
-#define MAX_PRIORITY_QUEUES     2
+#define PRIO_Q_SERIAL                             0
+#define PRIO_Q_BT                                 1
+#define PRIO_Q_OTHERS                             2
+#define MAX_PRIORITY_QUEUES                       3
 
 /* ESP Payload Header Flags */
-#define MORE_FRAGMENT           (1 << 0)
-#define DHCPS_CHANGED           (1 << 1)
+#define MORE_FRAGMENT                             (1 << 0)
+#define DHCPS_CHANGED                             (1 << 1)
+
+/* Serial interface */
+#define SERIAL_IF_FILE                            "/dev/esps0"
+
+/* Protobuf related info */
+/* Endpoints registered must have same string length */
+#define CTRL_EP_NAME_RESP                         "ctrlResp"
+#define CTRL_EP_NAME_EVENT                        "ctrlEvnt"
 
 #define NIC_LINK_UP             false
 #define NIC_LINK_DOWN           true
@@ -90,6 +98,7 @@ typedef enum {
 	ESP_SERIAL_IF,
 	ESP_HCI_IF,
 	ESP_PRIV_IF,
+	ESP_TEST_IF,
 	ESP_MAX_IF,
 } ESP_INTERFACE_TYPE;
 
@@ -97,6 +106,7 @@ typedef enum {
 	ESP_OPEN_DATA_PATH,
 	ESP_CLOSE_DATA_PATH,
 	ESP_RESET,
+	ESP_MAX_HOST_INTERRUPT,
 } ESP_HOST_INTERRUPT;
 
 
@@ -108,6 +118,7 @@ typedef enum {
 	ESP_BR_EDR_ONLY_SUPPORT = (1 << 4),
 	ESP_WLAN_SPI_SUPPORT = (1 << 5),
 	ESP_BT_SPI_SUPPORT = (1 << 6),
+	ESP_CHECKSUM_ENABLED = (1 << 7),
 } ESP_CAPABILITIES;
 
 typedef enum {
@@ -143,5 +154,3 @@ static inline uint16_t compute_checksum(uint8_t *buf, uint16_t len)
 
 	return checksum;
 }
-
-#endif

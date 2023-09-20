@@ -8,93 +8,17 @@ In this setup, ESP device acts as a SPI peripheral and provides Wi-Fi capabiliti
 
 Raspberry-Pi pinout can be found [here!](https://pinout.xyz/pinout/spi)
 
-#### 1.1.1 ESP32 setup
-
-| Raspberry-Pi Pin | ESP32 Pin | Function    |
-| ---------------- | --------- | ----------- |
-| 24               | IO15      | CS0         |
-| 23               | IO14      | SCLK        |
-| 21               | IO12      | MISO        |
-| 19               | IO13      | MOSI        |
-| 25               | GND       | Ground      |
-| 15               | IO2       | Handshake   |
-| 13               | IO4       | Data Ready  |
-| 31               | EN        | ESP32 Reset |
-
-Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
-
-#### 1.1.2 ESP32-S2 setup
-
-| Raspberry-Pi Pin | ESP32-S2 Pin | Function    |
-| ---------------- | ------------ | ----------- |
-| 24               | IO10         | CS0         |
-| 23               | IO12         | SCLK        |
-| 21               | IO13         | MISO        |
-| 19               | IO11         | MOSI        |
-| 25               | GND          | Ground      |
-| 15               | IO2          | Handshake   |
-| 13               | IO4          | Data ready  |
-| 31               | RST          | ESP32 Reset |
-
-Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
-
-#### 1.1.3 ESP32-S3 setup
-
-| Raspberry-Pi Pin | ESP32-S3 Pin | Function    |
-| ---------------- | ------------ | ----------- |
-| 24               | IO10         | CS0         |
-| 23               | IO12         | SCLK        |
-| 21               | IO13         | MISO        |
-| 19               | IO11         | MOSI        |
-| 25               | GND          | Ground      |
-| 15               | IO2          | Handshake   |
-| 13               | IO4          | Data ready  |
-| 31               | RST          | ESP32 Reset |
-
-Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
-
-#### 1.1.4 ESP32-C3 setup
-
-| Raspberry-Pi Pin | ESP32-C3 Pin | Function    |
-| ---------------- | ------------ | ----------- |
-| 24               | IO10         | CS0         |
-| 23               | IO6          | SCLK        |
-| 21               | IO2          | MISO        |
-| 19               | IO7          | MOSI        |
-| 25               | GND          | Ground      |
-| 15               | IO3          | Handshake   |
-| 13               | IO4          | Data ready  |
-| 31               | RST          | ESP32 Reset |
-
-Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
-
-#### 1.1.5 ESP32-C2 setup
-
-| Raspberry-Pi Pin | ESP32-C2 Pin | Function    |
-| ---------------- | ------------ | ----------- |
-| 24               | IO10         | CS0         |
-| 23               | IO6          | SCLK        |
-| 21               | IO2          | MISO        |
-| 19               | IO7          | MOSI        |
-| 25               | GND          | Ground      |
-| 15               | IO3          | Handshake   |
-| 13               | IO4          | Data ready  |
-| 31               | RST          | ESP32 Reset |
-
-Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
-
-#### 1.1.6 ESP32-C6 setup
-
-| Raspberry-Pi Pin | ESP32-C6 Pin | Function    |
-| ---------------- | ------------ | ----------- |
-| 24               | IO10         | CS0         |
-| 23               | IO6          | SCLK        |
-| 21               | IO2          | MISO        |
-| 19               | IO7          | MOSI        |
-| 25               | GND          | Ground      |
-| 15               | IO3          | Handshake   |
-| 13               | IO4          | Data ready  |
-| 31               | RST          | ESP32 Reset |
+#### 1.1.1 Pin connections
+| Raspberry-Pi Pin | ESP32 | ESP32-S2/S3 | ESP32-C2/C3/C6 | Function |
+|:-------:|:---------:|:--------:|:--------:|:--------:|
+| 24 | IO15 | IO10 | IO10 | CS0 |
+| 23 | IO14 | IO12 | IO6 | SCLK |
+| 21 | IO12 | IO13 | IO2 | MISO |
+| 19 | IO13 | IO11 | IO7 | MOSI |
+| 25 | GND | GND | GND | Ground |
+| 15 | IO2 | IO2 | IO3 | Handshake |
+| 13 | IO4 | IO4 | IO4 | Data Ready |
+| 31 | EN  | RST | RST | ESP32 Reset |
 
 Tested on Raspberry-Pi 3B+ and Raspberry-Pi 4B
 
