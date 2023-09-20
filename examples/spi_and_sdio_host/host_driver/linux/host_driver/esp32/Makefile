@@ -1,12 +1,19 @@
 CONFIG_SUPPORT_ESP_SERIAL = y
-CONFIG_ENABLE_MONITOR_PROCESS = n
+CONFIG_TEST_RAW_TP := n
+# In case of SDIO as transport, one of slave chipset used,
+# CONFIG_TARGET_ESP32  OR
+# CONFIG_TARGET_ESP32C6
+# need to be added depending upon slave in use
+# rpi_init.sh will add that flag using ESP_SLAVE
+# ESP_SLAVE := "CONFIG_TARGET_ESP32C6=y"
+ESP_SLAVE := "CONFIG_TARGET_ESP32=y"
 
 # Toolchain Path
-CROSS_COMPILE := /usr/bin/arm-linux-gnueabihf-
+CROSS_COMPILE :=
 # Linux Kernel header
 KERNEL := /lib/modules/$(shell uname -r)/build
 # Architecture
-ARCH := arm
+ARCH := arm64
 
 #Default interface is sdio
 MODULE_NAME=esp32_sdio
@@ -24,8 +31,8 @@ ifeq ($(CONFIG_SUPPORT_ESP_SERIAL), y)
 	EXTRA_CFLAGS += -DCONFIG_SUPPORT_ESP_SERIAL
 endif
 
-ifeq ($(CONFIG_ENABLE_MONITOR_PROCESS), y)
-	EXTRA_CFLAGS += -DCONFIG_ENABLE_MONITOR_PROCESS
+ifeq ($(CONFIG_TEST_RAW_TP), y)
+	EXTRA_CFLAGS += -DCONFIG_TEST_RAW_TP
 endif
 
 EXTRA_CFLAGS += -I$(PWD)/../../../../common/include -I$(PWD)
@@ -40,10 +47,14 @@ ifeq ($(MODULE_NAME), esp32_spi)
 	module_objects += spi/esp_spi.o
 endif
 
+ifneq ($(ESP_SLAVE), "")
+EXTRA_CFLAGS += -D$(ESP_SLAVE)
+endif
+
 PWD := $(shell pwd)
 
 obj-m := $(MODULE_NAME).o
-$(MODULE_NAME)-y := esp_bt.o main.o $(module_objects)
+$(MODULE_NAME)-y := esp_bt.o main.o esp_stats.o $(module_objects)
 
 ifeq ($(CONFIG_SUPPORT_ESP_SERIAL), y)
 	$(MODULE_NAME)-y += esp_serial.o esp_rb.o
