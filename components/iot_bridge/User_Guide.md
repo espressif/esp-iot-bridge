@@ -16,8 +16,9 @@ ESP-IoT-Bridge solution focuses on connectivity and communication between variou
 - [5 Configuration](#5-configuration)
 - [6 Build Flash Monitor](#6-build-flash-monitor)
 - [7 Network Configuration](#7-network-configuration)
-- [8 Solution Highlights](#8-solution-highlights)
-- [9 GPIO Map](#9-gpio-map)
+- [8 OTA](#8-ota)
+- [9 Solution Highlights](#9-solution-highlights)
+- [10 GPIO Map](#10-gpio-map)
 
 ## 1 Overview
 
@@ -287,7 +288,7 @@ $ idf.py monitor
 
 ### Configure Network on Web Page
 
-After the PC or MCU connects to the hotspot from the ESP-IoT-Bridge device and obtains the IP address successfully, it can configure the network on the web page by accessing the gateway IP.
+When a PC or MCU connects to the ESP-IoT-Bridge device via hotspot, USB, SPI, SDIO, or Ethernet and successfully obtains an IP address, it can configure the network on the web page by accessing the gateway IP.
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/web_server_en.png" alt="web_server_en" style="zoom: 67%;" />
 
@@ -342,7 +343,17 @@ Note:
 - Since ESP32-S2 does not support Bluetooth LE, this network configuration method is not applicable to ESP32-S2.
 - By default, `PROV_MODE` is set to `PROV_SEC2_DEV_MODE`. For mass-produced firmware, it is recommended to choose `PROV_SEC2_PROD_MODE` and add your own `salt` and `verifier`. For specific instructions, please refer to [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41).
 
-## 8 Solution Highlights
+## 8 OTA
+
+### OTA Firmware Upgrade Using a Browser
+
+#### Introduction
+
+When a PC or MCU connects to the ESP-IoT-Bridge device via hotspot, USB, SPI, SDIO, or Ethernet and successfully obtains an IP address, it can perform a web-based OTA (Over-the-Air) update by accessing the gateway IP. After opening the web page hosted on the Web Server in a browser, it can choose to enter the OTA upgrade page and proceed with firmware updates through the web interface.
+
+<img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/web_ota.png" alt="web_ota" style="zoom: 67%;" />
+
+## 9 Solution Highlights
 
 <table>
     <tr> <!-- First row of data -->
@@ -428,6 +439,6 @@ Note:
 
 **Please refer to the [ESP-IoT-Bridge Video](https://www.bilibili.com/video/BV1VN411A7G3) which demonstrates some of the features of the ESP-IoT-Bridge.**
 
-## 9 GPIO Map
+## 10 GPIO Map
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/gpio_map.png" alt="gpio_map" style="zoom: 67%;" />
