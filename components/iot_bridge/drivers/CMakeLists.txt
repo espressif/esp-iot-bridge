@@ -2,11 +2,11 @@ set(sub_srcs "drivers/src/network_adapter.c" "drivers/src/mempool.c")
 
 set(drivers_include "drivers/include")
 
-if(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
+if (CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
     list(APPEND sub_srcs "drivers/src/sdio_slave_api.c")
 endif()
 
-if(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
+if (CONFIG_BRIDGE_EXTERNAL_NETIF_SPI OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
     list(APPEND sub_srcs "drivers/src/spi_slave_api.c")
 endif()
 

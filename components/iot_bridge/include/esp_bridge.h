@@ -102,7 +102,7 @@ esp_netif_t *esp_bridge_create_eth_netif(esp_netif_ip_info_t *ip_info, uint8_t m
 esp_netif_t *esp_bridge_create_usb_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
 /**
 * @brief Create sdio netif for bridge.
 *
@@ -118,7 +118,7 @@ esp_netif_t *esp_bridge_create_usb_netif(esp_netif_ip_info_t *ip_info, uint8_t m
 esp_netif_t *esp_bridge_create_sdio_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
 /**
 * @brief Create spi netif for bridge.
 *

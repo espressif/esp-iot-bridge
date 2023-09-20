@@ -49,7 +49,7 @@ static const char TAG_TX[] = "S -> H";
 #define ARRAY_SIZE_OFFSET                5
 #endif
 
-#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
   #ifdef CONFIG_IDF_TARGET_ESP32S2
     #define TO_HOST_QUEUE_SIZE           5
   #else
@@ -75,7 +75,7 @@ static QueueHandle_t to_host_queue[MAX_PRIORITY_QUEUES] = {NULL};
 static void print_firmware_version()
 {
 	ESP_LOGI(TAG, "*********************************************************************");
-#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
   #if BLUETOOTH_UART
 	ESP_LOGI(TAG, "                Transport used :: SPI + UART                    ");
   #else
@@ -96,7 +96,7 @@ static uint8_t get_capabilities()
 	uint8_t cap = 0;
 
 	ESP_LOGI(TAG, "Supported features are:");
-#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
 	ESP_LOGI(TAG, "- WLAN over SPI");
 	cap |= ESP_WLAN_SPI_SUPPORT;
 #else
@@ -399,7 +399,7 @@ static esp_err_t print_real_time_stats(TickType_t xTicksToWait)
         if (k >= 0) {
             uint32_t task_elapsed_time = end_array[k].ulRunTimeCounter - start_array[i].ulRunTimeCounter;
             uint32_t percentage_time = (task_elapsed_time * 100UL) / (total_elapsed_time * portNUM_PROCESSORS);
-            printf("| %s | %d | %d%%\n", start_array[i].pcTaskName, task_elapsed_time, percentage_time);
+            printf("| %s | %"PRIu32" | %"PRIu32"%%\n", start_array[i].pcTaskName, task_elapsed_time, percentage_time);
         }
     }
 
@@ -427,7 +427,7 @@ exit:    //Common return path
 void task_runtime_stats_task(void* pvParameters)
 {
     while (1) {
-        printf("\n\nGetting real time stats over %d ticks\n", STATS_TICKS);
+        printf("\n\nGetting real time stats over %"PRIu32" ticks\n", STATS_TICKS);
         if (print_real_time_stats(STATS_TICKS) == ESP_OK) {
             printf("Real time stats obtained\n");
         } else {
@@ -462,7 +462,7 @@ void network_adapter_driver_init(void)
 #endif
 
 	if_context = interface_insert_driver(event_handler);
-#if CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
 	datapath = 1;
 #endif
 

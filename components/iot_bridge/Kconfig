@@ -22,8 +22,29 @@ menu "Bridge Configuration"
             default n
 
         config BRIDGE_EXTERNAL_NETIF_ETHERNET
-            bool "Use ethernet interface to connect to the external network"
+            bool "Use ethernet interface to connect to the external network. Please disable BRIDGE_DATA_FORWARDING_NETIF_ETHERNET first"
             default n
+            help
+                "BRIDGE_EXTERNAL_NETIF_ETHERNET" and "BRIDGE_DATA_FORWARDING_NETIF_ETHERNET" cannot be enabled simultaneously at the moment.
+
+        config BRIDGE_EXTERNAL_NETIF_SPI
+            bool "Use SPI interface to connect to the external network. Please note that SPI Netif and SDIO Netif cannot be enabled simultaneously."
+            default n
+            help
+                "BRIDGE_EXTERNAL_NETIF_SPI",
+                "BRIDGE_EXTERNAL_NETIF_SDIO",
+                "BRIDGE_DATA_FORWARDING_NETIF_SPI",
+                "BRIDGE_DATA_FORWARDING_NETIF_SDIO" are currently not supported to be enabled simultaneously.
+
+        config BRIDGE_EXTERNAL_NETIF_SDIO
+            bool "Use SDIO interface to connect to the external network. Please note that SPI Netif and SDIO Netif cannot be enabled simultaneously."
+            depends on IDF_TARGET_ESP32 || IDF_TARGET_ESP32C6
+            default n
+            help
+                "BRIDGE_EXTERNAL_NETIF_SPI",
+                "BRIDGE_EXTERNAL_NETIF_SDIO",
+                "BRIDGE_DATA_FORWARDING_NETIF_SPI",
+                "BRIDGE_DATA_FORWARDING_NETIF_SDIO" are currently not supported to be enabled simultaneously.
     endmenu
 
     menu "The interface used to provide network data forwarding for other devices"
@@ -78,34 +99,36 @@ menu "Bridge Configuration"
 
         config BRIDGE_DATA_FORWARDING_NETIF_USB
             bool "Use USB interface to provide network data forwarding for other devices"
-            default n
             depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
             select TINYUSB
             select TINYUSB_NET_ENABLED
+            default n
 
         config BRIDGE_DATA_FORWARDING_NETIF_ETHERNET
             bool "Use ethernet interface to provide network data forwarding for other devices"
-            default n
             depends on !BRIDGE_EXTERNAL_NETIF_ETHERNET
-
-        menuconfig DRIVER_TYPE
-            bool "Use SPI/SDIO interface to provide network data forwarding for other devices"
             default n
+            help
+                "BRIDGE_EXTERNAL_NETIF_ETHERNET" and "BRIDGE_DATA_FORWARDING_NETIF_ETHERNET" cannot be enabled simultaneously at the moment.
 
-            choice BRIDGE_DATA_FORWARDING_NETIF_DRIVER_TYPE
-                prompt "Select the driver type(SPI/SDIO)"
-                depends on DRIVER_TYPE
-                default BRIDGE_DATA_FORWARDING_NETIF_SPI
-                help
-                    Select the driver type(SPI/SDIO).
+        config BRIDGE_DATA_FORWARDING_NETIF_SPI
+            bool "Use SPI interface to provide network data forwarding for other devices. Please note that SPI Netif and SDIO Netif cannot be enabled simultaneously."
+            default n
+            help
+                "BRIDGE_EXTERNAL_NETIF_SPI",
+                "BRIDGE_EXTERNAL_NETIF_SDIO",
+                "BRIDGE_DATA_FORWARDING_NETIF_SPI",
+                "BRIDGE_DATA_FORWARDING_NETIF_SDIO" are currently not supported to be enabled simultaneously.
 
-                config BRIDGE_DATA_FORWARDING_NETIF_SPI
-                    bool "Use SPI interface to provide network data forwarding for other devices"
-
-                config BRIDGE_DATA_FORWARDING_NETIF_SDIO
-                    bool "Use SDIO interface to provide network data forwarding for other devices"
-                    depends on IDF_TARGET_ESP32
-            endchoice
+        config BRIDGE_DATA_FORWARDING_NETIF_SDIO
+            bool "Use SDIO interface to provide network data forwarding for other devices. Please note that SPI Netif and SDIO Netif cannot be enabled simultaneously."
+            depends on IDF_TARGET_ESP32 || IDF_TARGET_ESP32C6
+            default n
+            help
+                "BRIDGE_EXTERNAL_NETIF_SPI",
+                "BRIDGE_EXTERNAL_NETIF_SDIO",
+                "BRIDGE_DATA_FORWARDING_NETIF_SPI",
+                "BRIDGE_DATA_FORWARDING_NETIF_SDIO" are currently not supported to be enabled simultaneously.
     endmenu
 
     config BRIDGE_GPIO_RANGE_MIN

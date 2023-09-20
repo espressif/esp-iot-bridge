@@ -369,7 +369,6 @@ esp_err_t esp_bridge_eth_spi_init(esp_netif_t* eth_netif_spi)
 }
 #endif // CONFIG_BRIDGE_USE_SPI_ETHERNET
 
-#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
 static esp_err_t eth_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
 {
     phy->reset_hw(phy);
@@ -377,7 +376,6 @@ static esp_err_t eth_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
 
     return ESP_OK;
 }
-#endif /* CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET */
 
 static void eth_driver_free_rx_buffer(void *h, void* buffer)
 {
@@ -441,16 +439,16 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         esp_bridge_eth_spi_init(netif);
 #endif
         esp_netif_up(netif);
-#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
-        esp_bridge_netif_list_add(netif, eth_netif_dhcp_status_change_cb);
-#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
-        esp_bridge_netif_list_add(netif, NULL);
-#endif
+
         if (data_forwarding) {
+            esp_bridge_netif_list_add(netif, eth_netif_dhcp_status_change_cb);
             esp_netif_get_ip_info(netif, &netif_ip_info);
             ESP_LOGI(TAG, "ETH IP Address:" IPSTR, IP2STR(&netif_ip_info.ip));
             ip_napt_enable(netif_ip_info.ip.addr, 1);
+        } else {
+            esp_bridge_netif_list_add(netif, NULL);
         }
+
         if (enable_dhcps) {
             esp_netif_dhcps_start(netif);
         }

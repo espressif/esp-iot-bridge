@@ -1,8 +1,8 @@
 menu "Bridge Driver Configuration"
-    depends on BRIDGE_DATA_FORWARDING_NETIF_SPI || BRIDGE_DATA_FORWARDING_NETIF_SDIO
+    depends on BRIDGE_EXTERNAL_NETIF_SPI || BRIDGE_DATA_FORWARDING_NETIF_SPI || BRIDGE_EXTERNAL_NETIF_SDIO || BRIDGE_DATA_FORWARDING_NETIF_SDIO
 
     menu "SPI Configuration"
-        depends on BRIDGE_DATA_FORWARDING_NETIF_SPI
+        depends on BRIDGE_EXTERNAL_NETIF_SPI || BRIDGE_DATA_FORWARDING_NETIF_SPI
 
         config GPIO_MOSI
             int "GPIO pin for MOSI"
@@ -71,7 +71,7 @@ menu "Bridge Driver Configuration"
     endmenu
 
     menu "SDIO Configuration"
-        depends on BRIDGE_DATA_FORWARDING_NETIF_SDIO
+        depends on BRIDGE_EXTERNAL_NETIF_SDIO || BRIDGE_DATA_FORWARDING_NETIF_SDIO
 
         config ESP_SDIO_CHECKSUM
             bool "SDIO checksum ENABLE/DISABLE"
