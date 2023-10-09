@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.10.0 - 2023.10-13
+
+### Enhancements
+
+- Add esp_bridge_wifi_set_config API
+
 ## v0.9.0 - 2023.9-21
 
 ### Enhancements

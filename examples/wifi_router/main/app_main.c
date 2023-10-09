@@ -113,7 +113,13 @@ void app_main(void)
     esp_bridge_create_all_netif();
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
-    esp_bridge_wifi_set(WIFI_MODE_AP, CONFIG_BRIDGE_SOFTAP_SSID, CONFIG_BRIDGE_SOFTAP_PASSWORD, NULL);
+    wifi_config_t wifi_cfg = {
+        .ap = {
+            .ssid = CONFIG_BRIDGE_SOFTAP_SSID,
+            .password = CONFIG_BRIDGE_SOFTAP_PASSWORD,
+        }
+    };
+    esp_bridge_wifi_set_config(WIFI_IF_AP, &wifi_cfg);
 #endif
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
     esp_wifi_connect();
