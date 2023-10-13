@@ -177,7 +177,9 @@ static interface_handle_t * sdio_init(void)
 		   bus in your real design.
 		   */
 		//.flags              = SDIO_SLAVE_FLAG_INTERNAL_PULLUP,
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 		.flags              = SDIO_SLAVE_FLAG_DEFAULT_SPEED,
+#endif
 	};
 	sdio_slave_buf_handle_t handle;
 

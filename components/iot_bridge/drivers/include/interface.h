@@ -8,7 +8,7 @@
 
 #include "esp_err.h"
 
-#ifdef CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
 
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C6)
 	#include "driver/sdio_slave.h"
@@ -41,7 +41,7 @@ typedef enum {
 
 typedef struct {
 	union {
-#ifdef CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
 		sdio_slave_buf_handle_t sdio_buf_handle;
 #endif
 		wlan_buf_handle_t	wlan_buf_handle;

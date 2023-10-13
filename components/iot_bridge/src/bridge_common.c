@@ -327,10 +327,16 @@ void esp_bridge_create_all_netif(void)
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
     esp_bridge_create_spi_netif(NULL, NULL, true, true);
+#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI)
+    uint8_t spi_mac[6] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6};
+    esp_bridge_create_spi_netif(NULL, spi_mac, false, false);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
     esp_bridge_create_sdio_netif(NULL, NULL, true, true);
+#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO)
+    uint8_t sdio_mac[6] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6};
+    esp_bridge_create_sdio_netif(NULL, sdio_mac, false, false);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)

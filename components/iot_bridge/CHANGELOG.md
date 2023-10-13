@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.9.0 - 2023.9-21
+
+### Enhancements
+
+- Support SPI and SDIO drivers as external netif
+
 ## v0.8.0 - 2023.9-15
 
 ### Enhancements
