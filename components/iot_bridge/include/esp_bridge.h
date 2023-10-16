@@ -20,6 +20,9 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
                               const char *ssid,
                               const char *password,
                               const char *bssid);
+
+esp_err_t esp_bridge_wifi_set_config(wifi_interface_t interface, wifi_config_t *conf);
+
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
