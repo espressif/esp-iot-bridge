@@ -319,6 +319,24 @@ esp32c3_v5.1_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
 
+esp32s2_v4.3_build:
+  stage: build
+  image: espressif/idf:release-v4.3
+  tags:
+    - build
+
+  variables:
+    <<: *global-variables
+    idf_target: esp32s2
+    idf_branch: release/v4.3
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *setup_esp_idf
+    - *build_iot_bridge_examples
+
 esp32s2_v4.4_build:
   stage: build
   image: espressif/idf:release-v4.4
