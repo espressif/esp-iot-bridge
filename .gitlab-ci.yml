@@ -509,4 +509,4 @@ push_master_to_github:
     - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
     - if [ -d "components/iot_bridge/priv_src" ]; then exit 1; fi
     - git remote add github git@github.com:espressif/esp-iot-bridge.git
-    - eval $(git for-each-ref --shell bash --format 'if [ $CI_BUILD_REF == %(objectname) ]; then git checkout -B %(refname:strip=3); git push --follow-tags github %(refname:strip=3); fi;' $GITHUB_PUSH_REFS)
+    - eval $(git for-each-ref --shell bash --format 'if [ $CI_COMMIT_SHA == %(objectname) ]; then git checkout -B %(refname:strip=3); git push --follow-tags github %(refname:strip=3); fi;' $GITHUB_PUSH_REFS)
