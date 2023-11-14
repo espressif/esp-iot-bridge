@@ -268,7 +268,7 @@ void process_rx_pkt(interface_buffer_handle_t *buf_handle)
 /* Get data from host */
 void recv_task(void* pvParameters)
 {
-	interface_buffer_handle_t buf_handle;
+	interface_buffer_handle_t buf_handle = {0};
 
 	for (;;) {
 

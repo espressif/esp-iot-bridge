@@ -1,4 +1,4 @@
-set(sub_srcs "drivers/src/network_adapter.c" "drivers/src/mempool.c")
+set(sub_srcs "drivers/src/network_adapter.c" "drivers/src/mempool.c" "drivers/src/mempool_ll.c")
 
 set(drivers_include "drivers/include")
 

@@ -1,13 +1,9 @@
 set(srcs "src/bridge_common.c")
-set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "esp_modem")
+set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer")
 set(include_dirs "include")
 
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_STATION OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
     list(APPEND srcs "src/bridge_wifi.c")
-endif()
-
-if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
-    list(APPEND srcs "src/bridge_modem.c")
 endif()
 
 if (CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
@@ -29,6 +25,13 @@ if (CONFIG_BRIDGE_EXTERNAL_NETIF_SPI OR
         list(APPEND srcs "src/bridge_sdio.c")
     endif()
     add_subdirectory(drivers)
+endif()
+
+if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "4.4")
+    list(APPEND requires "esp_modem")
+    if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
+        list(APPEND srcs "src/bridge_modem.c")
+    endif()
 endif()
 
 if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")

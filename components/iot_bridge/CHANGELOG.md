@@ -1,18 +1,20 @@
 # ChangeLog
 
-## v0.10.0 - 2023.10-13
+## v0.10.0 - 2023.11.13
 
 ### Enhancements
 
+- Support ESP32C6 SDIO netif
 - Add esp_bridge_wifi_set_config API
+- Remove modom function on idf4.3
 
-## v0.9.0 - 2023.9-21
+## v0.9.0 - 2023.9.21
 
 ### Enhancements
 
 - Support SPI and SDIO drivers as external netif
 
-## v0.8.0 - 2023.9-15
+## v0.8.0 - 2023.9.15
 
 ### Enhancements
 

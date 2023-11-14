@@ -345,8 +345,10 @@ void esp_bridge_create_all_netif(void)
     esp_bridge_create_eth_netif(NULL, NULL, false, false);
 #endif
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
     esp_bridge_create_modem_netif(NULL, NULL, false, false);
+#endif
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
