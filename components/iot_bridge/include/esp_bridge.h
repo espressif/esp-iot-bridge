@@ -138,6 +138,30 @@ esp_netif_t *esp_bridge_create_spi_netif(esp_netif_ip_info_t *ip_info, uint8_t m
 #endif
 
 /**
+ * @brief Update DNS information for netif interface(s).
+ *
+ * This function updates the DNS information of the netif interface(s). If the second parameter
+ * (`data_forwarding_netif`) is not NULL, it retrieves the DNS information from the first parameter
+ * (`external_netif`) and sets it as the DNS information for the DHCP server of `data_forwarding_netif`.
+ * If the second parameter is NULL, it updates the DNS information for all data forwarding netif interfaces.
+ *
+ * @param[in] external_netif Pointer to the external netif (source of DNS information).
+ * @param[in] data_forwarding_netif Pointer to the data forwarding netif (target for DNS information).
+ *                                  If NULL, update DNS information for all external netifs.
+ *
+ * @note The function assumes that the DNS information in the external_netif is accessible
+ * and valid for the data_forwarding_netif.
+ *
+ * @warning This function may override existing DNS information in the all data forwarding_netifs
+ * (if data_forwarding_netif is NULL).
+ *
+ * @return
+ *     - ESP_OK: DNS information updated successfully.
+ *     - ESP_ERR_INVALID_ARG: One or more input arguments are invalid.
+ */
+esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *data_forwarding_netif);
+
+/**
 * @brief Create all netif which are enabled in menuconfig, for example, station, modem, ethernet.
 *
 */

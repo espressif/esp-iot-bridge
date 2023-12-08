@@ -26,6 +26,7 @@
 #include "esp_netif.h"
 #include "esp_netif_net_stack.h"
 
+#include "esp_bridge.h"
 #include "esp_bridge_internal.h"
 #include "network_adapter.h"
 
@@ -267,10 +268,11 @@ const struct esp_netif_lwip_vanilla_config spi_netstack_config = {
     .input_fn = spi_input
 };
 
-static void spi_got_ip_handler(void* arg, esp_event_base_t event_base,
-                               int32_t event_id, void* event_data)
+static void spi_got_ip_handler(void *arg, esp_event_base_t event_base,
+                               int32_t event_id, void *event_data)
 {
-    ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
+    ip_event_got_ip_t *event = (ip_event_got_ip_t*)event_data;
+    esp_bridge_update_dns_info(event->esp_netif, NULL);
     ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
 }
 
@@ -287,8 +289,8 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 #endif
         .get_ip_event = IP_EVENT_STA_GOT_IP,
         .lost_ip_event = IP_EVENT_STA_LOST_IP,
-        .if_key = "SPI_key",
-        .if_desc = "SPI_Netif"
+        .if_key = "SPI_DEF",
+        .if_desc = "spi"
     };
 
     esp_netif_config_t spi_config = {

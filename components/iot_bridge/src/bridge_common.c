@@ -159,9 +159,9 @@ esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t *ip_info)
             ip_info->ip.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
             ip_info->gw.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
             ip_info->netmask.addr = ESP_IP4TOADDR(255, 255, 255, 0);
-            ESP_LOGI("ip select", "IP Address:" IPSTR, IP2STR(&ip_info->ip));
-            ESP_LOGI("ip select", "GW Address:" IPSTR, IP2STR(&ip_info->gw));
-            ESP_LOGI("ip select", "NM Address:" IPSTR, IP2STR(&ip_info->netmask));
+            ESP_LOGI(TAG, "IP Address:" IPSTR, IP2STR(&ip_info->ip));
+            ESP_LOGI(TAG, "GW Address:" IPSTR, IP2STR(&ip_info->gw));
+            ESP_LOGI(TAG, "NM Address:" IPSTR, IP2STR(&ip_info->netmask));
 
             return ESP_OK;
         }
@@ -244,6 +244,7 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_neti
                 continue;
             }
 
+            ESP_LOGI(TAG, "[%-12s]", esp_netif_get_ifkey(p->netif));
             if (esp_bridge_netif_request_ip(&allocate_ip_info) != ESP_OK) {
                 ESP_LOGE(TAG, "ip reallocate fail");
                 break;
@@ -308,6 +309,49 @@ esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_in
     }
 
     return netif;
+}
+
+static void esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_t *data_forwarding_netif, esp_netif_dns_info_t *dns_info)
+{
+    dhcps_offer_t dhcps_dns_value = OFFER_DNS;
+    esp_netif_dhcps_stop(data_forwarding_netif);
+    ESP_ERROR_CHECK(esp_netif_dhcps_option(data_forwarding_netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value)));
+    ESP_LOGI(TAG, "[%-12s]Name Server1: " IPSTR, esp_netif_get_ifkey(data_forwarding_netif), IP2STR(&dns_info->ip.u_addr.ip4));
+    ESP_ERROR_CHECK(esp_netif_set_dns_info(data_forwarding_netif, ESP_NETIF_DNS_MAIN, dns_info));
+    ESP_ERROR_CHECK(esp_netif_dhcps_start(data_forwarding_netif));
+}
+
+esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *data_forwarding_netif)
+{
+    esp_netif_dns_info_t dns_info = {0};
+    if (external_netif) {
+        esp_netif_get_dns_info(external_netif, ESP_NETIF_DNS_MAIN, &dns_info);
+    }
+    if (dns_info.ip.u_addr.ip4.addr == 0) {
+        dns_info.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
+        dns_info.ip.type = IPADDR_TYPE_V4;
+    }
+
+    if (data_forwarding_netif) {
+        esp_bridge_update_data_forwarding_netif_dns_info(data_forwarding_netif, &dns_info);
+    } else {
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &dns_info);
+#endif
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SDIO_DEF"), &dns_info);
+#endif
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SPI_DEF"), &dns_info);
+#endif
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("ETH_DEF"), &dns_info);
+#endif
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("USB_DEF"), &dns_info);
+#endif
+    }
+    return ESP_OK;
 }
 
 void esp_bridge_create_all_netif(void)

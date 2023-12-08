@@ -282,8 +282,8 @@ esp_netif_t* esp_bridge_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         .flags = (ESP_NETIF_DHCP_SERVER | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
         .get_ip_event = IP_EVENT_STA_GOT_IP,
         .lost_ip_event = IP_EVENT_STA_LOST_IP,
-        .if_key = "USB_key",
-        .if_desc = "USB_Netif"
+        .if_key = "USB_DEF",
+        .if_desc = "usb"
     };
 
     esp_netif_config_t usb_config = {

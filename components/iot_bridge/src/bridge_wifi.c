@@ -115,27 +115,6 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
     return ESP_OK;
 }
 
-/* Event handler for catching system events */
-static void wifi_event_sta_disconnected_handler(void* arg, esp_event_base_t event_base,
-    int32_t event_id, void* event_data)
-{
-#if !CONFIG_BRIDGE_STATION_CANCEL_AUTO_CONNECT_WHEN_DISCONNECTED
-    ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
-    esp_wifi_connect();
-#endif
-    xEventGroupClearBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
-}
-
-static void ip_event_sta_got_ip_handler(void* arg, esp_event_base_t event_base,
-    int32_t event_id, void* event_data)
-{
-    ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
-    ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
-
-    esp_bridge_netif_network_segment_conflict_update(event->esp_netif);
-    xEventGroupSetBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
-}
-
 static esp_err_t esp_bridge_wifi_init(void)
 {
     if (s_wifi_event_group) {
@@ -157,6 +136,29 @@ static esp_err_t esp_bridge_wifi_init(void)
 #endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_STATION || CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP */
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
+
+static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
+    int32_t event_id, void *event_data)
+{
+    ip_event_got_ip_t *event = (ip_event_got_ip_t*)event_data;
+    ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
+
+    esp_bridge_update_dns_info(event->esp_netif, NULL);
+
+    esp_bridge_netif_network_segment_conflict_update(event->esp_netif);
+    xEventGroupSetBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
+}
+
+/* Event handler for catching system events */
+static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t event_base,
+    int32_t event_id, void *event_data)
+{
+#if !CONFIG_BRIDGE_STATION_CANCEL_AUTO_CONNECT_WHEN_DISCONNECTED
+    ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
+    esp_wifi_connect();
+#endif
+    xEventGroupClearBits(s_wifi_event_group, BRIDGE_EVENT_STA_CONNECTED);
+}
 
 esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
@@ -196,25 +198,32 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 static bool esp_bridge_softap_dhcps = false;
 
-static void wifi_event_ap_start_handler(void* arg, esp_event_base_t event_base,
-    int32_t event_id, void* event_data)
+static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
+    int32_t event_id, void *event_data)
 {
-    esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
-
-    if (netif) {
+    esp_netif_t *softap_netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
+    if (softap_netif) {
         if (esp_bridge_softap_dhcps) {
-            esp_netif_dhcps_stop(netif);
-            esp_netif_dns_info_t dns;
-            dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
-            dns.ip.type = IPADDR_TYPE_V4;
-            dhcps_offer_t dhcps_dns_value = OFFER_DNS;
-            ESP_ERROR_CHECK(esp_netif_dhcps_option(netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value)));
-            ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, ESP_NETIF_DNS_MAIN, &dns));
-            ESP_ERROR_CHECK(esp_netif_dhcps_start(netif));
+            esp_netif_t *external_netif = NULL;
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI)
+            external_netif = esp_netif_get_handle_from_ifkey("SPI_DEF");
+#endif
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO)
+            external_netif = esp_netif_get_handle_from_ifkey("SDIO_DEF");
+#endif
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
+            external_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
+#endif
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
+            external_netif = esp_netif_get_handle_from_ifkey("PPP_DEF");
+#endif
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
+            external_netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+#endif
+            esp_bridge_update_dns_info(external_netif, softap_netif);
         }
-
         esp_netif_ip_info_t netif_ip;
-        esp_netif_get_ip_info(netif, &netif_ip);
+        esp_netif_get_ip_info(softap_netif, &netif_ip);
 #if CONFIG_LWIP_IPV4_NAPT
         ip_napt_enable(netif_ip.ip.addr, 1);
 #endif
