@@ -14,6 +14,8 @@
 #include "lwip/sys.h"
 #include "lwip/lwip_napt.h"
 
+#include "esp_bridge.h"
+
 #ifdef __cplusplus
 extern "C"
 {

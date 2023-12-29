@@ -92,6 +92,7 @@ static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
     ESP_LOGI(TAG, "ETHMASK:" IPSTR, IP2STR(&ip_info->netmask));
     ESP_LOGI(TAG, "ETHGW:" IPSTR, IP2STR(&ip_info->gw));
     ESP_LOGI(TAG, "~~~~~~~~~~~");
+    esp_bridge_update_dns_info(event->esp_netif, NULL);
     esp_bridge_netif_network_segment_conflict_update(event->esp_netif);
 }
 #endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET */

@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.11.0 - 2023.12.8
+
+### Enhancements
+
+- Update the DNS information of the external netif to the data forwarding netif.
+
 ## v0.10.0 - 2023.11.13
 
 ### Enhancements
