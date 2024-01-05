@@ -62,7 +62,7 @@ set_source_files_properties(SOURCE ${srcs}
 set(FALLBACK_DNS_SERVER "8.8.8.8")
 target_compile_options(__idf_lwip PRIVATE 
                        "-DIP_PORTMAP_MAX=255"
-                       "-DFALLBACK_DNS_SERVER_ADDRESS(p)=ipaddr_aton(\'${FALLBACK_DNS_SERVER}\',(p))")
+                       "-DFALLBACK_DNS_SERVER_ADDRESS(p)=ipaddr_aton(\"${FALLBACK_DNS_SERVER}\",(p))")
 
 include(package_manager)
 cu_pkg_define_version(${CMAKE_CURRENT_LIST_DIR})
