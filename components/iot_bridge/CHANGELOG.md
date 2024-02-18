@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v0.11.1 - 2024.2.18
+
+### Chore
+
+- Change some log output level
+- fix undefined IP_NAPT_PORTMAP
+
 ## v0.11.0 - 2023.12.8
 
 ### Enhancements
