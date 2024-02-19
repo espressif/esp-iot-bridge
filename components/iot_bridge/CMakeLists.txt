@@ -60,7 +60,8 @@ set_source_files_properties(SOURCE ${srcs}
                             "COMMIT_ID=\"${SRC_COMMIT_ID}\"")
 
 set(FALLBACK_DNS_SERVER "8.8.8.8")
-target_compile_options(__idf_lwip PRIVATE 
+target_compile_options(__idf_lwip PRIVATE
+                       "-DIP_NAPT_PORTMAP=1"
                        "-DIP_PORTMAP_MAX=255"
                        "-DFALLBACK_DNS_SERVER_ADDRESS(p)=ipaddr_aton(\"${FALLBACK_DNS_SERVER}\",(p))")
 
