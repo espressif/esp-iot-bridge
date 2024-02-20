@@ -23,7 +23,8 @@ variables: &global-variables
   - chmod 600 ~/.ssh/id_rsa
   - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - export IDF_PATH=/opt/esp/idf
-  - python -m pip install --upgrade idf-component-manager
+  # - python -m pip install --upgrade idf-component-manager
+  - pip install idf-component-manager==1.4.1
 
 .build_iot_bridge_default: &build_iot_bridge_default
   - cd examples/wireless_nic
@@ -48,7 +49,7 @@ variables: &global-variables
   - git checkout -- .
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SDIO=y" >> sdkconfig.defaults.${idf_target}
-  - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
+  - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.${idf_target}
   - idf.py set-target ${idf_target}
   - idf.py build
 

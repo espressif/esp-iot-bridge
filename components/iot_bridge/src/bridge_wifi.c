@@ -245,7 +245,7 @@ static void wifi_event_ap_stadisconnected_handler(void* arg, esp_event_base_t ev
 static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t* ip_info)
 {
     esp_err_t ret = ESP_FAIL;
-    ESP_LOGW(TAG, "SoftAP IP network segment has changed, deauth all station");
+    ESP_LOGI(TAG, "SoftAP IP network segment has changed, deauth all station");
     if (esp_wifi_deauth_sta(0) == ESP_OK) {
         ret = ESP_OK;
     }
