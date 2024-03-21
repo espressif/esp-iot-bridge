@@ -14,6 +14,7 @@
 #include <sys/select.h>
 
 #include "esp_log.h"
+#include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_system.h"
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
@@ -27,6 +28,8 @@
 #include "esp_bridge.h"
 #include "esp_bridge_wifi.h"
 #include "esp_bridge_internal.h"
+
+#define NVS_NAMESPACE "netif_ip_info"
 
 // DHCP_Server has to be enabled for this netif
 #define DHCPS_NETIF_ID(netif) (ESP_NETIF_DHCP_SERVER & esp_netif_get_flags(netif))
@@ -300,7 +303,7 @@ esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_in
 
     if (enable_dhcps) {
         esp_netif_dns_info_t dns;
-        dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
+        dns.ip.u_addr.ip4.addr = ipaddr_addr(CONFIG_BRIDGE_STATIC_DNS_SERVER_MAIN);
         dns.ip.type = IPADDR_TYPE_V4;
         dhcps_offer_t dhcps_dns_value = OFFER_DNS;
         ESP_ERROR_CHECK(esp_netif_dhcps_option(netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value)));
@@ -328,7 +331,7 @@ esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *d
         esp_netif_get_dns_info(external_netif, ESP_NETIF_DNS_MAIN, &dns_info);
     }
     if (dns_info.ip.u_addr.ip4.addr == 0) {
-        dns_info.ip.u_addr.ip4.addr = ESP_IP4TOADDR(114, 114, 114, 114);
+        dns_info.ip.u_addr.ip4.addr = ipaddr_addr(CONFIG_BRIDGE_STATIC_DNS_SERVER_MAIN);
         dns_info.ip.type = IPADDR_TYPE_V4;
     }
 
@@ -351,6 +354,159 @@ esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *d
         esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("USB_DEF"), &dns_info);
 #endif
     }
+    return ESP_OK;
+}
+
+esp_err_t esp_bridge_save_ip_info_to_nvs(const char *name, esp_netif_ip_info_t *ip_info)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t err;
+
+    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to open NVS namespace");
+        return err;
+    }
+
+    err = nvs_set_blob(nvs_handle, name, ip_info, sizeof(esp_netif_ip_info_t));
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to save IP info to NVS");
+        nvs_close(nvs_handle);
+        return err;
+    }
+
+    err = nvs_commit(nvs_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to commit NVS changes");
+        nvs_close(nvs_handle);
+        return err;
+    }
+
+    nvs_close(nvs_handle);
+
+    return ESP_OK;
+}
+
+esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t *ip_info)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t err;
+
+    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to open NVS namespace");
+        return err;
+    }
+
+    size_t required_size = sizeof(esp_netif_ip_info_t);
+    err = nvs_get_blob(nvs_handle, name, ip_info, &required_size);
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to read IP info from NVS");
+        nvs_close(nvs_handle);
+        return err;
+    }
+
+    nvs_close(nvs_handle);
+
+    return ESP_OK;
+}
+
+esp_err_t esp_bridge_erase_ip_info_from_nvs(const char *name)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t err;
+
+    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to open NVS namespace");
+        return err;
+    }
+
+    err = nvs_erase_key(nvs_handle, name);
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to erase IP info from NVS");
+        nvs_close(nvs_handle);
+        return err;
+    }
+
+    err = nvs_commit(nvs_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to commit NVS changes");
+        nvs_close(nvs_handle);
+        return err;
+    }
+
+    nvs_close(nvs_handle);
+
+    return ESP_OK;
+}
+
+static esp_err_t esp_bridge_netif_set_dns_server(esp_netif_t *netif, uint32_t addr, esp_netif_dns_type_t type)
+{
+    if (!netif) {
+        return ESP_FAIL;
+    }
+
+    esp_netif_dns_info_t dns;
+    if (addr != IPADDR_ANY && addr != IPADDR_NONE) {
+        dns.ip.u_addr.ip4.addr = addr;
+    } else {
+        // Clear DNS server settings by setting IP address to IPADDR_ANY
+        dns.ip.u_addr.ip4.addr = IPADDR_ANY;
+    }
+
+    dns.ip.type = IPADDR_TYPE_V4;
+    ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, type, &dns));
+    return ESP_OK;
+}
+
+esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *ip_info, bool save_to_nvs)
+{
+    if (!netif) {
+        return ESP_FAIL;
+    }
+    ESP_LOGI(TAG, "[%-12s]", esp_netif_get_ifkey(netif));
+
+    esp_netif_dhcp_status_t state;
+    if (ip_info) {
+        if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_SERVER) {
+            ESP_ERROR_CHECK(esp_netif_dhcps_get_status(netif, &state));
+
+            // Set dhcps ip info
+            if (state != ESP_NETIF_DHCP_STOPPED) {
+                ESP_ERROR_CHECK(esp_netif_dhcps_stop(netif));
+            }
+            ESP_ERROR_CHECK(esp_netif_set_ip_info(netif, ip_info));
+            ESP_LOGI(TAG, "Set ip info:" IPSTR, IP2STR(&ip_info->ip));
+            ESP_ERROR_CHECK(esp_netif_dhcps_start(netif));
+
+            ESP_LOGW(TAG, "SoftAP IP network segment has changed, deauth all station");
+            esp_wifi_deauth_sta(0);
+
+            ip_napt_enable(ip_info->ip.addr, 1);
+        } else if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_CLIENT) {
+            ESP_ERROR_CHECK(esp_netif_dhcpc_get_status(netif, &state));
+
+            // Set dhcpc static ip info
+            if (state != ESP_NETIF_DHCP_STOPPED) {
+                ESP_ERROR_CHECK(esp_netif_dhcpc_stop(netif));
+            }
+            ESP_ERROR_CHECK(esp_netif_set_ip_info(netif, ip_info));
+            ESP_LOGI(TAG, "Set ip info:" IPSTR, IP2STR(&ip_info->ip));
+            ESP_ERROR_CHECK(esp_bridge_netif_set_dns_server(netif, ipaddr_addr(CONFIG_BRIDGE_STATIC_DNS_SERVER_MAIN), ESP_NETIF_DNS_MAIN));
+            ESP_ERROR_CHECK(esp_bridge_netif_set_dns_server(netif, ipaddr_addr(CONFIG_BRIDGE_STATIC_DNS_SERVER_BACKUP), ESP_NETIF_DNS_BACKUP));
+        }
+        esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info);
+    } else {
+        if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_CLIENT) {
+            ESP_ERROR_CHECK(esp_netif_dhcpc_get_status(netif, &state));
+            if (state != ESP_NETIF_DHCP_STARTED) {
+                ESP_ERROR_CHECK(esp_netif_dhcpc_start(netif));
+            }
+        }
+        esp_bridge_erase_ip_info_from_nvs(esp_netif_get_ifkey(netif));
+    }
+
     return ESP_OK;
 }
 

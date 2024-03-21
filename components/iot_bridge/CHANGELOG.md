@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.11.2 - 2024.3.29
+
+### Enhancements
+
+- Support setting IP info for netifs
+
 ## v0.11.1 - 2024.2.18
 
 ### Chore

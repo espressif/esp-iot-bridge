@@ -1,5 +1,5 @@
 set(srcs "src/bridge_common.c")
-set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer")
+set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "nvs_flash")
 set(include_dirs "include")
 
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_STATION OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
