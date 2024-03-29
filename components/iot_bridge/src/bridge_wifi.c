@@ -174,8 +174,10 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
     esp_bridge_netif_list_add(wifi_netif, NULL);
 
     esp_wifi_get_mode(&mode);
-    mode |= WIFI_MODE_STA;
-    ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
+    if (mode != WIFI_MODE_STA && mode != WIFI_MODE_APSTA) {
+        mode |= WIFI_MODE_STA;
+        ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
+    }
 
     wifi_sta_config_t router_config;
     /* Get WiFi Station configuration */
@@ -185,6 +187,15 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
     if (strlen((const char*)router_config.ssid)) {
         ESP_LOGI(TAG, "Found ssid %s", (const char*)router_config.ssid);
         ESP_LOGI(TAG, "Found password %s", (const char*)router_config.password);
+    }
+
+    if (ip_info) {
+        esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true);
+    } else {
+        esp_netif_ip_info_t ip_info_from_nvs;
+        if (esp_bridge_load_ip_info_from_nvs(esp_netif_get_ifkey(wifi_netif), &ip_info_from_nvs) == ESP_OK) {
+            esp_bridge_netif_set_ip_info(wifi_netif, &ip_info_from_nvs, true);
+        }
     }
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
@@ -253,9 +264,8 @@ static esp_err_t softap_netif_dhcp_status_change_cb(esp_ip_addr_t* ip_info)
     return ret;
 }
 
-esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
+esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
-    esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
     esp_netif_t* wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
@@ -268,18 +278,22 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_
 
     wifi_netif = esp_netif_create_default_wifi_ap();
 
-    ESP_ERROR_CHECK(esp_netif_dhcps_stop(wifi_netif));
+    esp_wifi_get_mode(&mode);
+    if (mode != WIFI_MODE_AP && mode != WIFI_MODE_APSTA) {
+        mode |= WIFI_MODE_AP;
+        ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
+    }
 
     if (ip_info) {
-        ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, ip_info));
+        esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true);
     } else {
-        if (enable_dhcps) {
-            esp_bridge_netif_request_ip(&allocate_ip_info);
-            ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, &allocate_ip_info));
+        if (esp_bridge_load_ip_info_from_nvs(esp_netif_get_ifkey(wifi_netif), &allocate_ip_info) != ESP_OK) {
+            if (enable_dhcps) {
+                esp_bridge_netif_request_ip(&allocate_ip_info);
+            }
         }
+        esp_bridge_netif_set_ip_info(wifi_netif, &allocate_ip_info, true);
     }
-    ESP_ERROR_CHECK(esp_netif_get_ip_info(wifi_netif, &netif_ip));
-    ESP_LOGI(TAG, "IP Address:" IPSTR, IP2STR(&netif_ip.ip));
     esp_bridge_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
 
     esp_bridge_softap_dhcps = enable_dhcps;
@@ -288,10 +302,6 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t* ip_info, uint8_
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_START, &wifi_event_ap_start_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &wifi_event_ap_staconnected_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &wifi_event_ap_stadisconnected_handler, NULL, NULL));
-
-    esp_wifi_get_mode(&mode);
-    mode |= WIFI_MODE_AP;
-    ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
 
     return wifi_netif;
 }

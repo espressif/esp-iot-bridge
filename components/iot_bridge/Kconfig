@@ -131,6 +131,20 @@ menu "Bridge Configuration"
                 "BRIDGE_DATA_FORWARDING_NETIF_SDIO" are currently not supported to be enabled simultaneously.
     endmenu
 
+    menu "ESP-IoT-Bridge Netif DNS Server Config"
+        config BRIDGE_STATIC_DNS_SERVER_MAIN
+            string "Main DNS server address"
+            default "114.114.114.114"
+            help
+                Set main DNS server address.
+
+        config BRIDGE_STATIC_DNS_SERVER_BACKUP
+            string "Backup DNS server address"
+            default "8.8.8.8"
+            help
+                Set backup DNS server address. It can be same with the main DNS server address or leave empty.
+    endmenu
+
     config BRIDGE_GPIO_RANGE_MIN
         int
         default 0
