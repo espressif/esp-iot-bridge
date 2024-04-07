@@ -23,6 +23,7 @@
 
 #include "lwip/inet.h"
 #include "lwip/ip_addr.h"
+#include "lwip/lwip_napt.h"
 #include "dhcpserver/dhcpserver.h"
 
 #include "esp_bridge.h"
