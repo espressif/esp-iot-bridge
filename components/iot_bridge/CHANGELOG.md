@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.11.3 - 2024.4.7
+
+### Chore
+
+- include lwip/lwip_napt.h
+
 ## v0.11.2 - 2024.3.29
 
 ### Enhancements
