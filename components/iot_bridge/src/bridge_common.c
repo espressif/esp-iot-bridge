@@ -317,12 +317,21 @@ esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_in
 
 static void esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_t *data_forwarding_netif, esp_netif_dns_info_t *dns_info)
 {
+    esp_netif_dns_info_t old_dns_info = {0};
+    esp_netif_get_dns_info(data_forwarding_netif, ESP_NETIF_DNS_MAIN, &old_dns_info);
+    if (old_dns_info.ip.u_addr.ip4.addr == dns_info->ip.u_addr.ip4.addr) {
+        return;
+    }
+
     dhcps_offer_t dhcps_dns_value = OFFER_DNS;
     esp_netif_dhcps_stop(data_forwarding_netif);
     ESP_ERROR_CHECK(esp_netif_dhcps_option(data_forwarding_netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value)));
     ESP_LOGI(TAG, "[%-12s]Name Server1: " IPSTR, esp_netif_get_ifkey(data_forwarding_netif), IP2STR(&dns_info->ip.u_addr.ip4));
     ESP_ERROR_CHECK(esp_netif_set_dns_info(data_forwarding_netif, ESP_NETIF_DNS_MAIN, dns_info));
     ESP_ERROR_CHECK(esp_netif_dhcps_start(data_forwarding_netif));
+
+    ESP_LOGI(TAG, "SoftAP DNS Info has changed, deauth all station");
+    esp_wifi_deauth_sta(0);
 }
 
 esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *data_forwarding_netif)

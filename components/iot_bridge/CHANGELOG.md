@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.11.4 - 2024.4.26
+
+### Bugfix
+
+- Fix the IP allocation conflict caused by updating data forwarding netif DNS information.
+
 ## v0.11.3 - 2024.4.7
 
 ### Chore
