@@ -4,13 +4,25 @@
 
 ### Feature
 
+- Support ESP-IDF release/v5.2 & release/v5.3
 - Add parameter in esp_bridge_netif_set_ip_info to check IP segment conflict. ([7212dc5](https://github.com/espressif/esp-iot-bridge/commit/7212dc50d3a6916bdf0b3e6334b88ee730975c35))
 - Do not stop DHCP Server if ip info is identical when set SoftAP ip. ([a2d9498](https://github.com/espressif/esp-iot-bridge/commit/a2d94988cea07d69eb513c0a45693aea4c039e09))
 
 ### Bugfix
 
+- fix(lwip/dhcp_server): Bind dhcps netif to avoid handling the dhcp packet from other netif ([bf4a5052](https://github.com/espressif/esp-iot-bridge/commit/bf4a50520f4111df52362b2a0a1dc3875cf6eb0f))
 - Fix phone disconnected from SoftAP when provisioning wifi. ([f73f0d6](https://github.com/espressif/esp-iot-bridge/commit/f73f0d68afb99a6bf11d89423368076fb3f34d41))
 - Add DHCP patch to update the DNS information of the dataforwarding netif when the DNS changes in the station. ([f73f0d6](https://github.com/espressif/esp-iot-bridge/commit/f73f0d68afb99a6bf11d89423368076fb3f34d41))
+
+### Chore
+
+- Remove macro definition from iot_bridge ([6f5e70b5](https://github.com/espressif/esp-iot-bridge/commit/6f5e70b5349d5808b46d1ae8502c49391056c945))
+- Remove the support for idf4.x ([3388bde9](https://github.com/espressif/esp-iot-bridge/commit/3388bde999c880f558e3911c5b9d4d82724bc6bf))
+- Post dhcps_change_cb when esp_bridge_netif_set_ip_info ([ecf7df94](https://github.com/espressif/esp-iot-bridge/commit/ecf7df9418d640b9d4eef5a9c25f6cc320a918f0))
+
+### Doc
+
+- docs: update readme ([fa19a2f8](https://github.com/espressif/esp-iot-bridge/commit/fa19a2f89b4b4bedefbfa6921238f583df877065))
 
 ## v0.11.4 - 2024.4.26
 

@@ -1,5 +1,5 @@
 set(srcs "src/bridge_common.c")
-set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "nvs_flash")
+set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "nvs_flash" "esp_modem")
 set(include_dirs "include")
 
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_STATION OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
@@ -31,16 +31,16 @@ if (CONFIG_BRIDGE_EXTERNAL_NETIF_SPI OR
     add_subdirectory(drivers)
 endif()
 
-if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "4.4")
-    list(APPEND requires "esp_modem")
-    if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
-        list(APPEND srcs "src/bridge_modem.c")
-    endif()
+if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
+    list(APPEND srcs "src/bridge_modem.c")
 endif()
 
 if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
-    if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "4.4")
-        list(APPEND requires "esp_modem_usb_dte" "usb_device")
+    list(APPEND requires "esp_modem_usb_dte")
+    if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}.${IDF_VERSION_PATCH}" VERSION_LESS "5.1.4")
+        list(APPEND requires "usb_device")
+    else()
+        list(APPEND requires "esp_tinyusb")
     endif()
 endif()
 
@@ -52,16 +52,12 @@ idf_component_register(SRCS "${srcs}"
 execute_process(COMMAND
                 git apply ${CMAKE_CURRENT_LIST_DIR}/patch/dhcp.patch
                 WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip)
-
 execute_process(COMMAND
                 git apply ${CMAKE_CURRENT_LIST_DIR}/patch/dhcpserver.patch
                 WORKING_DIRECTORY $ENV{IDF_PATH})
-
-if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "5.0")
-    execute_process(COMMAND
-                    git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_forward.patch
-                    WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
-endif()
+execute_process(COMMAND
+                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_forward.patch
+                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
 
 execute_process(COMMAND
                 git rev-parse --short HEAD
