@@ -489,6 +489,16 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
     esp_netif_dhcp_status_t state;
     if (ip_info) {
         if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_SERVER) {
+            esp_netif_ip_info_t ip_old;
+            memset(&ip_old, 0x0, sizeof(esp_netif_ip_info_t));
+            if (esp_netif_get_ip_info(netif, &ip_old) == ESP_OK) {
+                if (ip4_addr_cmp(&ip_old.ip, &ip_info->ip)
+                    && ip4_addr_cmp(&ip_old.netmask, &ip_info->netmask)
+                    && ip4_addr_cmp(&ip_old.gw, &ip_info->gw)) {
+                        esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info);
+                        return ESP_OK;
+                    }
+            }
             ESP_ERROR_CHECK(esp_netif_dhcps_get_status(netif, &state));
 
             // Set dhcps ip info

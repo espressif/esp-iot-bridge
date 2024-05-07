@@ -2,6 +2,10 @@
 
 ## v0.11.5 - 2024.5.7
 
+### Feature
+
+- Do not stop DHCP Server if ip info is identical when set SoftAP ip.
+
 ### Bugfix
 
 - Fix phone disconnected from SoftAP when provisioning wifi. ([f73f0d6](https://github.com/espressif/esp-iot-bridge/commit/f73f0d68afb99a6bf11d89423368076fb3f34d41))
