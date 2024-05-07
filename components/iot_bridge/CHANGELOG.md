@@ -4,7 +4,7 @@
 
 ### Feature
 
-- Do not stop DHCP Server if ip info is identical when set SoftAP ip. ([a2d9498](https://github.com/espressif/esp-mesh-lite/commit/a2d94988cea07d69eb513c0a45693aea4c039e09))
+- Do not stop DHCP Server if ip info is identical when set SoftAP ip. ([a2d9498](https://github.com/espressif/esp-iot-bridge/commit/a2d94988cea07d69eb513c0a45693aea4c039e09))
 
 ### Bugfix
 
