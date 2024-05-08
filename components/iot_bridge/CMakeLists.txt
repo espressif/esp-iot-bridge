@@ -44,6 +44,11 @@ idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "${include_dirs}"
                        REQUIRES "${requires}")
 
+# Apply ESP-IDF Patch
+execute_process(COMMAND
+                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/dhcp.patch
+                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip)
+
 if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "5.0")
     execute_process(COMMAND
                     git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_forward.patch

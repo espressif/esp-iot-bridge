@@ -1,0 +1,37 @@
+diff --git a/src/core/ipv4/dhcp.c b/src/core/ipv4/dhcp.c
+index e05ce8f6..088b32c2 100644
+--- a/src/core/ipv4/dhcp.c
++++ b/src/core/ipv4/dhcp.c
+@@ -689,6 +689,16 @@ dhcp_t2_timeout(struct netif *netif)
+   }
+ }
+ 
++__attribute__((weak)) void dhcp_dns_defore_updated_customer_cb(void)
++{
++    return;
++}
++
++__attribute__((weak)) void dhcp_dns_updated_customer_cb(void)
++{
++    return;
++}
++
+ /**
+  * Handle a DHCP ACK packet
+  *
+@@ -769,6 +779,7 @@ dhcp_handle_ack(struct netif *netif, struct dhcp_msg *msg_in)
+ 
+ #if LWIP_DHCP_PROVIDE_DNS_SERVERS
+   /* DNS servers */
++  dhcp_dns_defore_updated_customer_cb();
+   for (n = 0; (n < LWIP_DHCP_PROVIDE_DNS_SERVERS) && dhcp_option_given(dhcp, DHCP_OPTION_IDX_DNS_SERVER + n); n++) {
+     ip_addr_t dns_addr;
+ #if ESP_DNS
+@@ -779,6 +790,7 @@ dhcp_handle_ack(struct netif *netif, struct dhcp_msg *msg_in)
+     ip_addr_set_ip4_u32_val(dns_addr, lwip_htonl(dhcp_get_option_value(dhcp, DHCP_OPTION_IDX_DNS_SERVER + n)));
+     dns_setserver(n, &dns_addr);
+   }
++  dhcp_dns_updated_customer_cb();
+ #endif /* LWIP_DHCP_PROVIDE_DNS_SERVERS */
+ }
+ 

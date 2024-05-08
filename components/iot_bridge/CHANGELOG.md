@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v0.11.5 - 2024.5.7
+
+### Bugfix
+
+- Fix phone disconnected from SoftAP when provisioning wifi. ([f73f0d6](https://github.com/espressif/esp-iot-bridge/commit/f73f0d68afb99a6bf11d89423368076fb3f34d41))
+- Add DHCP patch to update the DNS information of the dataforwarding netif when the DNS changes in the station. ([f73f0d6](https://github.com/espressif/esp-iot-bridge/commit/f73f0d68afb99a6bf11d89423368076fb3f34d41))
+
 ## v0.11.4 - 2024.4.26
 
 ### Bugfix

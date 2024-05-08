@@ -278,6 +278,11 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_
 
     wifi_netif = esp_netif_create_default_wifi_ap();
 
+    if (enable_dhcps) {
+        dhcps_offer_t dhcps_dns_value = OFFER_DNS;
+        ESP_ERROR_CHECK(esp_netif_dhcps_option(wifi_netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &dhcps_dns_value, sizeof(dhcps_dns_value)));
+    }
+
     esp_wifi_get_mode(&mode);
     if (mode != WIFI_MODE_AP && mode != WIFI_MODE_APSTA) {
         mode |= WIFI_MODE_AP;
