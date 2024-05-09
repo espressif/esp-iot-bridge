@@ -193,12 +193,13 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t *esp_neti
  *
  * @param[in] name The key name of the netif associated with the IP information to be loaded.
  * @param[out] ip_info A pointer to the structure to store the loaded IP information.
+ * @param[out] conflict_check A pointer to store whether check IP segment conflict.
  * 
  * @return
  *     - ESP_OK: IP information loaded successfully.
  *     - Other: Error code indicating failure during loading.
  */
-esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t *ip_info);
+esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t *ip_info, bool *conflict_check);
 
 /**
  * @brief Set the IP information for a network interface and optionally save it to NVS.
@@ -206,12 +207,13 @@ esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t
  * @param[in] netif The network interface to set the IP information for.
  * @param[in] ip_info A pointer to the IP information structure to set.
  * @param[in] save_to_nvs Whether to save the IP information to NVS.
+ * @param[in] conflict_check Whether to check IP segment conflict on this netif.
  * 
  * @return
  *     - ESP_OK: IP information set successfully.
  *     - Other: Error code indicating failure during setting.
  */
-esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *ip_info, bool save_to_nvs);
+esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *ip_info, bool save_to_nvs, bool conflict_check);
 
 #ifdef __cplusplus
 }

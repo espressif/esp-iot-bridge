@@ -190,11 +190,12 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
     }
 
     if (ip_info) {
-        esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true);
+        esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true, true);
     } else {
         esp_netif_ip_info_t ip_info_from_nvs;
-        if (esp_bridge_load_ip_info_from_nvs(esp_netif_get_ifkey(wifi_netif), &ip_info_from_nvs) == ESP_OK) {
-            esp_bridge_netif_set_ip_info(wifi_netif, &ip_info_from_nvs, true);
+        bool conflict_check = true;
+        if (esp_bridge_load_ip_info_from_nvs(esp_netif_get_ifkey(wifi_netif), &ip_info_from_nvs, &conflict_check) == ESP_OK) {
+            esp_bridge_netif_set_ip_info(wifi_netif, &ip_info_from_nvs, true, conflict_check);
         }
     }
 
@@ -289,17 +290,19 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_
         ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
     }
 
+    esp_bridge_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
+
     if (ip_info) {
-        esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true);
+        esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true, true);
     } else {
-        if (esp_bridge_load_ip_info_from_nvs(esp_netif_get_ifkey(wifi_netif), &allocate_ip_info) != ESP_OK) {
+        bool conflict_check = true;
+        if (esp_bridge_load_ip_info_from_nvs(esp_netif_get_ifkey(wifi_netif), &allocate_ip_info, &conflict_check) != ESP_OK) {
             if (enable_dhcps) {
                 esp_bridge_netif_request_ip(&allocate_ip_info);
             }
         }
-        esp_bridge_netif_set_ip_info(wifi_netif, &allocate_ip_info, true);
+        esp_bridge_netif_set_ip_info(wifi_netif, &allocate_ip_info, true, conflict_check);
     }
-    esp_bridge_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
 
     esp_bridge_softap_dhcps = enable_dhcps;
 

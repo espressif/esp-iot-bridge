@@ -39,6 +39,7 @@ typedef struct bridge_netif {
     esp_netif_t *netif;
     dhcps_change_cb_t dhcps_change_cb;
     struct bridge_netif *next;
+    bool conflict_check;
 } bridge_netif_t;
 
 static const char *TAG = "bridge_common";
@@ -231,7 +232,7 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_neti
 
     while (p) {
         esp_bridge_network_segment_custom_check_t* list = custom_check_list;
-        if ((esp_netif != p->netif) && DHCPS_NETIF_ID(p->netif)) { /* DHCP_Server has to be enabled for this netif */
+        if ((esp_netif != p->netif) && DHCPS_NETIF_ID(p->netif) && p->conflict_check) { /* DHCP_Server has to be enabled for this netif */
             if (esp_netif) {
                 esp_netif_get_ip_info(esp_netif, &allocate_ip_info);
             }
@@ -376,7 +377,7 @@ esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *d
     return ESP_OK;
 }
 
-esp_err_t esp_bridge_save_ip_info_to_nvs(const char *name, esp_netif_ip_info_t *ip_info)
+esp_err_t esp_bridge_save_ip_info_to_nvs(const char *name, esp_netif_ip_info_t *ip_info, bool conflict_check)
 {
     nvs_handle_t nvs_handle;
     esp_err_t err;
@@ -394,6 +395,17 @@ esp_err_t esp_bridge_save_ip_info_to_nvs(const char *name, esp_netif_ip_info_t *
         return err;
     }
 
+    char *conflict_check_name = NULL;
+    asprintf(&conflict_check_name, "%.8s_check", name);
+    err = nvs_set_u8(nvs_handle, conflict_check_name, conflict_check);
+    if (err != ESP_OK) {
+        free(conflict_check_name);
+        ESP_LOGE("NVS", "Failed to save IP info to NVS");
+        nvs_close(nvs_handle);
+        return err;
+    }
+    free(conflict_check_name);
+
     err = nvs_commit(nvs_handle);
     if (err != ESP_OK) {
         ESP_LOGE("NVS", "Failed to commit NVS changes");
@@ -406,7 +418,7 @@ esp_err_t esp_bridge_save_ip_info_to_nvs(const char *name, esp_netif_ip_info_t *
     return ESP_OK;
 }
 
-esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t *ip_info)
+esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t *ip_info, bool *conflict_check)
 {
     nvs_handle_t nvs_handle;
     esp_err_t err;
@@ -424,6 +436,15 @@ esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t
         nvs_close(nvs_handle);
         return err;
     }
+
+    char *conflict_check_name = NULL;
+    asprintf(&conflict_check_name, "%.8s_check", name);
+    err = nvs_get_u8(nvs_handle, conflict_check_name, conflict_check);
+    if (err != ESP_OK) {
+        ESP_LOGE("NVS", "Failed to read conflict_check from NVS");
+        *conflict_check = true;
+    }
+    free(conflict_check_name);
 
     nvs_close(nvs_handle);
 
@@ -479,12 +500,25 @@ static esp_err_t esp_bridge_netif_set_dns_server(esp_netif_t *netif, uint32_t ad
     return ESP_OK;
 }
 
-esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *ip_info, bool save_to_nvs)
+esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *ip_info, bool save_to_nvs, bool conflict_check)
 {
     if (!netif) {
         return ESP_FAIL;
     }
     ESP_LOGI(TAG, "[%-12s]", esp_netif_get_ifkey(netif));
+
+    bridge_netif_t *p = bridge_link;
+
+    while (p) {
+        if (p->netif == netif) {
+            p->conflict_check = conflict_check;
+            break;
+        }
+    }
+
+    if (!p) {
+        return ESP_FAIL;
+    }
 
     esp_netif_dhcp_status_t state;
     if (ip_info) {
@@ -495,7 +529,7 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
                 if (ip4_addr_cmp(&ip_old.ip, &ip_info->ip)
                     && ip4_addr_cmp(&ip_old.netmask, &ip_info->netmask)
                     && ip4_addr_cmp(&ip_old.gw, &ip_info->gw)) {
-                        esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info);
+                        esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info, conflict_check);
                         return ESP_OK;
                     }
             }
@@ -525,7 +559,7 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
             ESP_ERROR_CHECK(esp_bridge_netif_set_dns_server(netif, ipaddr_addr(CONFIG_BRIDGE_STATIC_DNS_SERVER_MAIN), ESP_NETIF_DNS_MAIN));
             ESP_ERROR_CHECK(esp_bridge_netif_set_dns_server(netif, ipaddr_addr(CONFIG_BRIDGE_STATIC_DNS_SERVER_BACKUP), ESP_NETIF_DNS_BACKUP));
         }
-        esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info);
+        esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info, conflict_check);
     } else {
         if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_CLIENT) {
             ESP_ERROR_CHECK(esp_netif_dhcpc_get_status(netif, &state));
