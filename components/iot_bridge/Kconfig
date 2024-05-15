@@ -10,6 +10,15 @@ menu "Bridge Configuration"
         bool "Wi-Fi PMF Disable"
         default y
 
+    config BRIDGE_ETHERNET_NETIF_ENABLE
+        bool "Enable Ethernet interface"
+        default y
+
+    config BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN
+        depends on BRIDGE_ETHERNET_NETIF_ENABLE
+        bool "Ethernet acts as WAN or LAN automatically"
+        default n
+
     menu "The interface used to connect to the external network"
         config BRIDGE_EXTERNAL_NETIF_STATION
             bool "Use Wi-Fi station interface to connect to the external network"
@@ -25,6 +34,7 @@ menu "Bridge Configuration"
             default n
 
         config BRIDGE_EXTERNAL_NETIF_ETHERNET
+            depends on !BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN && BRIDGE_ETHERNET_NETIF_ENABLE
             bool "Use ethernet interface to connect to the external network. Please disable BRIDGE_DATA_FORWARDING_NETIF_ETHERNET first"
             default n
             help
@@ -108,6 +118,7 @@ menu "Bridge Configuration"
             default n
 
         config BRIDGE_DATA_FORWARDING_NETIF_ETHERNET
+            depends on !BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN && BRIDGE_ETHERNET_NETIF_ENABLE
             bool "Use ethernet interface to provide network data forwarding for other devices"
             depends on !BRIDGE_EXTERNAL_NETIF_ETHERNET
             default n
@@ -162,7 +173,7 @@ menu "Bridge Configuration"
         default 48 if IDF_TARGET_ESP32S3
 
     menu "ETH Configuration"
-        depends on BRIDGE_EXTERNAL_NETIF_ETHERNET || BRIDGE_DATA_FORWARDING_NETIF_ETHERNET
+        depends on BRIDGE_ETHERNET_NETIF_ENABLE
 
         choice BRIDGE_ETHERNET_TYPE
             prompt "Ethernet Type"

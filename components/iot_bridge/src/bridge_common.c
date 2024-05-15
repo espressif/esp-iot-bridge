@@ -331,16 +331,27 @@ static esp_netif_dns_info_t old_dns_info = {0};
 
 void dhcp_dns_defore_updated_customer_cb(void)
 {
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
     esp_netif_get_dns_info(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"), ESP_NETIF_DNS_MAIN, &old_dns_info);
+#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
+    esp_netif_get_dns_info(esp_netif_get_handle_from_ifkey("ETH_DEF"), ESP_NETIF_DNS_MAIN, &old_dns_info);
+#endif
 }
 
 void dhcp_dns_updated_customer_cb(void)
 {
-    esp_netif_dns_info_t dns_info = {0};
-    esp_netif_t *sta_netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-    esp_netif_get_dns_info(sta_netif, ESP_NETIF_DNS_MAIN, &dns_info);
-    if (dns_info.ip.u_addr.ip4.addr != old_dns_info.ip.u_addr.ip4.addr) {
-        esp_bridge_update_dns_info(sta_netif, NULL);
+    esp_netif_t *netif = NULL;
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
+    netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
+    netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
+#endif
+    if (netif) {
+        esp_netif_dns_info_t dns_info = {0};
+        esp_netif_get_dns_info(netif, ESP_NETIF_DNS_MAIN, &dns_info);
+        if (dns_info.ip.u_addr.ip4.addr != old_dns_info.ip.u_addr.ip4.addr) {
+            esp_bridge_update_dns_info(netif, NULL);
+        }
     }
 }
 
@@ -438,12 +449,14 @@ esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t
     }
 
     char *conflict_check_name = NULL;
+    uint8_t value = 0;
     asprintf(&conflict_check_name, "%.8s_check", name);
-    err = nvs_get_u8(nvs_handle, conflict_check_name, conflict_check);
+    err = nvs_get_u8(nvs_handle, conflict_check_name, &value);
     if (err != ESP_OK) {
         ESP_LOGE("NVS", "Failed to read conflict_check from NVS");
         *conflict_check = true;
     }
+    *conflict_check = value;
     free(conflict_check_name);
 
     nvs_close(nvs_handle);
@@ -620,9 +633,11 @@ void esp_bridge_create_all_netif(void)
     esp_bridge_create_sdio_netif(NULL, sdio_mac, false, false);
 #endif
 
-#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
     esp_bridge_create_eth_netif(NULL, NULL, true, true);
-#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
+#endif
+
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
     esp_bridge_create_eth_netif(NULL, NULL, false, false);
 #endif
 
