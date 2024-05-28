@@ -384,7 +384,7 @@ esp32s2_v5.1_build:
   variables:
     <<: *global-variables
     idf_target: esp32s2
-    idf_branch: release/v5.1
+    idf_branch: v5.1.4
 
   before_script:
     - *before_script_preparation
@@ -441,7 +441,7 @@ esp32s3_v5.1_build:
   variables:
     <<: *global-variables
     idf_target: esp32s3
-    idf_branch: release/v5.1
+    idf_branch: v5.1.4
 
   before_script:
     - *before_script_preparation
@@ -460,25 +460,6 @@ esp32c6_v5.1_build:
   variables:
     <<: *global-variables
     idf_target: esp32c6
-    idf_branch: release/v5.1
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32h2_v5.1_build:
-  stage: build
-  image: espressif/idf:release-v5.1
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32s3
     idf_branch: release/v5.1
 
   before_script:

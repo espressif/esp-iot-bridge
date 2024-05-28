@@ -2,6 +2,9 @@ menu "Bridge Configuration"
     config BRIDGE_ENABLE
         bool "Bridge Enable"
         default y
+        select LWIP_IP_FORWARD
+        select LWIP_IPV4_NAPT
+        select LWIP_FALLBACK_DNS_SERVER_SUPPORT
 
     config BRIDGE_WIFI_PMF_DISABLE
         bool "Wi-Fi PMF Disable"
