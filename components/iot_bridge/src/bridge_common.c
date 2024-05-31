@@ -529,7 +529,9 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
                 if (ip4_addr_cmp(&ip_old.ip, &ip_info->ip)
                     && ip4_addr_cmp(&ip_old.netmask, &ip_info->netmask)
                     && ip4_addr_cmp(&ip_old.gw, &ip_info->gw)) {
-                        esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info, conflict_check);
+                        if (save_to_nvs) {
+                            esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info, conflict_check);
+                        }
                         return ESP_OK;
                     }
             }
@@ -543,8 +545,20 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
             ESP_LOGI(TAG, "Set ip info:" IPSTR, IP2STR(&ip_info->ip));
             ESP_ERROR_CHECK(esp_netif_dhcps_start(netif));
 
-            ESP_LOGW(TAG, "SoftAP IP network segment has changed, deauth all station");
-            esp_wifi_deauth_sta(0);
+            bridge_netif_t *p = bridge_link;
+            while (p) {
+                if ((netif == p->netif) && DHCPS_NETIF_ID(p->netif)) {
+                    esp_ip_addr_t esp_ip_addr_info;
+                    esp_ip_addr_info.type = ESP_IPADDR_TYPE_V4;
+                    esp_ip_addr_info.u_addr.ip4.addr = ip_info->ip.addr;
+
+                    if (p->dhcps_change_cb) {
+                        p->dhcps_change_cb(&esp_ip_addr_info);
+                    }
+                    break;
+                }
+                p = p->next;
+            }
 
             ip_napt_enable(ip_info->ip.addr, 1);
         } else if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_CLIENT) {
@@ -559,7 +573,9 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
             ESP_ERROR_CHECK(esp_bridge_netif_set_dns_server(netif, ipaddr_addr(CONFIG_BRIDGE_STATIC_DNS_SERVER_MAIN), ESP_NETIF_DNS_MAIN));
             ESP_ERROR_CHECK(esp_bridge_netif_set_dns_server(netif, ipaddr_addr(CONFIG_BRIDGE_STATIC_DNS_SERVER_BACKUP), ESP_NETIF_DNS_BACKUP));
         }
-        esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info, conflict_check);
+        if (save_to_nvs) {
+            esp_bridge_save_ip_info_to_nvs(esp_netif_get_ifkey(netif), ip_info, conflict_check);
+        }
     } else {
         if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_CLIENT) {
             ESP_ERROR_CHECK(esp_netif_dhcpc_get_status(netif, &state));
@@ -581,6 +597,8 @@ void esp_bridge_create_all_netif(void)
     esp_bridge_create_softap_netif(NULL, NULL, true, true);
 #if defined(CONFIG_BRIDGE_WIFI_PMF_DISABLE)
     esp_wifi_disable_pmf_config(WIFI_IF_AP);
+    ESP_LOGI(TAG, "DHCPS Restart, deauth all station");
+    esp_wifi_deauth_sta(0);
 #endif
 #endif
 

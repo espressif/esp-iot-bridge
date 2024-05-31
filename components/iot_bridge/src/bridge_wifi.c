@@ -58,6 +58,9 @@ esp_err_t esp_bridge_wifi_set_config(wifi_interface_t interface, wifi_config_t *
             conf->ap.authmode = strlen((char*)conf->ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
             ESP_LOGI(TAG, "[%s] softap ssid: %s password: %s", __func__, conf->ap.ssid, conf->ap.password);
             ret = esp_wifi_set_config(WIFI_IF_AP, conf);
+
+            ESP_LOGI(TAG, "SoftAP config changed, deauth all station");
+            esp_wifi_deauth_sta(0);
             break;
         }
 
@@ -110,6 +113,8 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
 
         ESP_LOGI(TAG, "[%s] softap ssid: %s password: %s", __func__, (char*)wifi_cfg.ap.ssid, (char*)wifi_cfg.ap.password);
+        ESP_LOGI(TAG, "SoftAP config changed, deauth all station");
+        esp_wifi_deauth_sta(0);
     }
 
     return ESP_OK;
