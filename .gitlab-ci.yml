@@ -8,6 +8,9 @@ variables: &global-variables
   PYTHON_VER: 3
 
 .setup_esp_idf: &setup_esp_idf
+  - image_str=${image}
+  - image_str=(${image_str//:/ })
+  - idf_branch=${image_str[1]}
   - cd $IDF_PATH
   - git checkout ${idf_branch}
   - git submodule update --init --recursive
@@ -129,16 +132,19 @@ variables: &global-variables
   - *build_4g_hotspot_examples
   - *build_4g_nic_examples
 
-esp32_v5.0_build:
+esp32_build:
   stage: build
-  image: espressif/idf:release-v5.0
+    
   tags:
     - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3']
 
   variables:
     <<: *global-variables
     idf_target: esp32
-    idf_branch: release/v5.0
 
   before_script:
     - *before_script_preparation
@@ -148,73 +154,18 @@ esp32_v5.0_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_esp32
 
-esp32_v5.1_build:
+esp32c2_build:
   stage: build
-  image: espressif/idf:release-v5.1
   tags:
     - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32
-    idf_branch: release/v5.1
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32
-
-esp32_v5.2_build:
-  stage: build
-  image: espressif/idf:release-v5.2
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32
-    idf_branch: release/v5.2
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32
-
-esp32_v5.3_build:
-  stage: build
-  image: espressif/idf:release-v5.3
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32
-    idf_branch: release/v5.3
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32
-
-esp32c2_v5.0_build:
-  stage: build
-  image: espressif/idf:release-v5.0
-  tags:
-    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3']
 
   variables:
     <<: *global-variables
     idf_target: esp32c2
-    idf_branch: release/v5.0
 
   before_script:
     - *before_script_preparation
@@ -224,73 +175,18 @@ esp32c2_v5.0_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
 
-esp32c2_v5.1_build:
+esp32c3_build:
   stage: build
-  image: espressif/idf:release-v5.1
   tags:
     - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32c2
-    idf_branch: release/v5.1
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32c2_v5.2_build:
-  stage: build
-  image: espressif/idf:release-v5.2
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32c2
-    idf_branch: release/v5.2
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32c2_v5.3_build:
-  stage: build
-  image: espressif/idf:release-v5.3
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32c2
-    idf_branch: release/v5.3
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32c3_v5.0_build:
-  stage: build
-  image: espressif/idf:release-v5.0
-  tags:
-    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3']
 
   variables:
     <<: *global-variables
     idf_target: esp32c3
-    idf_branch: release/v5.0
 
   before_script:
     - *before_script_preparation
@@ -300,73 +196,18 @@ esp32c3_v5.0_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
 
-esp32c3_v5.1_build:
+esp32s2_build:
   stage: build
-  image: espressif/idf:release-v5.1
   tags:
     - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32c3
-    idf_branch: release/v5.1
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32c3_v5.2_build:
-  stage: build
-  image: espressif/idf:release-v5.2
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32c3
-    idf_branch: release/v5.2
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32c3_v5.3_build:
-  stage: build
-  image: espressif/idf:release-v5.3
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32c3
-    idf_branch: release/v5.3
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32s2_v5.0_build:
-  stage: build
-  image: espressif/idf:release-v5.0
-  tags:
-    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3']
 
   variables:
     <<: *global-variables
     idf_target: esp32s2
-    idf_branch: release/v5.0
 
   before_script:
     - *before_script_preparation
@@ -376,73 +217,18 @@ esp32s2_v5.0_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_esp32s2
 
-esp32s2_v5.1_build:
+esp32s3_build:
   stage: build
-  image: espressif/idf:release-v5.1
   tags:
     - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32s2
-    idf_branch: release/v5.1
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32s2
-
-esp32s2_v5.2_build:
-  stage: build
-  image: espressif/idf:release-v5.2
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32s2
-    idf_branch: release/v5.2
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32s2
-
-esp32s2_v5.3_build:
-  stage: build
-  image: espressif/idf:release-v5.3
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32s2
-    idf_branch: release/v5.3
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32s2
-
-esp32s3_v5.0_build:
-  stage: build
-  image: espressif/idf:release-v5.0
-  tags:
-    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3']
 
   variables:
     <<: *global-variables
     idf_target: esp32s3
-    idf_branch: release/v5.0
 
   before_script:
     - *before_script_preparation
@@ -452,111 +238,18 @@ esp32s3_v5.0_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_esp32s3
 
-esp32s3_v5.1_build:
+esp32c6_build:
   stage: build
-  image: espressif/idf:release-v5.1
   tags:
     - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32s3
-    idf_branch: release/v5.1
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32s3
-
-esp32s3_v5.2_build:
-  stage: build
-  image: espressif/idf:release-v5.2
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32s3
-    idf_branch: release/v5.2
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32s3
-
-esp32s3_v5.3_build:
-  stage: build
-  image: espressif/idf:release-v5.3
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32s3
-    idf_branch: release/v5.3
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_esp32s3
-
-esp32c6_v5.1_build:
-  stage: build
-  image: espressif/idf:release-v5.1
-  tags:
-    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3']
 
   variables:
     <<: *global-variables
     idf_target: esp32c6
-    idf_branch: release/v5.1
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32c6_v5.2_build:
-  stage: build
-  image: espressif/idf:release-v5.2
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32c6
-    idf_branch: release/v5.2
-
-  before_script:
-    - *before_script_preparation
-
-  script:
-    - *setup_esp_idf
-    - *build_iot_bridge_examples
-    - *build_iot_bridge_default
-
-esp32c6_v5.3_build:
-  stage: build
-  image: espressif/idf:release-v5.3
-  tags:
-    - build
-
-  variables:
-    <<: *global-variables
-    idf_target: esp32c6
-    idf_branch: release/v5.3
 
   before_script:
     - *before_script_preparation

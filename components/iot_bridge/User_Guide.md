@@ -233,7 +233,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
     | IDF Version               |             | Note                                                                   |
     | ------------------------- | ----------- | ---------------------------------------------------------------------- |
-    | ESP-IDF Release/v5.0-v5.2 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
+    | ESP-IDF Release/v5.0-v5.3 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
 
     ```
                                  +-- USB  <-+->  Computer
