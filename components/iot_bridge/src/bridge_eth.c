@@ -34,6 +34,12 @@ static const char *TAG = "bridge_eth";
 
 static esp_eth_phy_t *phy = NULL;
 
+#if defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
+esp_eth_netif_glue_handle_t esp_bridge_eth_new_netif_glue(esp_eth_handle_t eth_hdl);
+esp_err_t esp_bridge_set_eth_lan_netif(esp_netif_t* netif);
+esp_err_t esp_bridge_set_eth_wan_netif(esp_netif_t* netif);
+#endif
+
 /**
  * @brief ESP-Bridge Default configuration for Ethernet PHY object
  *
@@ -77,8 +83,7 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
             break;
     }
 }
-
-#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
 /** Event handler for IP_EVENT_ETH_GOT_IP */
 static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
                                  int32_t event_id, void *event_data)
@@ -95,13 +100,12 @@ static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
     esp_bridge_update_dns_info(event->esp_netif, NULL);
     esp_bridge_netif_network_segment_conflict_update(event->esp_netif);
 }
-#endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET */
-
+#endif
 void esp_bridge_eth_event_handler_register(void)
 {
     // Register user defined event handers
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL));
-#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
 #endif /* CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET */
 }
@@ -141,38 +145,44 @@ esp_bridge_eth_phy_model_t esp_bridge_eth_phy_model[] = {
 esp_err_t esp_bridge_eth_init(esp_netif_t* eth_netif)
 {
     esp_err_t ret = ESP_FAIL;
-    esp_eth_handle_t eth_handle = NULL;
+    static esp_eth_handle_t eth_handle = NULL;
 
-    // Init MAC configs to default
-    eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
-    eth_phy_config_t phy_config = ESP_BRIDGE_ETH_PHY_DEFAULT_CONFIG();
-    uint8_t phy_model_max = sizeof(esp_bridge_eth_phy_model)/sizeof(esp_bridge_eth_phy_model[0]);
+    if (!eth_handle) {
+        // Init MAC configs to default
+        eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
+        eth_phy_config_t phy_config = ESP_BRIDGE_ETH_PHY_DEFAULT_CONFIG();
+        uint8_t phy_model_max = sizeof(esp_bridge_eth_phy_model)/sizeof(esp_bridge_eth_phy_model[0]);
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-    eth_esp32_emac_config_t esp32_emac_config = ETH_ESP32_EMAC_DEFAULT_CONFIG();
-    esp32_emac_config.smi_mdc_gpio_num = CONFIG_BRIDGE_ETH_MDC_GPIO;
-    esp32_emac_config.smi_mdio_gpio_num = CONFIG_BRIDGE_ETH_MDIO_GPIO;
-    esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&esp32_emac_config, &mac_config);
+        eth_esp32_emac_config_t esp32_emac_config = ETH_ESP32_EMAC_DEFAULT_CONFIG();
+        esp32_emac_config.smi_mdc_gpio_num = CONFIG_BRIDGE_ETH_MDC_GPIO;
+        esp32_emac_config.smi_mdio_gpio_num = CONFIG_BRIDGE_ETH_MDIO_GPIO;
+        esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&esp32_emac_config, &mac_config);
 #else
-    mac_config.smi_mdc_gpio_num = CONFIG_BRIDGE_ETH_MDC_GPIO;
-    mac_config.smi_mdio_gpio_num = CONFIG_BRIDGE_ETH_MDIO_GPIO;
-    esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&mac_config);
+        mac_config.smi_mdc_gpio_num = CONFIG_BRIDGE_ETH_MDC_GPIO;
+        mac_config.smi_mdio_gpio_num = CONFIG_BRIDGE_ETH_MDIO_GPIO;
+        esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&mac_config);
 #endif // ESP_IDF_VERSION >= 5.0.0
 
-    for (uint8_t i = 0; i < phy_model_max; i++) {
-        phy = esp_bridge_eth_phy_model[i](&phy_config);
-        esp_eth_config_t eth_config = ETH_DEFAULT_CONFIG(mac, phy);
-        if (esp_eth_driver_install(&eth_config, &eth_handle) == ESP_OK){
-            ret = ESP_OK;
-            break;
+        for (uint8_t i = 0; i < phy_model_max; i++) {
+            phy = esp_bridge_eth_phy_model[i](&phy_config);
+            esp_eth_config_t eth_config = ETH_DEFAULT_CONFIG(mac, phy);
+            if (esp_eth_driver_install(&eth_config, &eth_handle) == ESP_OK){
+                ret = ESP_OK;
+                break;
+            }
         }
     }
 
     /* attach Ethernet driver to TCP/IP stack */
+#if defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
+    ESP_ERROR_CHECK(esp_netif_attach(eth_netif, esp_bridge_eth_new_netif_glue(eth_handle)));
+#else
     ESP_ERROR_CHECK(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle)));
+#endif
 
     /* start Ethernet driver state machine */
-    ESP_ERROR_CHECK(esp_eth_start(eth_handle));
+    esp_eth_start(eth_handle);
 
     return ret;
 }
@@ -180,7 +190,7 @@ esp_err_t esp_bridge_eth_init(esp_netif_t* eth_netif)
 
 #if CONFIG_BRIDGE_USE_SPI_ETHERNET
 #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
-esp_err_t esp_spi_eth_new_ksz8851snl(spi_device_interface_config_t *spi_devcfg, esp_netif_t* eth_netif_spi)
+esp_err_t esp_spi_eth_new_ksz8851snl(spi_device_interface_config_t *spi_devcfg, esp_netif_t *eth_netif_spi, esp_eth_handle_t *eth_handle_spi)
 {
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
     spi_device_handle_t spi_handle = NULL;
@@ -188,7 +198,6 @@ esp_err_t esp_spi_eth_new_ksz8851snl(spi_device_interface_config_t *spi_devcfg, 
 #endif
     // Configure SPI interface and Ethernet driver for specific SPI module
     esp_eth_mac_t *mac_spi;
-    esp_eth_handle_t eth_handle_spi = NULL;
     // Init MAC and PHY configs to default
     eth_mac_config_t mac_config_spi = ETH_MAC_DEFAULT_CONFIG();
     eth_phy_config_t phy_config_spi = ETH_PHY_DEFAULT_CONFIG();
@@ -208,25 +217,12 @@ esp_err_t esp_spi_eth_new_ksz8851snl(spi_device_interface_config_t *spi_devcfg, 
     mac_spi = esp_eth_mac_new_ksz8851snl(&ksz8851snl_config, &mac_config_spi);
     phy = esp_eth_phy_new_ksz8851snl(&phy_config_spi);
     esp_eth_config_t eth_config_spi_ksz8851snl = ETH_DEFAULT_CONFIG(mac_spi, phy);
-    if (esp_eth_driver_install(&eth_config_spi_ksz8851snl, &eth_handle_spi) == ESP_OK) {
-        /* The SPI Ethernet module might not have a burned factory MAC address, we can set it manually.
-        02:00:00 is a Locally Administered OUI range so should not be used except when testing on a LAN under your control.
-        */
-        ESP_ERROR_CHECK(esp_eth_ioctl(eth_handle_spi, ETH_CMD_S_MAC_ADDR, (uint8_t[]) {
-            0x02, 0x00, 0x00, 0x12, 0x34, 0x56
-        }));
-        // attach Ethernet driver to TCP/IP stack
-        ESP_ERROR_CHECK(esp_netif_attach(eth_netif_spi, esp_eth_new_netif_glue(eth_handle_spi)));
-        /* start Ethernet driver state machine */
-        return esp_eth_start(eth_handle_spi);
-    } else {
-        return ESP_FAIL;
-    }
+    return esp_eth_driver_install(&eth_config_spi_ksz8851snl, eth_handle_spi);
 }
 #endif // CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
 
 #if CONFIG_ETH_SPI_ETHERNET_DM9051
-esp_err_t esp_spi_eth_new_dm9051(spi_device_interface_config_t *spi_devcfg, esp_netif_t* eth_netif_spi)
+esp_err_t esp_spi_eth_new_dm9051(spi_device_interface_config_t *spi_devcfg, esp_netif_t *eth_netif_spi, esp_eth_handle_t *eth_handle_spi)
 {
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
     spi_devcfg->command_bits = 1;
@@ -236,7 +232,6 @@ esp_err_t esp_spi_eth_new_dm9051(spi_device_interface_config_t *spi_devcfg, esp_
 #endif
     // Configure SPI interface and Ethernet driver for specific SPI module
     esp_eth_mac_t *mac_spi;
-    esp_eth_handle_t eth_handle_spi = NULL;
     // Init MAC and PHY configs to default
     eth_mac_config_t mac_config_spi = ETH_MAC_DEFAULT_CONFIG();
     eth_phy_config_t phy_config_spi = ETH_PHY_DEFAULT_CONFIG();
@@ -256,25 +251,12 @@ esp_err_t esp_spi_eth_new_dm9051(spi_device_interface_config_t *spi_devcfg, esp_
     mac_spi = esp_eth_mac_new_dm9051(&dm9051_config, &mac_config_spi);
     phy = esp_eth_phy_new_dm9051(&phy_config_spi);
     esp_eth_config_t eth_config_spi_dm9051 = ETH_DEFAULT_CONFIG(mac_spi, phy);
-    if (esp_eth_driver_install(&eth_config_spi_dm9051, &eth_handle_spi) == ESP_OK) {
-        /* The SPI Ethernet module might not have a burned factory MAC address, we can set it manually.
-        02:00:00 is a Locally Administered OUI range so should not be used except when testing on a LAN under your control.
-        */
-        ESP_ERROR_CHECK(esp_eth_ioctl(eth_handle_spi, ETH_CMD_S_MAC_ADDR, (uint8_t[]) {
-            0x02, 0x00, 0x00, 0x12, 0x34, 0x56
-        }));
-        // attach Ethernet driver to TCP/IP stack
-        ESP_ERROR_CHECK(esp_netif_attach(eth_netif_spi, esp_eth_new_netif_glue(eth_handle_spi)));
-        /* start Ethernet driver state machine */
-        return esp_eth_start(eth_handle_spi);
-    } else {
-        return ESP_FAIL;
-    }
+    return esp_eth_driver_install(&eth_config_spi_dm9051, eth_handle_spi);
 }
 #endif // CONFIG_ETH_SPI_ETHERNET_DM9051
 
 #if CONFIG_ETH_SPI_ETHERNET_W5500
-esp_err_t esp_spi_eth_new_w5500(spi_device_interface_config_t *spi_devcfg, esp_netif_t* eth_netif_spi)
+esp_err_t esp_spi_eth_new_w5500(spi_device_interface_config_t *spi_devcfg, esp_netif_t *eth_netif_spi, esp_eth_handle_t *eth_handle_spi)
 {
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
     spi_devcfg->command_bits = 16;
@@ -284,7 +266,6 @@ esp_err_t esp_spi_eth_new_w5500(spi_device_interface_config_t *spi_devcfg, esp_n
 #endif
     // Configure SPI interface and Ethernet driver for specific SPI module
     esp_eth_mac_t *mac_spi;
-    esp_eth_handle_t eth_handle_spi = NULL;
     // Init MAC and PHY configs to default
     eth_mac_config_t mac_config_spi = ETH_MAC_DEFAULT_CONFIG();
     eth_phy_config_t phy_config_spi = ETH_PHY_DEFAULT_CONFIG();
@@ -304,24 +285,11 @@ esp_err_t esp_spi_eth_new_w5500(spi_device_interface_config_t *spi_devcfg, esp_n
     mac_spi = esp_eth_mac_new_w5500(&w5500_config, &mac_config_spi);
     phy = esp_eth_phy_new_w5500(&phy_config_spi);
     esp_eth_config_t eth_config_spi_w5500 = ETH_DEFAULT_CONFIG(mac_spi, phy);
-    if (esp_eth_driver_install(&eth_config_spi_w5500, &eth_handle_spi) == ESP_OK) {
-        /* The SPI Ethernet module might not have a burned factory MAC address, we can set it manually.
-        02:00:00 is a Locally Administered OUI range so should not be used except when testing on a LAN under your control.
-        */
-        ESP_ERROR_CHECK(esp_eth_ioctl(eth_handle_spi, ETH_CMD_S_MAC_ADDR, (uint8_t[]) {
-            0x02, 0x00, 0x00, 0x12, 0x34, 0x56
-        }));
-        // attach Ethernet driver to TCP/IP stack
-        ESP_ERROR_CHECK(esp_netif_attach(eth_netif_spi, esp_eth_new_netif_glue(eth_handle_spi)));
-        /* start Ethernet driver state machine */
-        return esp_eth_start(eth_handle_spi);
-    } else {
-        return ESP_FAIL;
-    }
+    return esp_eth_driver_install(&eth_config_spi_w5500, eth_handle_spi);
 }
 #endif // CONFIG_ETH_SPI_ETHERNET_W5500
 
-typedef esp_err_t (*esp_bridge_spi_eth_module_t)(spi_device_interface_config_t *spi_devcfg, esp_netif_t* eth_netif_spi);
+typedef esp_err_t (*esp_bridge_spi_eth_module_t)(spi_device_interface_config_t *spi_devcfg, esp_netif_t *eth_netif_spi, esp_eth_handle_t *eth_handle_spi);
 
 esp_bridge_spi_eth_module_t esp_bridge_spi_eth_module[] = {
 #if CONFIG_ETH_SPI_ETHERNET_DM9051
@@ -338,32 +306,57 @@ esp_bridge_spi_eth_module_t esp_bridge_spi_eth_module[] = {
 esp_err_t esp_bridge_eth_spi_init(esp_netif_t* eth_netif_spi)
 {
     esp_err_t ret = ESP_FAIL;
-    // Install GPIO ISR handler to be able to service SPI Eth modlues interrupts
-    gpio_install_isr_service(0);
+    static bool eth_is_start = false;
+    static esp_eth_handle_t eth_handle_spi = NULL;
+    if (!eth_is_start) {
+        // Install GPIO ISR handler to be able to service SPI Eth modlues interrupts
+        gpio_install_isr_service(0);
 
-    // Init SPI bus
-    spi_bus_config_t buscfg = {
-        .miso_io_num = CONFIG_BRIDGE_ETH_SPI_MISO_GPIO,
-        .mosi_io_num = CONFIG_BRIDGE_ETH_SPI_MOSI_GPIO,
-        .sclk_io_num = CONFIG_BRIDGE_ETH_SPI_SCLK_GPIO,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-    };
-    ESP_ERROR_CHECK(spi_bus_initialize(CONFIG_BRIDGE_ETH_SPI_HOST, &buscfg, SPI_DMA_CH_AUTO));
+        // Init SPI bus
+        spi_bus_config_t buscfg = {
+            .miso_io_num = CONFIG_BRIDGE_ETH_SPI_MISO_GPIO,
+            .mosi_io_num = CONFIG_BRIDGE_ETH_SPI_MOSI_GPIO,
+            .sclk_io_num = CONFIG_BRIDGE_ETH_SPI_SCLK_GPIO,
+            .quadwp_io_num = -1,
+            .quadhd_io_num = -1,
+        };
+        ESP_ERROR_CHECK(spi_bus_initialize(CONFIG_BRIDGE_ETH_SPI_HOST, &buscfg, SPI_DMA_CH_AUTO));
+        spi_device_interface_config_t devcfg = {
+            .mode = 0,
+            .clock_speed_hz = CONFIG_BRIDGE_ETH_SPI_CLOCK_MHZ * 1000 * 1000,
+            .queue_size = 20,
+            .spics_io_num = CONFIG_BRIDGE_ETH_SPI_CS0_GPIO
+        };
 
-    spi_device_interface_config_t devcfg = {
-        .mode = 0,
-        .clock_speed_hz = CONFIG_BRIDGE_ETH_SPI_CLOCK_MHZ * 1000 * 1000,
-        .queue_size = 20,
-        .spics_io_num = CONFIG_BRIDGE_ETH_SPI_CS0_GPIO
-    };
+        uint8_t spi_eth_module_max = sizeof(esp_bridge_spi_eth_module)/sizeof(esp_bridge_spi_eth_module[0]);
 
-    uint8_t spi_eth_module_max = sizeof(esp_bridge_spi_eth_module)/sizeof(esp_bridge_spi_eth_module[0]);
-    for (uint8_t i = 0; i < spi_eth_module_max; i++) {
-        if (esp_bridge_spi_eth_module[i](&devcfg, eth_netif_spi) == ESP_OK) {
-            ret = ESP_OK;
-            break;
+        for (uint8_t i = 0; i < spi_eth_module_max; i++) {
+            if (esp_bridge_spi_eth_module[i](&devcfg, eth_netif_spi, &eth_handle_spi) == ESP_OK) {
+                break;
+            }
         }
+    }
+
+    if (eth_handle_spi) {
+        /* The SPI Ethernet module might not have a burned factory MAC address, we can set it manually.
+        02:00:00 is a Locally Administered OUI range so should not be used except when testing on a LAN under your control.
+        */
+        ESP_ERROR_CHECK(esp_eth_ioctl(eth_handle_spi, ETH_CMD_S_MAC_ADDR, (uint8_t[]) {
+            0x02, 0x00, 0x00, 0x12, 0x34, 0x56
+        }));
+
+        // attach Ethernet driver to TCP/IP stack
+#if defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
+        ESP_ERROR_CHECK(esp_netif_attach(eth_netif_spi, esp_bridge_eth_new_netif_glue(eth_handle_spi)));
+#else
+        ESP_ERROR_CHECK(esp_netif_attach(eth_netif_spi, esp_eth_new_netif_glue(eth_handle_spi)));
+#endif
+    }
+
+    if (!eth_is_start) {
+        /* start Ethernet driver state machine */
+        ret = esp_eth_start(eth_handle_spi);
+        eth_is_start = true;
     }
 
     return ret;
@@ -404,16 +397,19 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
         .lost_ip_event = IP_EVENT_ETH_LOST_IP,
 #endif
-        .if_key = "ETH_DEF",
+        .if_key = "ETH_WAN",
         .if_desc = "eth",
-#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
-        .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_SERVER | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
-        .route_prio = 10
-#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
-        .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
-        .route_prio = 50
-#endif
+        .flags = (esp_netif_flags_t)(ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
+        .route_prio = 50,
     };
+
+    if (data_forwarding) {
+        esp_netif_common_config.flags |= ESP_NETIF_DHCP_SERVER;
+        esp_netif_common_config.if_key = "ETH_LAN";
+        esp_netif_common_config.route_prio = 10;
+    } else {
+        esp_netif_common_config.flags |= ESP_NETIF_DHCP_CLIENT;
+    }
 
     const esp_netif_driver_ifconfig_t eth_driver_ifconfig = {
         .driver_free_rx_buffer = eth_driver_free_rx_buffer,
@@ -426,13 +422,17 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 
     esp_netif_config_t eth_config = ESP_NETIF_DEFAULT_ETH(); // this configuration is for eth client
     eth_config.driver = &eth_driver_ifconfig;
-
-    if (data_forwarding || enable_dhcps) {
-        eth_config.base = &esp_netif_common_config;
-    }
+    eth_config.base = &esp_netif_common_config;
 
     esp_netif_t* netif = esp_bridge_create_netif(&eth_config, ip_info, mac, enable_dhcps);
     if (netif) {
+#if defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
+        if (data_forwarding) {
+            esp_bridge_set_eth_lan_netif(netif);
+        } else {
+            esp_bridge_set_eth_wan_netif(netif);
+        }
+#endif
         esp_netif_action_stop(netif, NULL, 0, NULL);
 #if CONFIG_BRIDGE_USE_INTERNAL_ETHERNET
         esp_bridge_eth_init(netif);
@@ -440,6 +440,8 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         esp_bridge_eth_spi_init(netif);
 #endif
         esp_netif_up(netif);
+
+        ESP_LOGI(TAG, "[%-12s]", esp_netif_get_ifkey(netif));
 
         if (data_forwarding) {
             esp_bridge_netif_list_add(netif, eth_netif_dhcp_status_change_cb);

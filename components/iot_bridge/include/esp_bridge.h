@@ -73,7 +73,7 @@ esp_netif_t *esp_bridge_create_station_netif(esp_netif_ip_info_t *ip_info, uint8
 esp_netif_t *esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
 #endif
 
-#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
+#if defined(CONFIG_BRIDGE_ETHERNET_NETIF_ENABLE)
 /**
 * @brief Create eth netif for bridge.
 *
