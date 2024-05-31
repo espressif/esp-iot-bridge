@@ -1,4 +1,4 @@
-menu "TinyUSB Stack"
+menu "Bridge TinyUSB Stack"
     visible if USB_OTG_SUPPORTED
 
     config TINYUSB

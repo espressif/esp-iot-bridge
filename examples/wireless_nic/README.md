@@ -26,6 +26,8 @@ Follow detailed instructions provided specifically for this example.
 
 You can select the interface (USB/ETH/SPI/SDIO) connected to the PC/MCU in `Component config → Bridge Configuration → The interface used to provide network data forwarding for other devices` of `menuconfig`.
 
+Note: The USB Network Class defaults to CONFIG_TINYUSB_NET_ECM. If you want to recognize the USB NIC device on a Windows computer, you need to select CONFIG_TINYUSB_NET_RNDIS.
+
 #### Build and Flash
 Run `idf.py flash monitor` to build, flash and monitor the project.
 
