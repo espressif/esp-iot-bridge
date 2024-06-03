@@ -19,3 +19,4 @@ dependencies:
     git: https://github.com/espressif/esp-iot-bridge.git
     rules:
       - if: "target in [esp32s2, esp32s3]"
+      - if: "idf_version < 5.1.4"

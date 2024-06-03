@@ -22,16 +22,18 @@ ESP-IoT-Bridge 方案主要针对 IoT 应用场景下的各种网络接口之间
 
 乐鑫 ESP-IoT-Bridge 方案已经适配乐鑫多种芯片：
 
-| 芯片     |  ESP-IDF Release/v4.3  |  ESP-IDF Release/v4.4  |  ESP-IDF Release/v5.0  |  ESP-IDF Release/v5.1  |
+| 芯片     |  ESP-IDF Release/v5.0  |  ESP-IDF Release/v5.1  |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |
 | :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
 | ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-S3 |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C2 |                        |                        | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C6 |                        |                        |                        | ![alt text][supported] |
+| ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C6 |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 
 [supported]: https://img.shields.io/badge/-%E6%94%AF%E6%8C%81-green "supported"
+
+**注意**： 从 ([a4ab5cc](https://github.com/espressif/esp-iot-bridge/commit/a4ab5ccdbe07329802fff2778c67496b83ecf0dd)) 之后 esp-iot-bridge 只支持 esp-idf/v5.x 版本。
 
 ESP-IoT-Bridge 方案提供多个网络接口，不同的网络接口可以分为两大类：
 
@@ -86,7 +88,7 @@ ESP-IoT-Bridge 设备通过 Wi-Fi 或者有线以太网网口连接至路由器�
 
 - 通过在 menuconfig（``Bridge Configuration`` > ``SoftAP Config``）中启用 ``BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC``，可在 SoftAP SSID 末尾增加 MAC 信息。
 
-- 单个设备最多支持 10 个 子设备同时连接，多个子设备共享带宽。
+- 除了 C2，单个设备最多支持 15 个 子设备同时连接（具体参考 [AP 基本配置](https://docs.espressif.com/projects/esp-idf/zh_CN/v5.1.2/esp32/api-guides/wifi.html#id39) 中 max_connection），多个子设备共享带宽。
 
 - 若 ESP-IoT-Bridge 设备通过 Wi-Fi 连接至路由器，则需要进行配网操作，目前支持以下两种配网方式：
 
@@ -209,9 +211,9 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - 获取 Espressif SDK [ESP-IDF](https://github.com/espressif/esp-idf)。
 
-- 为确保成功获取了完整的 ESP-IDF，请在终端中输入 `idf.py --version`，如果输出结果类似于 `ESP-IDF v4.4-dev-3675-g35b20cadce`，则代表安装成功。详细的安装和配置说明请参考[快速入门文档](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32s2/get-started/index.html)。
+- 为确保成功获取了完整的 ESP-IDF，请在终端中输入 `idf.py --version`，如果输出结果类似于 `ESP-IDF v5.0.5-493-ga463942e14`，则代表安装成功。详细的安装和配置说明请参考[快速入门文档](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32s2/get-started/index.html)。
 
-- 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v4.3`  以上版本。
+- 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v5.0`  及其以上版本。
 
 
 ## 5 配置项介绍
@@ -228,10 +230,9 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - 是否支持选择多个网络数据转发接口来给不同设备提供网络功能？
 
-    | IDF Version               |          | 备注                              |
-    | ------------------------- | -------- | --------------------------------- |
-    | ESP-IDF Release/v4.3/v4.4 | 不支持    | 只能选择一个网络数据转发接口      |
-    | ESP-IDF Release/v5.0/v5.1 | **支持** | 目前不能同时选择 SDIO 和 SPI 接口 |
+    | IDF Version               |          | 备注                          |
+    | ------------------------- | -------- | ---------------------------- |
+    | ESP-IDF Release/v5.0-v5.3 | **支持** | 目前不能同时选择 SDIO 和 SPI 接口 |
 
     ```
                                  +-- USB  <-+->  Computer

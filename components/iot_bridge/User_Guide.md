@@ -24,16 +24,18 @@ ESP-IoT-Bridge solution focuses on connectivity and communication between variou
 
 ESP-IoT-Bridge is supported by various Espressif chips, as shown in the table below:
 
-| Chip     |  ESP-IDF Release/v4.3  |  ESP-IDF Release/v4.4  |  ESP-IDF Release/v5.0  |  ESP-IDF Release/v5.1  |
+| Chip     |  ESP-IDF Release/v5.0  |  ESP-IDF Release/v5.1  |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |
 | :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
 | ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-S3 |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C2 |                        |                        | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C6 |                        |                        |                        | ![alt text][supported] |
+| ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C6 |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 
 [supported]: https://img.shields.io/badge/-supported-green "supported"
+
+**Note**: From commit [a4ab5cc](https://github.com/espressif/esp-iot-bridge/commit/a4ab5ccdbe07329802fff2778c67496b83ecf0dd) onwards, esp-iot-bridge only supports esp-idf version 5.x.
 
 The ESP-IoT-Bridge solution provides several network interfaces, which can be divided into two main categories:
 
@@ -88,7 +90,7 @@ ESP-IoT-Bridge device can connect to the network by connecting to the router via
 
 - By enabling ``BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC`` in menuconfig (``Bridge Configuration`` > ``SoftAP Config``), users can add MAC information at the end of SoftAP SSID.
 
-- A single ESP-IoT-Bridge device supports up to 10 stations connected at the same time, and bandwidth is shared by these stations.
+- Except for the C2, a single device can support up to 15 sub-devices connected simultaneously (refer to [AP Basic Configuration](https://docs.espressif.com/projects/esp-idf/en/v5.1.2/esp32/api-guides/wifi.html#ap-basic-configuration) for details on max_connection). Multiple sub-devices share the bandwidth.
 
 - You need to configure your network if the ESP-IoT-Bridge device connects to the router via Wi-Fi. Currently, the following ways are supported:
 
@@ -211,9 +213,9 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - Get Espressif SDK from [ESP-IDF](https://github.com/espressif/esp-idf).
 
-- To ensure that the ESP-IDF is successfully obtained, please enter `idf.py --version` in the terminal. If the output is similar to `ESP-IDF v4.4-dev-3675-g35b20cadce`, ESP-IDF is installed successfully. For detailed installation and configuration instructions, please refer to [ESP-IDF Get Started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html).
+- To ensure that you have successfully installed the complete ESP-IDF, please enter `idf.py --version` in the terminal. If the output is similar to `ESP-IDF v5.0.5-493-ga463942e14`, it means the installation was successful. For detailed installation and configuration instructions, please refer to the [Quick Start Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html).
 
-- After successfully obtaining ESP-IDF, please switch its version to the `release/v4.3` or a higher version.
+- After successfully obtaining ESP-IDF, please switch the ESP-IDF version to `release/v5.0` or above.
 
 ## 5 Configuration
 
@@ -231,8 +233,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
     | IDF Version               |             | Note                                                                   |
     | ------------------------- | ----------- | ---------------------------------------------------------------------- |
-    | ESP-IDF Release/v4.3/v4.4 | Not Support | Only one network data forwarding interface can be selected             |
-    | ESP-IDF Release/v5.0/v5.1 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
+    | ESP-IDF Release/v5.0-v5.2 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
 
     ```
                                  +-- USB  <-+->  Computer
