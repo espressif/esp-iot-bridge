@@ -228,8 +228,8 @@ static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO)
             external_netif = esp_netif_get_handle_from_ifkey("SDIO_DEF");
 #endif
-#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
-            external_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
+#if (defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN))
+            external_netif = esp_netif_get_handle_from_ifkey("ETH_WAN");
 #endif
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
             external_netif = esp_netif_get_handle_from_ifkey("PPP_DEF");

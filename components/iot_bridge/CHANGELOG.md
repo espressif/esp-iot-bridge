@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.11.6 - 2024.6.5
+
+### Bugfix
+
+- fix: change data forwarding ethernet netif if_key to ETH_LAN
+
 ## v0.11.5 - 2024.6.3
 
 ### Feature
