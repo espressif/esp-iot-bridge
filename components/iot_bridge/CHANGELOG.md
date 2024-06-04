@@ -1,10 +1,10 @@
 # ChangeLog
 
-## v0.11.5 - 2024.5.9
+## v0.11.5 - 2024.6.3
 
 ### Feature
 
-- Support ESP-IDF release/v5.2 & release/v5.3
+- Support ESP-IDF release/v5.2 & release/v5.3 ([a5a1ae56](https://github.com/espressif/esp-iot-bridge/commit/a5a1ae564853087bb8cf74d3635e892246c538ed))
 - Add parameter in esp_bridge_netif_set_ip_info to check IP segment conflict. ([7212dc5](https://github.com/espressif/esp-iot-bridge/commit/7212dc50d3a6916bdf0b3e6334b88ee730975c35))
 - Do not stop DHCP Server if ip info is identical when set SoftAP ip. ([a2d9498](https://github.com/espressif/esp-iot-bridge/commit/a2d94988cea07d69eb513c0a45693aea4c039e09))
 
