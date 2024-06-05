@@ -4,7 +4,7 @@
 
 ### Bugfix
 
-- fix: change data forwarding ethernet netif if_key to ETH_LAN
+- fix: Update if_key used to get ethernet netif ([8be4cee](https://github.com/espressif/esp-iot-bridge/commit/8be4cee48a4cf5e693f66ed94c9b8834861a2b76))
 
 ## v0.11.5 - 2024.6.3
 

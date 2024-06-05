@@ -1,4 +1,4 @@
-version: "0.11.5"
+version: "0.11.6"
 description: A smart bridge to make both ESP and the other MCU or smart device can access the Internet
 url: https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge
 repository: https://github.com/espressif/esp-iot-bridge.git
