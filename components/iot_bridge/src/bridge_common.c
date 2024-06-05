@@ -333,8 +333,8 @@ void dhcp_dns_defore_updated_customer_cb(void)
 {
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
     esp_netif_get_dns_info(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"), ESP_NETIF_DNS_MAIN, &old_dns_info);
-#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
-    esp_netif_get_dns_info(esp_netif_get_handle_from_ifkey("ETH_DEF"), ESP_NETIF_DNS_MAIN, &old_dns_info);
+#elif (defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN))
+    esp_netif_get_dns_info(esp_netif_get_handle_from_ifkey("ETH_WAN"), ESP_NETIF_DNS_MAIN, &old_dns_info);
 #endif
 }
 
@@ -343,8 +343,8 @@ void dhcp_dns_updated_customer_cb(void)
     esp_netif_t *netif = NULL;
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
     netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET)
-    netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
+#elif (defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN))
+    netif = esp_netif_get_handle_from_ifkey("ETH_WAN");
 #endif
     if (netif) {
         esp_netif_dns_info_t dns_info = {0};
@@ -378,8 +378,8 @@ esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *d
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
         esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SPI_DEF"), &dns_info);
 #endif
-#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET)
-        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("ETH_DEF"), &dns_info);
+#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("ETH_LAN"), &dns_info);
 #endif
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
         esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("USB_DEF"), &dns_info);

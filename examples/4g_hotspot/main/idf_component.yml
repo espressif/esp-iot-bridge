@@ -1,5 +1,5 @@
 dependencies:
-  idf: ">=4.3"
+  idf: ">=5.0"
   espressif/iot_bridge:
     version: "*"
     # Please comment the following line, if this example is installed by idf.py create-project-from-example.
