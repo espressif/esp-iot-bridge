@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.11.7 - 2024.6.5
+
+### Bugfix
+
+- fix(bridge_common): add null check for data_forwarding_netif when DNS info update ([e538c1a](https://github.com/espressif/esp-iot-bridge/commit/e538c1ac4ae562cec324173852898883a2b5e020))
+
 ## v0.11.6 - 2024.6.5
 
 ### Bugfix
