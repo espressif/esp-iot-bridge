@@ -318,6 +318,10 @@ esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_in
 
 static void esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_t *data_forwarding_netif, esp_netif_dns_info_t *dns_info)
 {
+    if (!data_forwarding_netif) {
+        return;
+    }
+
     esp_netif_dns_info_t old_dns_info = {0};
     esp_netif_get_dns_info(data_forwarding_netif, ESP_NETIF_DNS_MAIN, &old_dns_info);
     if (old_dns_info.ip.u_addr.ip4.addr == dns_info->ip.u_addr.ip4.addr) {
@@ -331,11 +335,15 @@ static esp_netif_dns_info_t old_dns_info = {0};
 
 void dhcp_dns_defore_updated_customer_cb(void)
 {
+    esp_netif_t *netif = NULL;
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
-    esp_netif_get_dns_info(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"), ESP_NETIF_DNS_MAIN, &old_dns_info);
+    netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
 #elif (defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN))
-    esp_netif_get_dns_info(esp_netif_get_handle_from_ifkey("ETH_WAN"), ESP_NETIF_DNS_MAIN, &old_dns_info);
+    netif = esp_netif_get_handle_from_ifkey("ETH_WAN");
 #endif
+    if (netif) {
+        esp_netif_get_dns_info(netif, ESP_NETIF_DNS_MAIN, &old_dns_info);
+    }
 }
 
 void dhcp_dns_updated_customer_cb(void)
