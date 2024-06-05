@@ -39,6 +39,7 @@ if(CONFIG_TINYUSB)
         "additions/include_private"
         "additions/tusb/src/lib/networking"
         "additions/tusb/src/class/dfu"
+        "additions/tusb/src/class/bth"
         "additions/tusb/src/class/vendor"
         )
 
@@ -88,7 +89,9 @@ if(CONFIG_TINYUSB)
     endif()
 
     if(CONFIG_TINYUSB_BTH_ENABLED)
-        list(APPEND srcs "additions/src/tusb_bth.c")
+        list(APPEND srcs
+            "additions/src/tusb_bth.c"
+            "additions/tusb/src/class/bth/bth_device.c")
     endif()
 
     if(CONFIG_TINYUSB_DFU_ENABLED)
