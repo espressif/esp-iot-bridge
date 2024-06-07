@@ -31,8 +31,15 @@
 #include "tinyusb.h"
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 1, 4)
 #include "tusb_net.h"
+#include "tusb_bth.h"
 #else
 #include "tinyusb_net.h"
+#endif
+
+#if CFG_TUD_BTH
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 4)
+#error "USB BTH currently only support in IDF versions 5.0~5.1.3"
+#endif
 #endif
 
 /* Define those to better describe your network interface. */
@@ -87,6 +94,11 @@ static void esp_bridge_usb_init(void)
     ESP_ERROR_CHECK(tinyusb_net_init(TINYUSB_USBDEV_0, &net_config));
 #else
     tusb_net_init();
+
+#if CFG_TUD_BTH
+    // init ble controller
+    tusb_bth_init();
+#endif /* CFG_TUD_BTH */
 
     tinyusb_config_t tusb_cfg = {
         .external_phy = false // In the most cases you need to use a `false` value
