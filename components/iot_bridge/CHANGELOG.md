@@ -1,6 +1,10 @@
 # ChangeLog
 
-## v0.11.7 - 2024.6.5
+## v0.11.7 - 2024.6.7
+
+### Feature
+
+- Support USB_BTH Class(Currently supported only in IDF versions tag 5.0 to 5.1.3) ([16772da](https://github.com/espressif/esp-iot-bridge/commit/16772da1117ee676da8f2dc0a98dbae6c274e61e))
 
 ### Bugfix
 
