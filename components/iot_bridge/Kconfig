@@ -564,4 +564,14 @@ menu "Bridge Configuration"
     endmenu
 
     rsource "drivers/Kconfig"
+
+    menu "Bridge NAPT configuration"
+        config BRIDGE_IP_NAPT_SIZE
+            int "the size of NAPT tables"
+            default 512
+
+        config BRIDGE_IP_NAPT_TIMEOUT_MS_TCP
+            int "timeout in ms for tcp connection, default is 5 minutes"
+            default 300000
+    endmenu
 endmenu
