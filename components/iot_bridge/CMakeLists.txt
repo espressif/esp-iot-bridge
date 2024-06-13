@@ -70,7 +70,9 @@ set_source_files_properties(SOURCE ${srcs}
 
 target_compile_options(__idf_lwip PRIVATE
                        "-DIP_NAPT_PORTMAP=1"
-                       "-DIP_PORTMAP_MAX=255")
+                       "-DIP_PORTMAP_MAX=255"
+                       "-DIP_NAPT_MAX=CONFIG_BRIDGE_IP_NAPT_SIZE"
+                       "-DIP_NAPT_TIMEOUT_MS_TCP=CONFIG_BRIDGE_IP_NAPT_TIMEOUT_MS_TCP")
 
 include(package_manager)
 cu_pkg_define_version(${CMAKE_CURRENT_LIST_DIR})

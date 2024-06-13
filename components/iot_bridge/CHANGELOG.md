@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.11.8 - 2024.6.13
+
+### Feature
+
+- feat: Add some NAPT configurations for iot_bridge ([6417238](https://github.com/espressif/esp-iot-bridge/commit/6417238041dd3271db75d1fdb93d01d9117bf759))
+
 ## v0.11.7 - 2024.6.7
 
 ### Feature
