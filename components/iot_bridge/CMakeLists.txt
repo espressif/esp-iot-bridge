@@ -58,6 +58,9 @@ execute_process(COMMAND
 execute_process(COMMAND
                 git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_forward.patch
                 WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
+execute_process(COMMAND
+                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_napt.patch
+                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
 
 execute_process(COMMAND
                 git rev-parse --short HEAD
