@@ -535,6 +535,7 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
             p->conflict_check = conflict_check;
             break;
         }
+        p = p->next;
     }
 
     if (!p) {
