@@ -18,6 +18,9 @@ menu "Bridge Configuration"
         depends on BRIDGE_ETHERNET_NETIF_ENABLE
         bool "Ethernet acts as WAN or LAN automatically"
         default n
+        help
+            If using SPI Ethernet, ensure that the corresponding SPI Ethernet module configuration is enabled, e.g., CONFIG_ETH_SPI_ETHERNET_DM9051.
+            Path: Component config → Ethernet → Support SPI to Ethernet Module → DM9051
 
     menu "The interface used to connect to the external network"
         config BRIDGE_EXTERNAL_NETIF_STATION
@@ -39,6 +42,8 @@ menu "Bridge Configuration"
             default n
             help
                 "BRIDGE_EXTERNAL_NETIF_ETHERNET" and "BRIDGE_DATA_FORWARDING_NETIF_ETHERNET" cannot be enabled simultaneously at the moment.
+                If using SPI Ethernet, ensure that the corresponding SPI Ethernet module configuration is enabled, e.g., CONFIG_ETH_SPI_ETHERNET_DM9051.
+                Path: Component config → Ethernet → Support SPI to Ethernet Module → DM9051
 
         config BRIDGE_EXTERNAL_NETIF_SPI
             bool "Use SPI interface to connect to the external network. Please note that SPI Netif and SDIO Netif cannot be enabled simultaneously."
@@ -124,6 +129,8 @@ menu "Bridge Configuration"
             default n
             help
                 "BRIDGE_EXTERNAL_NETIF_ETHERNET" and "BRIDGE_DATA_FORWARDING_NETIF_ETHERNET" cannot be enabled simultaneously at the moment.
+                If using SPI Ethernet, ensure that the corresponding SPI Ethernet module configuration is enabled, e.g., CONFIG_ETH_SPI_ETHERNET_DM9051.
+                Path: Component config → Ethernet → Support SPI to Ethernet Module → DM9051
 
         config BRIDGE_DATA_FORWARDING_NETIF_SPI
             bool "Use SPI interface to provide network data forwarding for other devices. Please note that SPI Netif and SDIO Netif cannot be enabled simultaneously."
