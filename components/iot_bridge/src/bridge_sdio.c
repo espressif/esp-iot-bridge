@@ -89,7 +89,7 @@ static void sdio_low_level_init(struct netif *netif)
 
 #if ESP_IPV6
 #if LWIP_IPV6 && LWIP_IPV6_MLD
-  netif->flags |= NETIF_FLAG_MLD6;
+    netif->flags |= NETIF_FLAG_MLD6;
 #endif
 #endif
 }
@@ -115,7 +115,7 @@ static err_t sdio_low_level_output(struct netif *netif, struct pbuf *p)
         return ERR_IF;
     }
 
-    if(q->next == NULL) {
+    if (q->next == NULL) {
         ret = esp_netif_transmit(esp_netif, q->payload, q->len);
     } else {
         LWIP_DEBUGF(PBUF_DEBUG, ("low_level_output: pbuf is a list, application may has bug"));
@@ -157,7 +157,7 @@ void sdio_input(void *h, void *buffer, size_t len, void *l2_buff)
     esp_netif_t *esp_netif = esp_netif_get_handle_from_netif_impl(netif);
     struct pbuf *p;
 
-    if(unlikely(!buffer || !netif_is_up(netif))) {
+    if (unlikely(!buffer || !netif_is_up(netif))) {
         if (l2_buff) {
             esp_netif_free_rx_buffer(esp_netif, l2_buff);
         }
@@ -296,7 +296,7 @@ esp_netif_t* esp_bridge_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t 
     esp_netif_config_t sdio_config = {
         .base = &esp_netif_common_config,
         .driver = &sdio_driver_ifconfig,
-        .stack = (const esp_netif_netstack_config_t*)&sdio_netstack_config
+        .stack = (const esp_netif_netstack_config_t*) &sdio_netstack_config
     };
 
     esp_netif_t* netif = esp_bridge_create_netif(&sdio_config, ip_info, mac, enable_dhcps);

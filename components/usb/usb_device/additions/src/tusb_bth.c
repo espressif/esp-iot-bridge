@@ -1,17 +1,7 @@
-/**
- * @copyright Copyright 2021 Espressif Systems (Shanghai) Co. Ltd.
+/*
+ * SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD
  *
- *      Licensed under the Apache License, Version 2.0 (the "License");
- *      you may not use this file except in compliance with the License.
- *      You may obtain a copy of the License at
- *
- *               http://www.apache.org/licenses/LICENSE-2.0
- * 
- *      Unless required by applicable law or agreed to in writing, software
- *      distributed under the License is distributed on an "AS IS" BASIS,
- *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *      See the License for the specific language governing permissions and
- *      limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "esp_log.h"
@@ -57,33 +47,33 @@ static int host_rcv_pkt(uint8_t *data, uint16_t len)
     HCI_DUMP_BUFFER("Recv Pkt", data, len);
 
     switch (type) {
-        case HCIT_TYPE_COMMAND:
-            break;
-        case HCIT_TYPE_ACL_DATA:
-            acl_rx_buf = (uint8_t *)malloc(act_len * sizeof(uint8_t));
-            assert(acl_rx_buf);
+    case HCIT_TYPE_COMMAND:
+        break;
+    case HCIT_TYPE_ACL_DATA:
+        acl_rx_buf = (uint8_t *)malloc(act_len * sizeof(uint8_t));
+        assert(acl_rx_buf);
 
-            memcpy(acl_rx_buf, data +1 , act_len);
-            tud_bt_acl_data_send(acl_rx_buf, act_len);
+        memcpy(acl_rx_buf, data + 1, act_len);
+        tud_bt_acl_data_send(acl_rx_buf, act_len);
 
-            xSemaphoreTake(acl_sem, portMAX_DELAY);
-            free(acl_rx_buf);
-            break;
-        case HCIT_TYPE_SCO_DATA:
-            break;
-        case HCIT_TYPE_EVENT:
-            evt_rx_buf = (uint8_t *)malloc(act_len * sizeof(uint8_t));
-            assert(evt_rx_buf);
+        xSemaphoreTake(acl_sem, portMAX_DELAY);
+        free(acl_rx_buf);
+        break;
+    case HCIT_TYPE_SCO_DATA:
+        break;
+    case HCIT_TYPE_EVENT:
+        evt_rx_buf = (uint8_t *)malloc(act_len * sizeof(uint8_t));
+        assert(evt_rx_buf);
 
-            memcpy(evt_rx_buf, data +1 , act_len);
-            tud_bt_event_send(evt_rx_buf, act_len);
+        memcpy(evt_rx_buf, data + 1, act_len);
+        tud_bt_event_send(evt_rx_buf, act_len);
 
-            xSemaphoreTake(evt_sem, portMAX_DELAY);
-            free(evt_rx_buf);
-            break;
-        default:
-            ESP_LOGE(TAG, "Unknow type [0x%02x]", type);
-            break;
+        xSemaphoreTake(evt_sem, portMAX_DELAY);
+        free(evt_rx_buf);
+        break;
+    default:
+        ESP_LOGE(TAG, "Unknow type [0x%02x]", type);
+        break;
     }
 
     return 0;
@@ -112,7 +102,7 @@ void tud_bt_hci_cmd_cb(void * hci_cmd, size_t cmd_len)
     while (!esp_vhci_host_check_send_available()) {
         vTaskDelay(1);
     }
-    esp_vhci_host_send_packet(cmd_tx_buf, cmd_len +1);
+    esp_vhci_host_send_packet(cmd_tx_buf, cmd_len + 1);
 
     free(cmd_tx_buf);
     cmd_tx_buf = NULL;
@@ -126,12 +116,12 @@ void tud_bt_hci_cmd_cb(void * hci_cmd, size_t cmd_len)
 void tud_bt_acl_data_received_cb(void *acl_data, uint16_t data_len)
 {
     if (acl_tx_data.is_new_pkt) {
-        acl_tx_data.pkt_total_len = *(((uint16_t * )acl_data) + 1) + 4;
+        acl_tx_data.pkt_total_len = *(((uint16_t *)acl_data) + 1) + 4;
         acl_tx_data.pkt_cur_offset = 0;
 
         acl_tx_data.pkt_val = (uint8_t *)malloc((acl_tx_data.pkt_total_len + 1) * sizeof(uint8_t));
         assert(acl_tx_data.pkt_val);
-        memset(acl_tx_data.pkt_val, 0x0 , (acl_tx_data.pkt_total_len + 1));
+        memset(acl_tx_data.pkt_val, 0x0, (acl_tx_data.pkt_total_len + 1));
 
         acl_tx_data.pkt_val[0] = HCIT_TYPE_ACL_DATA;
         acl_tx_data.pkt_cur_offset++;

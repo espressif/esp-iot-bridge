@@ -13,4 +13,3 @@ In the [examples](examples) directory, demos of some common application scenario
 - [examples/wired_nic](examples/wired_nic)：ESP-IoT-Bridge device can connect to the network by plugging the Ethernet cable into the LAN port of router. PC or MCU can connect with the ESP-IoT-Bridge device through multiple interfaces (USB/SPI/SDIO) to gain internet access.
 - [examples/4g_hotspot](examples/4g_hotspot): ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM card and then convert the cellular network into a Wi-Fi signal. The surrounding smart devices can connect to the hotspot from the ESP-IoT-Bridge device to gain Internet access.
 - [examples/4g_nic](examples/4g_nic)：ESP-IoT-Bridge device can be equipped with a mobile network module with a SIM card. After the network module is connected to the Internet, the PC or MCU can be connected to it through the network interface (ETH/SPI/SDIO) to gain Internet access.
-

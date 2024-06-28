@@ -61,10 +61,10 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     esp_eth_handle_t eth_handle = *(esp_eth_handle_t *)event_data;
 
     switch (event_id) {
-        case ETHERNET_EVENT_CONNECTED:
-            esp_eth_ioctl(eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
-            ESP_LOGI(TAG, "Ethernet Link Up");
-            ESP_LOGI(TAG, "Ethernet HW Addr "MACSTR"", MAC2STR(mac_addr));
+    case ETHERNET_EVENT_CONNECTED:
+        esp_eth_ioctl(eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
+        ESP_LOGI(TAG, "Ethernet Link Up");
+        ESP_LOGI(TAG, "Ethernet HW Addr "MACSTR"", MAC2STR(mac_addr));
             break;
 
         case ETHERNET_EVENT_DISCONNECTED:

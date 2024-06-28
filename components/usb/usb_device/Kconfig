@@ -193,7 +193,7 @@ menu "Bridge TinyUSB Stack"
                 default n
                 help
                     Enable TinyUSB HID feature.
-        
+
             config TINYUSB_HID_BUFSIZE
                 int "HID FIFO size"
                 default 64
@@ -203,7 +203,7 @@ menu "Bridge TinyUSB Stack"
         endmenu # "Human Interface Device Class"
 
         menu "USB Network Class (RNDIS, ECM)"
-        
+
             config TINYUSB_NET_ENABLED
                 bool "Enable TinyUSB NET driver"
                 default n
@@ -243,7 +243,7 @@ menu "Bridge TinyUSB Stack"
                 bool "Enable TinyUSB BTH feature"
                 default n
                 help
-                    Enable TinyUSB BTH feature. 
+                    Enable TinyUSB BTH feature.
 
             config TINYUSB_BTH_ISO_ALT_COUNT
                 depends on TINYUSB_BTH_ENABLED
@@ -258,7 +258,7 @@ menu "Bridge TinyUSB Stack"
                 bool "Enable TinyUSB DFU feature"
                 default n
                 help
-                    Enable TinyUSB DFU feature. 
+                    Enable TinyUSB DFU feature.
 
             config TINYUSB_DFU_BUFSIZE
                 depends on TINYUSB_DFU_ENABLED

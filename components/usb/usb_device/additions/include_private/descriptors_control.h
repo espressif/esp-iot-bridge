@@ -1,22 +1,13 @@
-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2020-2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #pragma once
 
 #include <string.h>
 #include "usb_descriptors.h"
-
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -141,20 +132,20 @@ enum {
 #define TUD_DFU_DESC_LEN(_alt_count)    (9 + (_alt_count) * 9)
 
 enum {
-    TUSB_DESC_TOTAL_LEN = TUD_CONFIG_DESC_LEN + 
-                          TUD_CDC_DESC_LEN * CFG_TUD_CDC + 
+    TUSB_DESC_TOTAL_LEN = TUD_CONFIG_DESC_LEN +
+                          TUD_CDC_DESC_LEN * CFG_TUD_CDC +
                           TUD_RNDIS_DESC_LEN * CFG_TUD_NET +
-                          TUD_VENDOR_DESC_LEN * CFG_TUD_VENDOR + 
-                          TUD_MSC_DESC_LEN * CFG_TUD_MSC + 
+                          TUD_VENDOR_DESC_LEN * CFG_TUD_VENDOR +
+                          TUD_MSC_DESC_LEN * CFG_TUD_MSC +
                           TUD_HID_DESC_LEN * CFG_TUD_HID +
                           TUD_BTH_DESC_LEN * CFG_TUD_BTH +
                           TUD_DFU_DESC_LEN(DFU_ALT_COUNT) * CFG_TUD_DFU,
 
-    ALT_CONFIG_TOTAL_LEN = TUD_CONFIG_DESC_LEN + 
-                           TUD_CDC_ECM_DESC_LEN * CFG_TUD_NET + 
+    ALT_CONFIG_TOTAL_LEN = TUD_CONFIG_DESC_LEN +
+                           TUD_CDC_ECM_DESC_LEN * CFG_TUD_NET +
                            TUD_CDC_DESC_LEN * CFG_TUD_CDC +
                            TUD_VENDOR_DESC_LEN * CFG_TUD_VENDOR +
-                           TUD_MSC_DESC_LEN * CFG_TUD_MSC + 
+                           TUD_MSC_DESC_LEN * CFG_TUD_MSC +
                            TUD_HID_DESC_LEN * CFG_TUD_HID +
                            TUD_BTH_DESC_LEN * CFG_TUD_BTH +
                            TUD_DFU_DESC_LEN(DFU_ALT_COUNT) * CFG_TUD_DFU
