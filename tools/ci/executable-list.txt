@@ -1,0 +1,2 @@
+tools/ci/check_executables.py
+tools/ci/idf_ci_utils.py
