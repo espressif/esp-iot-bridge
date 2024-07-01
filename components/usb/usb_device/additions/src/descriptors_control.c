@@ -1,16 +1,8 @@
-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2020-2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include "esp_log.h"
 #include "descriptors_control.h"
@@ -122,13 +114,12 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 
     uint8_t chr_count = 0;
 
-    if ( index == 0) {
+    if (index == 0) {
         memcpy(&_desc_str[1], s_str_descriptor[0], 2);
         chr_count = 1;
     }
 #if CONFIG_TINYUSB_NET_ECM
-    else if (STRID_MAC == index)
-    {
+    else if (STRID_MAC == index) {
         // Convert MAC address into UTF-16
         uint8_t usb_net_mac[6];
         memset(usb_net_mac, 0x0, sizeof(usb_net_mac));
@@ -136,18 +127,16 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
         /* USB Netif Mac */
         usb_net_mac[5] = usb_net_mac[5] + 8;
 
-        for (unsigned i=0; i<sizeof(usb_net_mac); i++)
-        {
-        _desc_str[1+chr_count++] = "0123456789ABCDEF"[(usb_net_mac[i] >> 4) & 0xf];
-        _desc_str[1+chr_count++] = "0123456789ABCDEF"[(usb_net_mac[i] >> 0) & 0xf];
+        for (unsigned i = 0; i < sizeof(usb_net_mac); i++) {
+            _desc_str[1 + chr_count++] = "0123456789ABCDEF"[(usb_net_mac[i] >> 4) & 0xf];
+            _desc_str[1 + chr_count++] = "0123456789ABCDEF"[(usb_net_mac[i] >> 0) & 0xf];
         }
     }
 #endif
-    else
-    {
+    else {
         // Convert ASCII string into UTF-16
 
-        if ( index >= sizeof(s_str_descriptor) / sizeof(s_str_descriptor[0]) ) {
+        if (index >= sizeof(s_str_descriptor) / sizeof(s_str_descriptor[0])) {
             return NULL;
         }
 
@@ -155,7 +144,7 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 
         // Cap at max char
         chr_count = strlen(str);
-        if ( chr_count > MAX_DESC_BUF_SIZE - 1 ) {
+        if (chr_count > MAX_DESC_BUF_SIZE - 1) {
             chr_count = MAX_DESC_BUF_SIZE - 1;
         }
 
@@ -165,7 +154,7 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
     }
 
     // first byte is length (including header), second byte is string type
-    _desc_str[0] = (TUSB_DESC_STRING << 8 ) | (2 * chr_count + 2);
+    _desc_str[0] = (TUSB_DESC_STRING << 8) | (2 * chr_count + 2);
 
     return _desc_str;
 }
@@ -234,7 +223,7 @@ void tusb_set_descriptor(tusb_desc_device_t *dev_desc, const char **str_desc)
 void tusb_set_config_descriptor(const uint8_t *config_desc)
 {
     size_t length = 0;
-    const uint8_t *config_descriptor = NULL; 
+    const uint8_t *config_descriptor = NULL;
     if (config_desc == NULL) {
         config_descriptor = desc_configuration;
         ESP_LOGI(TAG, "using default config desc");
@@ -242,7 +231,7 @@ void tusb_set_config_descriptor(const uint8_t *config_desc)
         config_descriptor = config_desc;
         ESP_LOGI(TAG, "using custom config desc");
     }
-    length = (config_descriptor[3]<<8) + config_descriptor[2];
+    length = (config_descriptor[3] << 8) + config_descriptor[2];
     ESP_LOGI(TAG, "config desc size=%d", length);
     s_config_descriptor = realloc(s_config_descriptor, length);
     memcpy(s_config_descriptor, config_descriptor, length);

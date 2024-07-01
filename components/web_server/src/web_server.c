@@ -1105,7 +1105,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         }
 
         s_wifi_sta_connect_timer_handler = xTimerCreate("listen_sta_connect_status", BRIDGE_WEB_TIMER_POLLING_PERIOD / portTICK_PERIOD_MS, pdTRUE,
-                                           NULL, listen_sta_connect_status_timer_cb);
+                                                        NULL, listen_sta_connect_status_timer_cb);
         xTimerStart(s_wifi_sta_connect_timer_handler, 5);
     } else {
         // if have connect to a ap, then disconnect
@@ -1113,7 +1113,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         s_wifi_sta_connect_event_group = xEventGroupCreate();
 
         s_wifi_sta_connect_timer_handler = xTimerCreate("listen_sta_connect_success", BRIDGE_WEB_TIMER_POLLING_PERIOD / portTICK_PERIOD_MS, pdTRUE,
-                                           NULL, listen_sta_connect_success_timer_cb);
+                                                        NULL, listen_sta_connect_success_timer_cb);
         xTimerStart(s_wifi_sta_connect_timer_handler, 5);
         connection_info.config_status = BRIDGE_WIFI_STA_CONNECTING;
         esp_web_update_sta_connection_info(&connection_info);

@@ -93,7 +93,7 @@ static esp_err_t esp_eth_post_attach(esp_netif_t *esp_netif, void *args)
              eth_mac[2], eth_mac[3], eth_mac[4], eth_mac[5]);
 
     esp_netif_set_mac(esp_netif, eth_mac);
-    
+
     if (state == ETH_LINK_UP) {
         eth_speed_t speed;
         esp_netif_up(esp_netif);

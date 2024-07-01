@@ -1,16 +1,8 @@
-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2020-2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #pragma once
 
@@ -29,11 +21,11 @@ extern "C" {
 /**
  * @brief CDC ports available to setup
  */
-typedef enum{
+typedef enum {
     TINYUSB_CDC_ACM_0 = 0x0,
     TINYUSB_CDC_ACM_1,
     TINYUSB_CDC_TOTAL
-}tinyusb_cdcacm_itf_t;
+} tinyusb_cdcacm_itf_t;
 
 /* Callbacks and events
    ********************************************************************* */
@@ -116,7 +108,6 @@ typedef struct {
  */
 esp_err_t tusb_cdc_acm_init(const tinyusb_config_cdcacm_t *cfg);
 
-
 /**
  * @brief Register a callback invoking on CDC event. If the callback had been
  *        already registered, it will be overwritten
@@ -127,9 +118,8 @@ esp_err_t tusb_cdc_acm_init(const tinyusb_config_cdcacm_t *cfg);
  * @return esp_err_t - ESP_OK or ESP_ERR_INVALID_ARG
  */
 esp_err_t tinyusb_cdcacm_register_callback(tinyusb_cdcacm_itf_t itf,
-        cdcacm_event_type_t event_type,
-        tusb_cdcacm_callback_t callback);
-
+                                           cdcacm_event_type_t event_type,
+                                           tusb_cdcacm_callback_t callback);
 
 /**
  * @brief Unregister a callback invoking on CDC event.
@@ -140,7 +130,6 @@ esp_err_t tinyusb_cdcacm_register_callback(tinyusb_cdcacm_itf_t itf,
  */
 esp_err_t tinyusb_cdcacm_unregister_callback(tinyusb_cdcacm_itf_t itf, cdcacm_event_type_t event_type);
 
-
 /**
  * @brief Sent one character to a write buffer
  *
@@ -149,7 +138,6 @@ esp_err_t tinyusb_cdcacm_unregister_callback(tinyusb_cdcacm_itf_t itf, cdcacm_ev
  * @return size_t - amount of queued bytes
  */
 size_t tinyusb_cdcacm_write_queue_char(tinyusb_cdcacm_itf_t itf, char ch);
-
 
 /**
  * @brief Write data to write buffer from a byte array
@@ -187,7 +175,6 @@ esp_err_t tinyusb_cdcacm_write_flush(tinyusb_cdcacm_itf_t itf, uint32_t timeout_
  * @return esp_err_t ESP_OK, ESP_FAIL or ESP_ERR_INVALID_STATE
  */
 esp_err_t tinyusb_cdcacm_read(tinyusb_cdcacm_itf_t itf, uint8_t *out_buf, size_t out_buf_sz, size_t *rx_data_size);
-
 
 /**
  * @brief Check if the ACM initialized

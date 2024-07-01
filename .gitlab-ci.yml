@@ -1,4 +1,5 @@
 stages:
+  - pre_check
   - build
   - deploy
 
@@ -132,9 +133,24 @@ variables: &global-variables
   - *build_4g_hotspot_examples
   - *build_4g_nic_examples
 
+.pre_check_template:
+  stage: pre_check
+  image: python:3.9
+  tags: ["build", "amd64", "internet"]
+  needs: []
+
+check_pre_commit:
+  extends:
+    - .pre_check_template
+  before_script:
+    - pip install pre-commit
+  script:
+    - pre-commit install --allow-missing-config -t pre-commit -t commit-msg
+    - pre-commit run -a
+
 esp32_build:
   stage: build
-    
+
   tags:
     - build
   image: $IMAGE

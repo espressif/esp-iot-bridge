@@ -1,16 +1,8 @@
-// Copyright 2020-2021 Espressif Systems (Shanghai) Co. Ltd.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2020-2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #pragma once
 
@@ -22,10 +14,9 @@ extern "C" {
 #include "tusb.h"
 #include "tinyusb.h"
 
-
 /**
  * @brief Report delta movement of mouse.
- * 
+ *
  * @param x Current delta x movement of the mouse
  * @param y Current delta y movement on the mouse
  * @param vertical Current delta wheel movement on the mouse
@@ -36,14 +27,14 @@ void tinyusb_hid_mouse_move_report(int8_t x, int8_t y, int8_t vertical, int8_t h
 /**
  * @brief Report button click in the mouse, using bitmap here.
  * eg. MOUSE_BUTTON_LEFT | MOUSE_BUTTON_RIGHT, if click left and right button at same time.
- * 
+ *
  * @param buttons hid mouse button bit mask
  */
 void tinyusb_hid_mouse_button_report(uint8_t buttons_map);
 
 /**
  * @brief Report key press in the keyboard, using array here, contains six keys at most.
- * 
+ *
  * @param keycode hid keyboard code array
  */
 void tinyusb_hid_keyboard_report(uint8_t keycode[]);
@@ -56,7 +47,6 @@ void tinyusb_hid_keyboard_report(uint8_t keycode[]);
 // MOUSE_BUTTON_MIDDLE   = TU_BIT(2), ///< Middle button
 // MOUSE_BUTTON_BACKWARD = TU_BIT(3), ///< Backward button,
 // MOUSE_BUTTON_FORWARD  = TU_BIT(4), ///< Forward button,
-
 
 //--------------------------------------------------------------------+
 // HID KEYCODE
@@ -232,7 +222,6 @@ void tinyusb_hid_keyboard_report(uint8_t keycode[]);
 // #define HID_KEY_SHIFT_RIGHT               0xE5
 // #define HID_KEY_ALT_RIGHT                 0xE6
 // #define HID_KEY_GUI_RIGHT                 0xE7
-
 
 #ifdef __cplusplus
 }

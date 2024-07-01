@@ -1,16 +1,8 @@
-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2020-2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -44,8 +36,6 @@ const static char *TAG = "tusb_vfs";
                                     }                   \
                                 } while (0)
 
-
-
 #if CONFIG_NEWLIB_STDOUT_LINE_ENDING_CRLF
 #   define DEFAULT_TX_MODE ESP_LINE_ENDINGS_CRLF
 #elif CONFIG_NEWLIB_STDOUT_LINE_ENDING_CR
@@ -73,7 +63,6 @@ typedef struct {
 } vfs_tinyusb_t;
 
 static vfs_tinyusb_t s_vfstusb;
-
 
 static esp_err_t apply_path(char const *path)
 {
@@ -116,7 +105,6 @@ static void vfstusb_deinit(void)
 {
     memset(&s_vfstusb, 0, sizeof(s_vfstusb));
 }
-
 
 static int tusb_open(const char *path, int flags, int mode)
 {
@@ -186,7 +174,7 @@ static ssize_t tusb_read(int fd, void *data, size_t size)
                 c = '\n';
             }
         }
-        if ( c == NONE) { // if data ends
+        if (c == NONE) {  // if data ends
             break;
         }
         data_c[received] = (char) c;
@@ -202,7 +190,6 @@ static ssize_t tusb_read(int fd, void *data, size_t size)
     errno = EWOULDBLOCK;
     return -1;
 }
-
 
 static int tusb_fstat(int fd, struct stat *st)
 {
@@ -248,8 +235,6 @@ esp_err_t esp_vfs_tusb_cdc_unregister(char const *path)
         return res;
     }
 
-
-
     res = esp_vfs_unregister(s_vfstusb.vfs_path);
     if (res != ESP_OK) {
         ESP_LOGE(TAG, "Can't unregister TinyUSB driver from '%s' (err: 0x%x)", s_vfstusb.vfs_path, res);
@@ -259,9 +244,6 @@ esp_err_t esp_vfs_tusb_cdc_unregister(char const *path)
     }
     return res;
 }
-
-
-
 
 esp_err_t esp_vfs_tusb_cdc_register(int cdc_intf, char const *path)
 {

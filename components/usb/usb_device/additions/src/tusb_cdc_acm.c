@@ -1,16 +1,8 @@
-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * SPDX-FileCopyrightText: 2020-2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include <stdint.h>
 #include "esp_check.h"
@@ -24,7 +16,6 @@
 #include "sdkconfig.h"
 
 #define RX_UNREADBUF_SZ_DEFAULT 64 // buffer storing all unread RX data
-
 
 typedef struct {
     bool initialized;
@@ -48,7 +39,6 @@ static inline esp_tusb_cdcacm_t *get_acm(tinyusb_cdcacm_itf_t itf)
     }
     return (esp_tusb_cdcacm_t *)(cdc_inst->subclass_obj);
 }
-
 
 /* TinyUSB callbacks
    ********************************************************************* */
@@ -86,7 +76,6 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
     }
 }
 
-
 /* Invoked when CDC interface received data from host */
 void tud_cdc_rx_cb(uint8_t itf)
 {
@@ -101,9 +90,9 @@ void tud_cdc_rx_cb(uint8_t itf)
         return;
     }
     while (tud_cdc_n_available(itf)) {
-        int read_res = tud_cdc_n_read(  itf,
-                                        acm->rx_tfbuf,
-                                        CONFIG_TINYUSB_CDC_RX_BUFSIZE );
+        int read_res = tud_cdc_n_read(itf,
+                                      acm->rx_tfbuf,
+                                      CONFIG_TINYUSB_CDC_RX_BUFSIZE);
         int res = xRingbufferSend(acm->rx_unread_buf,
                                   acm->rx_tfbuf,
                                   read_res, 0);
@@ -164,11 +153,9 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char)
     }
 }
 
-
-
 esp_err_t tinyusb_cdcacm_register_callback(tinyusb_cdcacm_itf_t itf,
-        cdcacm_event_type_t event_type,
-        tusb_cdcacm_callback_t callback)
+                                           cdcacm_event_type_t event_type,
+                                           tusb_cdcacm_callback_t callback)
 {
     esp_tusb_cdcacm_t *acm = get_acm(itf);
     if (acm) {
@@ -195,9 +182,8 @@ esp_err_t tinyusb_cdcacm_register_callback(tinyusb_cdcacm_itf_t itf,
     }
 }
 
-
 esp_err_t tinyusb_cdcacm_unregister_callback(tinyusb_cdcacm_itf_t itf,
-        cdcacm_event_type_t event_type)
+                                             cdcacm_event_type_t event_type)
 {
     esp_tusb_cdcacm_t *acm = get_acm(itf);
     if (!acm) {
@@ -280,7 +266,6 @@ esp_err_t tinyusb_cdcacm_read(tinyusb_cdcacm_itf_t itf, uint8_t *out_buf, size_t
     return ESP_OK;
 }
 
-
 size_t tinyusb_cdcacm_write_queue_char(tinyusb_cdcacm_itf_t itf, char ch)
 {
     if (!get_acm(itf)) { // non-initialized
@@ -288,7 +273,6 @@ size_t tinyusb_cdcacm_write_queue_char(tinyusb_cdcacm_itf_t itf, char ch)
     }
     return tud_cdc_n_write_char(itf, ch);
 }
-
 
 size_t tinyusb_cdcacm_write_queue(tinyusb_cdcacm_itf_t itf, uint8_t *in_buf, size_t in_size)
 {
@@ -332,7 +316,7 @@ esp_err_t tinyusb_cdcacm_write_flush(tinyusb_cdcacm_itf_t itf, uint32_t timeout_
             if (tud_cdc_n_write_flush(itf)) { // Success
                 break;
             }
-            if ( (ticks_now - ticks_start) > timeout_ticks ) { // Time is up
+            if ((ticks_now - ticks_start) > timeout_ticks) {   // Time is up
                 ESP_LOGW(TAG, "Flush failed");
                 return ESP_ERR_TIMEOUT;
             }
@@ -384,7 +368,7 @@ esp_err_t tusb_cdc_acm_init(const tinyusb_config_cdcacm_t *cfg)
         tinyusb_cdcacm_register_callback(itf, CDC_EVENT_LINE_STATE_CHANGED, cfg->callback_line_state_changed);
     }
     if (cfg->callback_line_coding_changed) {
-        tinyusb_cdcacm_register_callback( itf, CDC_EVENT_LINE_CODING_CHANGED, cfg->callback_line_coding_changed);
+        tinyusb_cdcacm_register_callback(itf, CDC_EVENT_LINE_CODING_CHANGED, cfg->callback_line_coding_changed);
     }
 
     /* Buffers */
