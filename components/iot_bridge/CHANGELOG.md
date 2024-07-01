@@ -1,10 +1,14 @@
 # ChangeLog
 
-## v0.11.8 - 2024.6.13
+## v0.11.8 - 2024.7.1
 
 ### Feature
 
 - feat: Add some NAPT configurations for iot_bridge ([6417238](https://github.com/espressif/esp-iot-bridge/commit/6417238041dd3271db75d1fdb93d01d9117bf759))
+
+### Bugfix
+
+- fix: it causes infinite loop when set IP info of the netif if the netif is not the first one in the list ([ef320fa](https://github.com/espressif/esp-iot-bridge/commit/ef320fac8477cfd438b228a8aa416b0a0a088068))
 
 ## v0.11.7 - 2024.6.7
 
