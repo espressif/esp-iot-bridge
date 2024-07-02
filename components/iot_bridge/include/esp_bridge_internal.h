@@ -26,6 +26,11 @@ extern "C"
 
 typedef esp_err_t(*dhcps_change_cb_t)(esp_ip_addr_t *ip_info);
 
+#ifndef IOT_BRIDGE_NAPT_TABLE_CLEAR
+void ip_napt_table_clear(void);
+#define IOT_BRIDGE_NAPT_TABLE_CLEAR()    ip_napt_table_clear()
+#endif
+
 /**
  * @brief  Cause the TCP/IP stack to bring up an interface
  * This function is called automatically by default called from event handlers/actions

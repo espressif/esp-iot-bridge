@@ -4,6 +4,8 @@
 
 ### Feature
 
+- feat: Add napt table clear ([5cf256c](https://github.com/espressif/esp-iot-bridge/commit/5cf256ceb9c7d9ee6796680011127f76d13c647f))
+    - To ensure the fix works, please use the latest branch of IDF v5.x
 - feat: Add some NAPT configurations for iot_bridge ([6417238](https://github.com/espressif/esp-iot-bridge/commit/6417238041dd3271db75d1fdb93d01d9117bf759))
 
 ### Bugfix

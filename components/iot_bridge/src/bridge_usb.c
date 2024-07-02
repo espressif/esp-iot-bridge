@@ -53,6 +53,12 @@ esp_err_t pkt_netif2usb(void *buffer, uint16_t len);
 #endif
 esp_netif_t* usb_netif;
 
+static void usb_lost_ip_handler(void *arg, esp_event_base_t event_base,
+                                int32_t event_id, void *event_data)
+{
+    IOT_BRIDGE_NAPT_TABLE_CLEAR();
+}
+
 static esp_err_t usb_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
 {
 #ifdef CONFIG_TINYUSB_NET_ECM
@@ -356,6 +362,8 @@ esp_netif_t* esp_bridge_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t m
             esp_netif_get_ip_info(netif, &netif_ip_info);
             ESP_LOGI(TAG, "USB IP Address:" IPSTR, IP2STR(&netif_ip_info.ip));
             ip_napt_enable(netif_ip_info.ip.addr, 1);
+        } else {
+            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_LOST_IP, &usb_lost_ip_handler, NULL, NULL);
         }
     }
 

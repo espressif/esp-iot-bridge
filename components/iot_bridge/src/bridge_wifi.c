@@ -158,6 +158,7 @@ static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
 static void wifi_event_sta_disconnected_handler(void *arg, esp_event_base_t event_base,
     int32_t event_id, void *event_data)
 {
+    IOT_BRIDGE_NAPT_TABLE_CLEAR();
 #if !CONFIG_BRIDGE_STATION_CANCEL_AUTO_CONNECT_WHEN_DISCONNECTED
     ESP_LOGE(TAG, "Disconnected. Connecting to the AP again...");
     esp_wifi_connect();

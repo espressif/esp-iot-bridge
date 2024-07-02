@@ -1,0 +1,50 @@
+diff --git a/src/core/ipv4/ip4_napt.c b/src/core/ipv4/ip4_napt.c
+index 0cf228ce..86ceed92 100644
+--- a/src/core/ipv4/ip4_napt.c
++++ b/src/core/ipv4/ip4_napt.c
+@@ -1075,4 +1075,45 @@ ip_napt_get_stats(struct stats_ip_napt *stats)
+ }
+ #endif /* LWIP_STATS */
+ 
++#define IP_GET_V4(ipaddr)          (ip_2_ip4(ipaddr))
++
++void ip_napt_table_clear(void)
++{
++    struct netif *each_netif;
++    u16_t i = 0, next = 0;
++    struct ip_napt_entry *t;
++
++    NETIF_FOREACH(each_netif) {
++        if (netif_is_up(each_netif)
++            && !each_netif->napt
++            && !ip_addr_isany(&each_netif->ip_addr)
++            && IP_IS_V4(&each_netif->ip_addr)
++            && !ip4_addr_isloopback(IP_GET_V4(&each_netif->ip_addr))) {
++            /* napt used on another interface, no need for cleanup */
++            return;
++        }
++    }
++
++    uint32_t count = 0;
++    for (i = napt_list; i != NO_IDX; i = next) {
++        t = NT(i);
++        next = t->next;
++        count++;
++    }
++    LWIP_DEBUGF(NAPT_DEBUG, ("before napt count=%d\r\n", count));
++
++    for (i = napt_list; i != NO_IDX; i = next) {
++        t = NT(i);
++        next = t->next;
++        ip_napt_free(t);
++    }
++
++    for (i = napt_list; i != NO_IDX; i = next) {
++        t = NT(i);
++        next = t->next;
++        count++;
++    }
++    LWIP_DEBUGF(NAPT_DEBUG, ("after napt count=%d\r\n", count));
++}
++
+ #endif /* ESP_LWIP && LWIP_IPV4 && IP_NAPT */

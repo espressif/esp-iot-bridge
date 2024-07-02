@@ -69,6 +69,7 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
 
         case ETHERNET_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "Ethernet Link Down");
+            IOT_BRIDGE_NAPT_TABLE_CLEAR();
             break;
 
         case ETHERNET_EVENT_START:
@@ -91,7 +92,7 @@ static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
     ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
     const esp_netif_ip_info_t *ip_info = &event->ip_info;
 
-    ESP_LOGI(TAG, "Ethernet Got IP Address");
+    ESP_LOGI(TAG, "Ethernet Gotx IP Address");
     ESP_LOGI(TAG, "~~~~~~~~~~~");
     ESP_LOGI(TAG, "ETHIP:" IPSTR, IP2STR(&ip_info->ip));
     ESP_LOGI(TAG, "ETHMASK:" IPSTR, IP2STR(&ip_info->netmask));
