@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2021-2024 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -287,9 +287,12 @@ static bool check_fail_list(uint8_t *bssid)
 static esp_err_t stop_scan_filter(void)
 {
     if (!SLIST_EMPTY(&s_router_fail_list)) {
-        for (router_obj_t *fail_item = SLIST_FIRST(&s_router_fail_list); fail_item != NULL; fail_item = SLIST_NEXT(fail_item, next)) {
+        router_obj_t *fail_item = SLIST_FIRST(&s_router_fail_list);
+        while (fail_item != NULL) {
+            router_obj_t *next_item = SLIST_NEXT(fail_item, next);
             SLIST_REMOVE(&s_router_fail_list, fail_item, router_obj, next);
             free(fail_item);
+            fail_item = next_item;
         }
     }
 
