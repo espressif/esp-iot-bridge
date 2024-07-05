@@ -610,10 +610,11 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
         }
 
 #endif
-
         // delete scan list
-        for (item = SLIST_FIRST(&s_router_all_list); item != NULL; item = SLIST_NEXT(item, next)) {
-            ESP_LOGD(TAG, "Delete SSID:%s", item->ssid);
+        router_obj_t *next_item;
+        for (item = SLIST_FIRST(&s_router_all_list); item != NULL; item = next_item) {
+            next_item = SLIST_NEXT(item, next);
+            ESP_LOGD(TAG, "Delete SSID: %s", item->ssid);
             SLIST_REMOVE(&s_router_all_list, item, router_obj, next);
             free(item);
         }
