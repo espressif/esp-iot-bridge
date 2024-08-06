@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "esp_log.h"
-#include "esp32/rom/lldesc.h"
+#include "soc/lldesc.h"
 #include "sys/queue.h"
 #include "soc/soc.h"
 #include "sdkconfig.h"

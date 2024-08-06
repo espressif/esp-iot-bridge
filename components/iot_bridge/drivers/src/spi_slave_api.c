@@ -68,6 +68,8 @@ static const char TAG[] = "SPI_DRIVER";
     #define DMA_CHAN               SPI_DMA_CH_AUTO
 #elif defined CONFIG_IDF_TARGET_ESP32S3
     #define DMA_CHAN               SPI_DMA_CH_AUTO
+#elif defined CONFIG_IDF_TARGET_ESP32C5
+    #define DMA_CHAN               SPI_DMA_CH_AUTO
 #endif
 
 #define GPIO_MASK_DATA_READY (1 << CONFIG_ESP_SPI_GPIO_DATA_READY)
