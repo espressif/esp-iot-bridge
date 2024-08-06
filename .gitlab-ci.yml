@@ -275,6 +275,27 @@ esp32c6_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
 
+esp32c6_build:
+  stage: build
+  tags:
+    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:lastest']
+
+  variables:
+    <<: *global-variables
+    idf_target: esp32c6
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *setup_esp_idf
+    - *build_iot_bridge_examples
+    - *build_iot_bridge_default
+
 push_master_to_github:
   stage: deploy
   only:
