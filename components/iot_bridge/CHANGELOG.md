@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v0.11.9 - 2024.8.6
+
+### Feature
+
+- Support ESP32-C5 for esp-iot-bridge ([b2f0a28](https://github.com/espressif/esp-iot-bridge/commit/b2f0a28adc8b6a41e46a0dd18ab7f0d97bfeae92))
+
 ## v0.11.8 - 2024.7.1
 
 ### Feature

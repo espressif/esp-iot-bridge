@@ -19,6 +19,14 @@ variables: &global-variables
   - . ./export.sh
   - cd -
 
+.setup_esp_idf_master: &setup_esp_idf_master
+  - cd $IDF_PATH
+  - git branch
+  - git fetch origin master
+  - git checkout master
+  - git submodule update --init --recursive
+  - cd -
+
 .before_script_preparation: &before_script_preparation
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
@@ -33,97 +41,97 @@ variables: &global-variables
 .build_iot_bridge_default: &build_iot_bridge_default
   - cd examples/wireless_nic
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
   - git checkout -- .
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_APP_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
 .build_iot_bridge_esp32: &build_iot_bridge_esp32
   - cd examples/wireless_nic
   - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
   - git checkout -- .
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SDIO=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
 .build_iot_bridge_esp32s2: &build_iot_bridge_esp32s2
   - cd examples/wireless_nic
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
   - git checkout -- .
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
 .build_iot_bridge_esp32s3: &build_iot_bridge_esp32s3
   - cd examples/wireless_nic
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
   - git checkout -- .
   - git clean -xdff
   - echo -e "\nCONFIG_APP_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
   - git checkout -- .
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
 
 .build_wifi_router_examples: &build_wifi_router_examples
   - cd examples/wifi_router
   - rm -rf build sdkconfig
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
   - cd -
 
 .build_wireless_nic_examples: &build_wireless_nic_examples
   - cd examples/wireless_nic
   - rm -rf build sdkconfig
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
   - cd -
 
 .build_wired_nic_examples: &build_wired_nic_examples
   - cd examples/wired_nic
   - rm -rf build sdkconfig
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
   - cd -
 
 .build_4g_hotspot_examples: &build_4g_hotspot_examples
   - cd examples/4g_hotspot
   - rm -rf build sdkconfig
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
   - cd -
 
 .build_4g_nic_examples: &build_4g_nic_examples
   - cd examples/4g_nic
   - rm -rf build sdkconfig
-  - idf.py set-target ${idf_target}
-  - idf.py build
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py ${compile_option} build
   - cd -
 
 .build_iot_bridge_examples: &build_iot_bridge_examples
@@ -272,6 +280,28 @@ esp32c6_build:
 
   script:
     - *setup_esp_idf
+    - *build_iot_bridge_examples
+    - *build_iot_bridge_default
+
+esp32c5_build:
+  stage: build
+  tags:
+    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:release-v5.3']
+
+  variables:
+    <<: *global-variables
+    idf_target: esp32c5
+    compile_option: --preview
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *setup_esp_idf_master
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
 
