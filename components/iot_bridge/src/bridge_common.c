@@ -333,7 +333,7 @@ static void esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_t *data_f
 
 static esp_netif_dns_info_t old_dns_info = {0};
 
-void dhcp_dns_defore_updated_customer_cb(void)
+void dhcp_dns_before_updated_customer_cb(void)
 {
     esp_netif_t *netif = NULL;
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
