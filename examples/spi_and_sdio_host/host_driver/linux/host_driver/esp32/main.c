@@ -44,6 +44,7 @@ MODULE_DESCRIPTION("Host driver for ESP-Hosted solution");
 MODULE_VERSION("0.0.5");
 
 uint8_t driver_data_debug = 0;
+uint8_t driver_action_debug = 0;
 
 struct esp_adapter adapter;
 volatile u8 stop_data = 0;
@@ -159,6 +160,8 @@ static int esp_hard_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	struct esp_private *priv = netdev_priv(ndev);
 	struct esp_skb_cb *cb = NULL;
 
+	ESP_DRIVER_DEBUG1("%s %d begin\n", __func__, __LINE__);
+
 	if (!priv) {
 		dev_kfree_skb(skb);
 		return NETDEV_TX_OK;
@@ -174,6 +177,7 @@ static int esp_hard_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	cb = (struct esp_skb_cb *) skb->cb;
 	cb->priv = priv;
 
+	ESP_DRIVER_DEBUG1("%s %d end\n", __func__, __LINE__);
 	return process_tx_packet(skb);
 }
 
@@ -319,7 +323,7 @@ static int process_tx_packet (struct sk_buff *skb)
 		new_skb = esp_alloc_skb(skb->len + pad_len);
 
 		if (!new_skb) {
-			printk(KERN_ERR "%s: Failed to allocate SKB", __func__);
+			printk(KERN_ERR "%s: Failed to allocate SKB. skb->len:%d pad_len:%d\n", __func__, skb->len, pad_len);
 			priv->stats.tx_errors++;
 			dev_kfree_skb(skb);
 			return NETDEV_TX_OK;
@@ -516,8 +520,10 @@ static void process_rx_packet(struct sk_buff *skb)
 		skb->protocol = eth_type_trans(skb, priv->ndev);
 		skb->ip_summed = CHECKSUM_NONE;
 
+		ESP_DRIVER_DEBUG1("%s %d begin\n", __func__, __LINE__);
 		/* Forward skb to kernel */
 		netif_rx_ni(skb);
+		ESP_DRIVER_DEBUG1("%s %d end\n", __func__, __LINE__);
 
 		priv->stats.rx_bytes += skb->len;
 		priv->stats.rx_packets++;
@@ -845,7 +851,7 @@ static int esp_rx_thread(void *data)
 	printk(KERN_INFO "esp rx thread created\n");
 
 	while (!kthread_should_stop()) {
-
+		ESP_DRIVER_DEBUG1("%s %d begin\n", __func__, __LINE__);
 		if (down_interruptible(&rx_sem)) {
 			msleep(10);
 			continue;
@@ -855,7 +861,7 @@ static int esp_rx_thread(void *data)
 			msleep(100);
 			continue;
 		}
-
+		ESP_DRIVER_DEBUG1("%s %d end\n", __func__, __LINE__);
 		/* read inbound packet and forward it to network/serial interface */
 		esp_get_packets(&adapter);
 	}

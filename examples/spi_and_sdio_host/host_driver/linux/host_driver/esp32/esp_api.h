@@ -36,4 +36,11 @@ int process_init_event(u8 *evt_buf, u8 len);
 void process_capabilities(u8 cap);
 void process_test_capabilities(u8 cap);
 
+extern uint8_t driver_action_debug;
+#define ESP_DRIVER_DEBUG1(format, ... ) do { \
+        if (driver_action_debug > 0) { \
+            printk(KERN_INFO format, ##__VA_ARGS__); \
+        } \
+    } while(0)
+
 #endif
