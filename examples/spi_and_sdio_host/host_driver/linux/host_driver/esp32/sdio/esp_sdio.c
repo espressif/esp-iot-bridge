@@ -110,7 +110,7 @@ static void esp_handle_isr(struct sdio_func *func)
 	struct esp_sdio_context *context = NULL;
 	u32 *int_status;
 	int ret;
-
+	ESP_DRIVER_DEBUG1("%s %d\n", __func__, __LINE__);
 	if (!func) {
 		return;
 	}
@@ -126,6 +126,7 @@ static void esp_handle_isr(struct sdio_func *func)
 	int_status = kmalloc(sizeof(u32), GFP_ATOMIC);
 
 	if (!int_status) {
+		ESP_DRIVER_DEBUG1("%s %d malloc fail\n", __func__, __LINE__);
 		return;
 	}
 

@@ -43,6 +43,9 @@ MODULE_AUTHOR("Yogesh Mantri <yogesh.mantri@espressif.com>");
 MODULE_DESCRIPTION("Host driver for ESP-Hosted solution");
 MODULE_VERSION("0.0.5");
 
+uint8_t driver_data_debug = 0;
+uint8_t driver_action_debug = 0;
+
 struct esp_adapter adapter;
 volatile u8 stop_data = 0;
 static struct task_struct *rx_thread;
@@ -157,6 +160,8 @@ static int esp_hard_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	struct esp_private *priv = netdev_priv(ndev);
 	struct esp_skb_cb *cb = NULL;
 
+	ESP_DRIVER_DEBUG1("%s %d begin\n", __func__, __LINE__);
+
 	if (!priv) {
 		dev_kfree_skb(skb);
 		return NETDEV_TX_OK;
@@ -172,6 +177,7 @@ static int esp_hard_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	cb = (struct esp_skb_cb *) skb->cb;
 	cb->priv = priv;
 
+	ESP_DRIVER_DEBUG1("%s %d end\n", __func__, __LINE__);
 	return process_tx_packet(skb);
 }
 
@@ -208,6 +214,20 @@ void esp_process_new_packet_intr(struct esp_adapter *adapter)
 	up(&rx_sem);
 }
 
+static void print_human_readable_time(struct timespec64 *ts)
+{
+    struct tm tm;
+    time64_to_tm(ts->tv_sec, 0, &tm);
+    printk(KERN_INFO "Timestamp: %04ld-%02d-%02d %02d:%02d:%02d.%09ld\n",
+           tm.tm_year + 1900,
+           tm.tm_mon + 1,
+           tm.tm_mday,
+           tm.tm_hour,
+           tm.tm_min,
+           tm.tm_sec,
+           ts->tv_nsec);
+}
+
 static int process_tx_packet (struct sk_buff *skb)
 {
 	struct esp_private *priv = NULL;
@@ -219,18 +239,60 @@ static int process_tx_packet (struct sk_buff *skb)
 	u16 len = 0;
 	u16 total_len = 0;
 	u8 *pos = NULL;
+	int i;
 
 	/* Get the priv */
 	cb = (struct esp_skb_cb *) skb->cb;
 	priv = cb->priv;
 
+	// Print timestamp
+	if (driver_data_debug) {
+		struct timespec64 ts;
+		ktime_get_real_ts64(&ts);
+		// Print human-readable timestamp
+		print_human_readable_time(&ts);
+
+		printk(KERN_INFO "Packet length: %u\n", skb->len);
+
+		// Print the first 16 bytes of the data content
+		if (skb->len >= 16) {
+			printk(KERN_INFO "First 16 bytes of data: ");
+			for (i = 0; i < 16; i++) {
+				printk(KERN_CONT "%02x ", skb->data[i]);
+			}
+			printk(KERN_CONT "\n");
+		} else {
+			printk(KERN_INFO "Data: ");
+			for (i = 0; i < skb->len; i++) {
+				printk(KERN_CONT "%02x ", skb->data[i]);
+			}
+			printk(KERN_CONT "\n");
+		}
+
+		if (skb->len >= 42) {
+			printk(KERN_INFO "seq: ");
+			for (i= 38; i < 42; i++) {
+				printk(KERN_CONT "%02x ", skb->data[i]);
+			}
+			printk(KERN_CONT "\n");
+		}
+		// print the last 4 Bytes
+		printk(KERN_INFO "Last 4 bytes of data: ");
+		for (i = 4; i > 0; i--) {
+			printk(KERN_CONT "%02x ", skb->data[skb->len - i]);
+		}
+		printk(KERN_CONT "\n");
+	}
+
 	if (!priv) {
 		dev_kfree_skb(skb);
+		printk(KERN_ERR "No private data available. Freeing skb and returning NETDEV_TX_OK\n");
 		return NETDEV_TX_OK;
 	}
 
 	if (netif_queue_stopped((const struct net_device *) adapter.priv[0]->ndev) ||
-			netif_queue_stopped((const struct net_device *) adapter.priv[1]->ndev)) {
+		netif_queue_stopped((const struct net_device *) adapter.priv[1]->ndev)) {
+		printk(KERN_ERR "One or both network queues are stopped. Cannot send packet.\n");
 		return NETDEV_TX_BUSY;
 	}
 
@@ -254,13 +316,14 @@ static int process_tx_packet (struct sk_buff *skb)
 		if (skb_linearize(skb)) {
 			priv->stats.tx_errors++;
 			dev_kfree_skb(skb);
+			printk(KERN_ERR "SKB linearization failed.\n");
 			return NETDEV_TX_OK;
 		}
 
 		new_skb = esp_alloc_skb(skb->len + pad_len);
 
 		if (!new_skb) {
-			printk(KERN_ERR "%s: Failed to allocate SKB", __func__);
+			printk(KERN_ERR "%s: Failed to allocate SKB. skb->len:%d pad_len:%d\n", __func__, skb->len, pad_len);
 			priv->stats.tx_errors++;
 			dev_kfree_skb(skb);
 			return NETDEV_TX_OK;
@@ -457,8 +520,10 @@ static void process_rx_packet(struct sk_buff *skb)
 		skb->protocol = eth_type_trans(skb, priv->ndev);
 		skb->ip_summed = CHECKSUM_NONE;
 
+		ESP_DRIVER_DEBUG1("%s %d begin\n", __func__, __LINE__);
 		/* Forward skb to kernel */
 		netif_rx_ni(skb);
+		ESP_DRIVER_DEBUG1("%s %d end\n", __func__, __LINE__);
 
 		priv->stats.rx_bytes += skb->len;
 		priv->stats.rx_packets++;
@@ -786,7 +851,7 @@ static int esp_rx_thread(void *data)
 	printk(KERN_INFO "esp rx thread created\n");
 
 	while (!kthread_should_stop()) {
-
+		ESP_DRIVER_DEBUG1("%s %d begin\n", __func__, __LINE__);
 		if (down_interruptible(&rx_sem)) {
 			msleep(10);
 			continue;
@@ -796,7 +861,7 @@ static int esp_rx_thread(void *data)
 			msleep(100);
 			continue;
 		}
-
+		ESP_DRIVER_DEBUG1("%s %d end\n", __func__, __LINE__);
 		/* read inbound packet and forward it to network/serial interface */
 		esp_get_packets(&adapter);
 	}
