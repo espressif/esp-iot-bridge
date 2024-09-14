@@ -43,6 +43,8 @@ MODULE_AUTHOR("Yogesh Mantri <yogesh.mantri@espressif.com>");
 MODULE_DESCRIPTION("Host driver for ESP-Hosted solution");
 MODULE_VERSION("0.0.5");
 
+uint8_t driver_data_debug = 0;
+
 struct esp_adapter adapter;
 volatile u8 stop_data = 0;
 static struct task_struct *rx_thread;
@@ -208,6 +210,20 @@ void esp_process_new_packet_intr(struct esp_adapter *adapter)
 	up(&rx_sem);
 }
 
+static void print_human_readable_time(struct timespec64 *ts)
+{
+    struct tm tm;
+    time64_to_tm(ts->tv_sec, 0, &tm);
+    printk(KERN_INFO "Timestamp: %04ld-%02d-%02d %02d:%02d:%02d.%09ld\n",
+           tm.tm_year + 1900,
+           tm.tm_mon + 1,
+           tm.tm_mday,
+           tm.tm_hour,
+           tm.tm_min,
+           tm.tm_sec,
+           ts->tv_nsec);
+}
+
 static int process_tx_packet (struct sk_buff *skb)
 {
 	struct esp_private *priv = NULL;
@@ -219,18 +235,60 @@ static int process_tx_packet (struct sk_buff *skb)
 	u16 len = 0;
 	u16 total_len = 0;
 	u8 *pos = NULL;
+	int i;
 
 	/* Get the priv */
 	cb = (struct esp_skb_cb *) skb->cb;
 	priv = cb->priv;
 
+	// Print timestamp
+	if (driver_data_debug) {
+		struct timespec64 ts;
+		ktime_get_real_ts64(&ts);
+		// Print human-readable timestamp
+		print_human_readable_time(&ts);
+
+		printk(KERN_INFO "Packet length: %u\n", skb->len);
+
+		// Print the first 16 bytes of the data content
+		if (skb->len >= 16) {
+			printk(KERN_INFO "First 16 bytes of data: ");
+			for (i = 0; i < 16; i++) {
+				printk(KERN_CONT "%02x ", skb->data[i]);
+			}
+			printk(KERN_CONT "\n");
+		} else {
+			printk(KERN_INFO "Data: ");
+			for (i = 0; i < skb->len; i++) {
+				printk(KERN_CONT "%02x ", skb->data[i]);
+			}
+			printk(KERN_CONT "\n");
+		}
+
+		if (skb->len >= 42) {
+			printk(KERN_INFO "seq: ");
+			for (i= 38; i < 42; i++) {
+				printk(KERN_CONT "%02x ", skb->data[i]);
+			}
+			printk(KERN_CONT "\n");
+		}
+		// print the last 4 Bytes
+		printk(KERN_INFO "Last 4 bytes of data: ");
+		for (i = 4; i > 0; i--) {
+			printk(KERN_CONT "%02x ", skb->data[skb->len - i]);
+		}
+		printk(KERN_CONT "\n");
+	}
+
 	if (!priv) {
 		dev_kfree_skb(skb);
+		printk(KERN_ERR "No private data available. Freeing skb and returning NETDEV_TX_OK\n");
 		return NETDEV_TX_OK;
 	}
 
 	if (netif_queue_stopped((const struct net_device *) adapter.priv[0]->ndev) ||
-			netif_queue_stopped((const struct net_device *) adapter.priv[1]->ndev)) {
+		netif_queue_stopped((const struct net_device *) adapter.priv[1]->ndev)) {
+		printk(KERN_ERR "One or both network queues are stopped. Cannot send packet.\n");
 		return NETDEV_TX_BUSY;
 	}
 
@@ -254,6 +312,7 @@ static int process_tx_packet (struct sk_buff *skb)
 		if (skb_linearize(skb)) {
 			priv->stats.tx_errors++;
 			dev_kfree_skb(skb);
+			printk(KERN_ERR "SKB linearization failed.\n");
 			return NETDEV_TX_OK;
 		}
 
