@@ -216,6 +216,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v5.0`  及其以上版本。
 
+- 由于 IoT-Bridge 组件的某些特性以及 ESP-IDF 的某些限制，组件在编译时将会给当前使用的 ESP-IDF 打上 [patch](https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge/patch)，为了避免对其他项目的影响，推荐为 IoT-Bridge 项目单独维护 ESP-IDF。
 
 ## 5 配置项介绍
 
