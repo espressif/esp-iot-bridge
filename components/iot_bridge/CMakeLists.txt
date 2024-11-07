@@ -35,7 +35,7 @@ if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
     list(APPEND srcs "src/bridge_modem.c")
 endif()
 
-if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
+if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3" OR "${IDF_TARGET}" STREQUAL "esp32p4")
     list(APPEND requires "esp_modem_usb_dte")
     if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}.${IDF_VERSION_PATCH}" VERSION_LESS "5.1.4")
         list(APPEND requires "usb_device")

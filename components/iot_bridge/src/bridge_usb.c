@@ -94,7 +94,11 @@ static void esp_bridge_usb_init(void)
     tinyusb_net_config_t net_config = {
         .on_recv_callback = usb_recv_callback,
     };
+#if CONFIG_IDF_TARGET_ESP32P4
+    esp_read_mac(net_config.mac_addr, ESP_MAC_ETH);
+#else
     esp_read_mac(net_config.mac_addr, ESP_MAC_WIFI_STA);
+#endif
     uint8_t *mac = net_config.mac_addr;
     ESP_LOGI(TAG, "Network interface HW address: %02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     ESP_ERROR_CHECK(tinyusb_net_init(TINYUSB_USBDEV_0, &net_config));

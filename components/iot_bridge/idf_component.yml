@@ -10,15 +10,15 @@ dependencies:
   espressif/esp_modem:
     version: 1.*
     rules:
-      - if: "target not in [esp32s2, esp32s3]"
+      - if: "target not in [esp32s2, esp32s3, esp32p4]"
   espressif/esp_modem_usb_dte:
     version: 1.*
     rules:
-      - if: "target in [esp32s2, esp32s3]"
+      - if: "target in [esp32s2, esp32s3, esp32p4]"
   espressif/esp_tinyusb:
     version: 1.*
     rules:
-      - if: "target in [esp32s2, esp32s3]"
+      - if: "target in [esp32s2, esp32s3, esp32p4]"
       - if: "idf_version >=5.1.4"
 examples:
   - path: ../../examples/wifi_router

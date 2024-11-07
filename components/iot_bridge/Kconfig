@@ -117,7 +117,7 @@ menu "Bridge Configuration"
 
         config BRIDGE_DATA_FORWARDING_NETIF_USB
             bool "Use USB interface to provide network data forwarding for other devices"
-            depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32P4
             select TINYUSB
             select TINYUSB_NET_ENABLED
             default n
@@ -179,19 +179,20 @@ menu "Bridge Configuration"
         default 23 if IDF_TARGET_ESP32C6
         default 46 if IDF_TARGET_ESP32S2
         default 48 if IDF_TARGET_ESP32S3
+        default 52 if IDF_TARGET_ESP32P4
 
     menu "ETH Configuration"
         depends on BRIDGE_ETHERNET_NETIF_ENABLE
 
         choice BRIDGE_ETHERNET_TYPE
             prompt "Ethernet Type"
-            default BRIDGE_USE_INTERNAL_ETHERNET if IDF_TARGET_ESP32
+            default BRIDGE_USE_INTERNAL_ETHERNET if IDF_TARGET_ESP32 || IDF_TARGET_ESP32P4
             default BRIDGE_USE_SPI_ETHERNET if !IDF_TARGET_ESP32
             help
                 Select which kind of Ethernet will be used in the ESP-Bridge.
 
             config BRIDGE_USE_INTERNAL_ETHERNET
-                depends on IDF_TARGET_ESP32
+                depends on IDF_TARGET_ESP32 || IDF_TARGET_ESP32P4
                 select ETH_USE_ESP32_EMAC
                 bool "Internal EMAC"
                 help
@@ -363,14 +364,14 @@ menu "Bridge Configuration"
         choice BRIDGE_SERIAL_CONFIG
             prompt "Choose the interface of the modem (UART or USB)"
             default BRIDGE_SERIAL_VIA_UART if IDF_TARGET_ESP32 || IDF_TARGET_ESP32C3
-            default BRIDGE_SERIAL_VIA_USB if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default BRIDGE_SERIAL_VIA_USB if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32P4
             config BRIDGE_SERIAL_VIA_UART
                 bool "UART"
                 help
                     Connect to modem via UART.
             config BRIDGE_SERIAL_VIA_USB
                 bool "USB"
-                depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32P4
                 help
                     Connect to modem via USB (CDC-ACM class). For IDF version >= 4.4.
         endchoice
