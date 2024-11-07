@@ -31,7 +31,7 @@ index 0cf228ce..86ceed92 100644
 +        next = t->next;
 +        count++;
 +    }
-+    LWIP_DEBUGF(NAPT_DEBUG, ("before napt count=%d\r\n", count));
++    LWIP_DEBUGF(NAPT_DEBUG, ("before napt count=%"PRIu32"\r\n", count));
 +
 +    for (i = napt_list; i != NO_IDX; i = next) {
 +        t = NT(i);
@@ -44,7 +44,7 @@ index 0cf228ce..86ceed92 100644
 +        next = t->next;
 +        count++;
 +    }
-+    LWIP_DEBUGF(NAPT_DEBUG, ("after napt count=%d\r\n", count));
++    LWIP_DEBUGF(NAPT_DEBUG, ("after napt count=%"PRIu32"\r\n", count));
 +}
 +
  #endif /* ESP_LWIP && LWIP_IPV4 && IP_NAPT */
