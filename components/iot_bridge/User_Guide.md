@@ -218,6 +218,8 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - After successfully obtaining ESP-IDF, please switch the ESP-IDF version to `release/v5.0` or above.
 
+- Due to certain characteristics of the IoT-Bridge component and some limitations of ESP-IDF, the component will apply a [patch](https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge/patch) during compilation for the currently used ESP-IDF. To avoid impacting other projects, it is recommended to maintain a separate ESP-IDF for the IoT-Bridge project.
+
 ## 5 Configuration
 
 **Select the interface for connecting to the Internet**
