@@ -1,4 +1,4 @@
-set(srcs "src/bridge_common.c")
+set(srcs "src/bridge_common.c" "src/customer_hook.c")
 set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "nvs_flash" "esp_modem")
 set(include_dirs "include")
 
@@ -15,7 +15,7 @@ if (CONFIG_BRIDGE_ETHERNET_NETIF_ENABLE)
 endif()
 
 if (CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
-list(APPEND srcs "src/esp_eth_netif_glue_wrap.c")
+    list(APPEND srcs "src/esp_eth_netif_glue_wrap.c")
 endif()
 
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_SPI OR
@@ -75,7 +75,11 @@ target_compile_options(__idf_lwip PRIVATE
                        "-DIP_NAPT_PORTMAP=1"
                        "-DIP_PORTMAP_MAX=255"
                        "-DIP_NAPT_MAX=CONFIG_BRIDGE_IP_NAPT_SIZE"
-                       "-DIP_NAPT_TIMEOUT_MS_TCP=CONFIG_BRIDGE_IP_NAPT_TIMEOUT_MS_TCP")
+                       "-DIP_NAPT_TIMEOUT_MS_TCP=CONFIG_BRIDGE_IP_NAPT_TIMEOUT_MS_TCP"
+                       "-DIP_NAPT_ADD_FAILED_HOOK=custom_hook_ip4_napt_add_failed"
+                       "-DESP_IDF_LWIP_HOOK_FILENAME=\"${CMAKE_CURRENT_SOURCE_DIR}/include/customer_hook.h\"")
+
+idf_component_set_property(${COMPONENT_NAME} WHOLE_ARCHIVE TRUE)
 
 include(package_manager)
 cu_pkg_define_version(${CMAKE_CURRENT_LIST_DIR})
