@@ -6,6 +6,10 @@
 
 - Make usb_device a dependency of the iot_bridge component ([8ce55ae](https://github.com/espressif/esp-iot-bridge/commit/8ce55ae077a794977c200cec3b470b0d48bc9bcd))
 
+### Patch
+
+- Add IP_NAPT_ADD_FAILED_HOOK for monitoring napt status ([9c744cf](https://github.com/espressif/esp-iot-bridge/commit/9c744cfe91a3c9fe7ce160cd8ae17bbc973c3d1b))
+
 ## v0.11.9 - 2024.8.6
 
 ### Feature

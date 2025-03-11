@@ -1,8 +1,31 @@
 diff --git a/src/core/ipv4/ip4_napt.c b/src/core/ipv4/ip4_napt.c
-index 0cf228ce..86ceed92 100644
+index c02b599e..c1d518d5 100644
 --- a/src/core/ipv4/ip4_napt.c
 +++ b/src/core/ipv4/ip4_napt.c
-@@ -1075,4 +1075,45 @@ ip_napt_get_stats(struct stats_ip_napt *stats)
+@@ -41,6 +41,10 @@
+ 
+ #if ESP_LWIP && LWIP_IPV4 && IP_NAPT
+ 
++#ifdef ESP_IDF_LWIP_HOOK_FILENAME
++#include ESP_IDF_LWIP_HOOK_FILENAME
++#endif
++
+ #include <assert.h>
+ #include <stdbool.h>
+ #include <string.h>
+@@ -613,6 +617,11 @@ ip_napt_add(u8_t proto, u32_t src, u16_t sport, u32_t dest, u16_t dport, u32_t s
+     return mport;
+   }
+   LWIP_DEBUGF(NAPT_DEBUG, ("ip_napt_add() failed to insert\n"));
++
++#ifdef IP_NAPT_ADD_FAILED_HOOK
++    IP_NAPT_ADD_FAILED_HOOK();
++#endif
++
+   return 0;
+ }
+ 
+@@ -1075,4 +1084,45 @@ ip_napt_get_stats(struct stats_ip_napt *stats)
  }
  #endif /* LWIP_STATS */
  
