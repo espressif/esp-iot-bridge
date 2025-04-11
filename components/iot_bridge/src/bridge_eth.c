@@ -154,16 +154,15 @@ esp_err_t esp_bridge_eth_init(esp_netif_t* eth_netif)
         eth_phy_config_t phy_config = ESP_BRIDGE_ETH_PHY_DEFAULT_CONFIG();
         uint8_t phy_model_max = sizeof(esp_bridge_eth_phy_model)/sizeof(esp_bridge_eth_phy_model[0]);
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
         eth_esp32_emac_config_t esp32_emac_config = ETH_ESP32_EMAC_DEFAULT_CONFIG();
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
+        esp32_emac_config.smi_gpio.mdc_num = CONFIG_BRIDGE_ETH_MDC_GPIO;
+        esp32_emac_config.smi_gpio.mdio_num = CONFIG_BRIDGE_ETH_MDIO_GPIO;
+#else
         esp32_emac_config.smi_mdc_gpio_num = CONFIG_BRIDGE_ETH_MDC_GPIO;
         esp32_emac_config.smi_mdio_gpio_num = CONFIG_BRIDGE_ETH_MDIO_GPIO;
+#endif
         esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&esp32_emac_config, &mac_config);
-#else
-        mac_config.smi_mdc_gpio_num = CONFIG_BRIDGE_ETH_MDC_GPIO;
-        mac_config.smi_mdio_gpio_num = CONFIG_BRIDGE_ETH_MDIO_GPIO;
-        esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&mac_config);
-#endif // ESP_IDF_VERSION >= 5.0.0
 
         for (uint8_t i = 0; i < phy_model_max; i++) {
             phy = esp_bridge_eth_phy_model[i](&phy_config);
