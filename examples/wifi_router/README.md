@@ -10,6 +10,7 @@ This example focuses on the networking part, enables forwarding packets between 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wifi_router_en.png" style="zoom:80%;" />
 
 ### How to use example
+
 #### Hardware Required
 - An esp32 series development board
 - A Micro-USB cable for power supply and programming

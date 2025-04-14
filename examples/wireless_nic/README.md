@@ -10,6 +10,7 @@ This example focuses on the networking part, implementing packet forwarding betw
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wireless_nic_en.png" style="zoom:80%;" />
 
 ### How to use example
+
 #### Hardware Required
 **Required**
 - An Ethernet cable

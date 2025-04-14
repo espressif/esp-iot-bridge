@@ -65,7 +65,10 @@ variables: &global-variables
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
-  - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
+  - >
+    if [ "$IMAGE" != "espressif/idf:release-v5.0" ]; then
+      echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
+    fi
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
 
@@ -85,7 +88,10 @@ variables: &global-variables
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
-  - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
+  - >
+    if [ "$IMAGE" != "espressif/idf:release-v5.0" ]; then
+      echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
+    fi
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
 
