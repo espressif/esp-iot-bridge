@@ -1,6 +1,16 @@
 # ChangeLog
 
-## v0.11.10 - 2024.11.13
+## v1.0.0 - 2025.4.11
+
+### Feature
+
+- feat: add host driver action debug log ([dc62187](https://github.com/espressif/esp-iot-bridge/commit/dc62187271cf295dc791f2070ec1304661fc3c38))
+- feat: add host driver data debug log ([973a81d](https://github.com/espressif/esp-iot-bridge/commit/973a81de900c21743b153a1defb4027fc7aa528f))
+
+### Bugfix
+
+- fix: Adapt to ESP-IDF updates related to UART and Ethernet ([669edaf](https://github.com/espressif/esp-iot-bridge/commit/669edaf9962beb4cbc42da7b1ece05ef081b272d))
+- fix: update usb_device's dependencies to fix IDF5.0 compilation error ([2f0f5d2](https://github.com/espressif/esp-iot-bridge/commit/2f0f5d245617126eb3a715c06dc4146f018f35fc))
 
 ### Chore
 
