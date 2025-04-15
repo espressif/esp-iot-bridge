@@ -24,7 +24,7 @@ ESP-IoT-Bridge solution focuses on connectivity and communication between variou
 
 ESP-IoT-Bridge is supported by various Espressif chips, as shown in the table below:
 
-| Chip     |  ESP-IDF Release/v5.0  |  ESP-IDF Release/v5.1  |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |     ESP-IDF master     |
+| Chip     |  ESP-IDF Release/v5.0  |  ESP-IDF Release/v5.1  |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |
 | :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
 | ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
@@ -33,6 +33,7 @@ ESP-IoT-Bridge is supported by various Espressif chips, as shown in the table be
 | ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C6 |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C5 |                        |                        |                        |                        | ![alt text][supported] |
+| ESP32-C61|                        |                        |                        |                        | ![alt text][supported] |
 
 [supported]: https://img.shields.io/badge/-supported-green "supported"
 
@@ -74,7 +75,8 @@ To summarize, the above table mainly involves the following application scenario
 | ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | TODO  | TODO |
 | ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | TODO  | TODO |
 | ESP32-C6 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | TODO  | TODO |
-| ESP32-H2 | TODO                   | TODO                   | TODO                                 | TODO                                 | TODO                                 | TODO  | TODO |
+| ESP32-C5 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | TODO  | TODO |
+| ESP32-C61| ![alt text][supported] | ![alt text][supported] | TODO                                 | TODO                                 | TODO                                 | TODO  | TODO |
 
 Notes:
 
