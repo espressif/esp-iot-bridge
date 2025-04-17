@@ -175,8 +175,8 @@ menu "Bridge Configuration"
         default 33 if IDF_TARGET_ESP32
         default 20 if IDF_TARGET_ESP32C2
         default 19 if IDF_TARGET_ESP32C3
-        default 29 if IDF_TARGET_ESP32C5
-        default 23 if IDF_TARGET_ESP32C6
+        default 30 if IDF_TARGET_ESP32C5 || IDF_TARGET_ESP32C6
+        default 24 if IDF_TARGET_ESP32C61
         default 46 if IDF_TARGET_ESP32S2
         default 48 if IDF_TARGET_ESP32S3
 
@@ -294,8 +294,11 @@ menu "Bridge Configuration"
                 int "SPI SCLK GPIO number"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 14 if IDF_TARGET_ESP32
-                default 17 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-                default 6
+                default 12 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                default 6 if IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C61
+                default 4 if IDF_TARGET_ESP32H2
+                default 33 if IDF_TARGET_ESP32P4
+                default 8 if IDF_TARGET_ESP32C5
                 help
                     Set the GPIO number used by SPI SCLK.
 
@@ -303,8 +306,11 @@ menu "Bridge Configuration"
                 int "SPI MOSI GPIO number"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 13 if IDF_TARGET_ESP32
-                default 16 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-                default 7
+                default 11 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                default 7 if IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C61
+                default 5 if IDF_TARGET_ESP32H2
+                default 32 if IDF_TARGET_ESP32P4
+                default 10 if IDF_TARGET_ESP32C5
                 help
                     Set the GPIO number used by SPI MOSI.
 
@@ -312,16 +318,18 @@ menu "Bridge Configuration"
                 int "SPI MISO GPIO number"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 12 if IDF_TARGET_ESP32
-                default 18 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-                default 2
+                default 13 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+                default 2 if IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C61
+                default 0 if IDF_TARGET_ESP32H2
+                default 24 if IDF_TARGET_ESP32P4
+                default 9 if IDF_TARGET_ESP32C5
                 help
                     Set the GPIO number used by SPI MISO.
 
             config BRIDGE_ETH_SPI_CLOCK_MHZ
                 int "SPI clock speed (MHz)"
                 range 5 80
-                default 23 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
-                default 12
+                default 16
                 help
                     Set the clock speed (MHz) of SPI interface.
 
@@ -329,14 +337,21 @@ menu "Bridge Configuration"
                 int "SPI CS0 GPIO number for SPI Ethernet module #1"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
                 default 15 if IDF_TARGET_ESP32
-                default 10
+                default 10 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32C2
+                default 3 if IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C5 || IDF_TARGET_ESP32C61
+                default 1 if IDF_TARGET_ESP32H2
+                default 21 if IDF_TARGET_ESP32P4
                 help
                     Set the GPIO number used by SPI CS0, i.e. Chip Select associated with the first SPI Eth module).
 
             config BRIDGE_ETH_SPI_INT0_GPIO
                 int "Interrupt GPIO number SPI Ethernet module #1"
                 range BRIDGE_GPIO_RANGE_MIN BRIDGE_GPIO_RANGE_MAX
-                default 4
+                default 4 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
+                default 4 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C5
+                default 10 if IDF_TARGET_ESP32H2
+                default 48 if IDF_TARGET_ESP32P4
+                default 0 if IDF_TARGET_ESP32C61
                 help
                     Set the GPIO number used by the first SPI Ethernet module interrupt line.
 

@@ -302,6 +302,29 @@ esp32c5_build:
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
 
+esp32c61_build:
+  stage: build
+  tags:
+    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:latest']
+
+  variables:
+    <<: *global-variables
+    idf_branch: master
+    idf_target: esp32c61
+    compile_option: --preview
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *setup_esp_idf
+    - *build_wifi_router_examples
+    - *build_4g_hotspot_examples
+
 push_master_to_github:
   stage: deploy
   only:

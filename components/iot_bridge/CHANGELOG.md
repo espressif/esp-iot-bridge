@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.0.1 - 2025.4.17
+
+### Supported Socs
+
+- ESP32-C61 ([bb5e179](https://github.com/espressif/esp-iot-bridge/commit/bb5e179672958eb4e59b4439f9cd04a2bf3c778b))
+
 ## v1.0.0 - 2025.4.15
 
 ### Breaking Change:
