@@ -1,6 +1,28 @@
 # ChangeLog
 
-## v1.0.0 - 2025.4.11
+## v1.0.0 - 2025.4.15
+
+### Breaking Change:
+
+- Starting from iot_bridge v1.0.0, USB functionality requires ESP-IDF v5.1.4 or later. For systems using ESP-IDF versions between 5.0 and 5.1.3:
+    - Recommended solution: Upgrade ESP-IDF to ≥v5.1.4
+    - Legacy solution: Downgrade iot_bridge to v0.11.9 (The current latest version of esp_tinyusb does not support RNDIS. To use RNDIS functionality, you must select this specific implementation.)
+        ```yml
+        espressif/iot_bridge:
+            version: "0.11.9"
+        usb_device:
+            path: components/usb/usb_device
+            git: https://github.com/espressif/esp-iot-bridge.git
+            rules:
+            - if: "target in [esp32s2, esp32s3]"
+            - if: "idf_version < 5.1.4"
+        ```
+
+    | Component Version | ESP-IDF Version | USB Support | RNDIS Support | Required Action |
+    |-------------------|-----------------|-------------|---------------|-----------------|
+    | **iot_bridge ≥1.0.0** | **ESP-IDF ≥5.1.4** | ✅ Full support | ❌ Not supported | Use modern USB stack |
+    | **iot_bridge ≥1.0.0** | **ESP-IDF 5.0-5.1.3** | ❌ Not supported | ❌ Not supported | Upgrade IDF **or** see legacy solution ↓ |
+    | **iot_bridge 0.11.9** | **ESP-IDF 5.0+** | ✅ Full support | ✅ Supported (ESP-IDF 5.0-5.1.3) | <pre>espressif/iot_bridge:<br>  version: "0.11.9"<br>usb_device:<br>  path: components/usb/usb_device<br>  git: https://github.com/espressif/esp-iot-bridge.git<br>  rules:<br>  - if: "target in [esp32s2, esp32s3]"<br>  - if: "idf_version < 5.1.4"</pre> |
 
 ### Feature
 

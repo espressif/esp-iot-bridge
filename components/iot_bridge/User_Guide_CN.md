@@ -34,8 +34,6 @@ ESP-IoT-Bridge 方案主要针对 IoT 应用场景下的各种网络接口之间
 
 [supported]: https://img.shields.io/badge/-%E6%94%AF%E6%8C%81-green "supported"
 
-**注意**： 从 ([a4ab5cc](https://github.com/espressif/esp-iot-bridge/commit/a4ab5ccdbe07329802fff2778c67496b83ecf0dd)) 之后 esp-iot-bridge 只支持 esp-idf/v5.x 版本。
-
 ESP-IoT-Bridge 方案提供多个网络接口，不同的网络接口可以分为两大类：
 
 - 用于连接互联网的接口
@@ -81,7 +79,26 @@ ESP-IoT-Bridge 方案提供多个网络接口，不同的网络接口可以分�
 - **使用 Thread 边界路由器时，需要搭配 802.15.4 芯片，如 ESP32-H2。**
 - **对于 ESP32 SDIO 接口，硬件上有管脚上拉需求，具体请参考 [SD 上拉需求](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html)。**
 
-
+### ​注意事项
+- 从 ([a4ab5cc](https://github.com/espressif/esp-iot-bridge/commit/a4ab5ccdbe07329802fff2778c67496b83ecf0dd)) 之后 esp-iot-bridge 只支持 esp-idf/v5.x 版本。
+- 自 **iot_bridge v1.0.0** 起，USB 功能需要使用 **ESP-IDF v5.1.4 或更高版本**。对于使用 **ESP-IDF 5.0-5.1.3** 的系统：
+    - **推荐方案**：升级 ESP-IDF 至 ≥v5.1.4
+    - **旧版兼容方案**：降级 iot_bridge 至 v0.11.9（当前最新版 esp_tinyusb 组件不支持 RNDIS 协议，如需 RNDIS 功能必须采用此特定配置）
+        ```yml
+        espressif/iot_bridge:
+            version: "0.11.9"
+        usb_device:
+            path: components/usb/usb_device
+            git: https://github.com/espressif/esp-iot-bridge.git
+            rules:
+            - if: "target in [esp32s2, esp32s3]"
+            - if: "idf_version < 5.1.4"
+        ```
+    | 组件版本         | ESP-IDF版本       | USB支持  | RNDIS支持 | 解决方案                  |
+    |------------------|-------------------|----------|-----------|---------------------------|
+    | **iot_bridge ≥1.0.0** | **ESP-IDF ≥5.1.4** | ✅ 支持 | ❌ 不支持   | 使用 esp_tinyusb 组件 |
+    | **iot_bridge ≥1.0.0** | **ESP-IDF 5.0-5.1.3** | ❌ 不支持 | ❌ 不支持   | 升级IDF **或** 采用旧版方案 ↓ |
+    | **iot_bridge 0.11.9** | **ESP-IDF 5.0+** | ✅ 支持 | ✅ 支持（idf5.0-5.1.3） | <pre>espressif/iot_bridge:<br>  version: "0.11.9"<br>usb_device:<br>  path: components/usb/usb_device<br>  git: https://github.com/espressif/esp-iot-bridge.git<br>  rules:<br>  - if: "target in [esp32s2, esp32s3]"<br>  - if: "idf_version < 5.1.4"</pre> |
 
 ### 1.1 Wi-Fi 路由器
 

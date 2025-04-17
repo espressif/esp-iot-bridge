@@ -10,6 +10,7 @@ This example focuses on the networking part, enables forwarding packets between 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/4g_router_en.png" style="zoom:80%;" />
 
 ### How to use example
+
 #### Hardware Required
 - A 4G module
 - An esp32 series development board
