@@ -202,6 +202,20 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t *esp_neti
 esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t *ip_info, bool *conflict_check);
 
 /**
+ * @brief Set whether to check IP segment conflict on a network interface.
+ *        By default, conflict detection is enabled.
+ *
+ * @param[in] netif The network interface to set the conflict check for.
+ * @param[in] enable Whether to enable or disable conflict check.
+ *
+ * @return
+ *     - ESP_OK: Conflict check set successfully.
+ *     - ESP_ERR_INVALID_ARG: Invalid netif argument.
+ *     - ESP_ERR_NOT_FOUND: Network interface not found in bridge list.
+ */
+esp_err_t esp_bridge_netif_set_conflict_check(esp_netif_t *netif, bool enable);
+
+/**
  * @brief Set the IP information for a network interface and optionally save it to NVS.
  *
  * @param[in] netif The network interface to set the IP information for.

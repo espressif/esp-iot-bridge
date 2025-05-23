@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -519,6 +519,24 @@ static esp_err_t esp_bridge_netif_set_dns_server(esp_netif_t *netif, uint32_t ad
     dns.ip.type = IPADDR_TYPE_V4;
     ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, type, &dns));
     return ESP_OK;
+}
+
+esp_err_t esp_bridge_netif_set_conflict_check(esp_netif_t *netif, bool enable)
+{
+    if (netif == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    bridge_netif_t *p = bridge_link;
+    while (p) {
+        if (p->netif == netif) {
+            p->conflict_check = enable;
+            return ESP_OK;
+        }
+        p = p->next;
+    }
+
+    return ESP_ERR_NOT_FOUND;
 }
 
 esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *ip_info, bool save_to_nvs, bool conflict_check)
