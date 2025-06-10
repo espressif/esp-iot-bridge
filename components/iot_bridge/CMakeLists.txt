@@ -1,4 +1,4 @@
-set(srcs "src/bridge_common.c" "src/customer_hook.c")
+set(srcs "src/bridge_common.c" "src/bridge_lwip_hook.c")
 set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "nvs_flash" "esp_modem")
 set(include_dirs "include")
 
@@ -46,6 +46,16 @@ idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "${include_dirs}"
                        REQUIRES "${requires}")
 
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/config)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/include/esp_bridge_lwip_hook.h ${CMAKE_BINARY_DIR}/config/)
+
+set_property(GLOBAL PROPERTY CUSTOMER_LWIP_HOOK_FILE_LISTS "${CMAKE_BINARY_DIR}/config/customer_lwip_hook.h")
+get_property(hook_file GLOBAL PROPERTY CUSTOMER_LWIP_HOOK_FILE_LISTS)
+
+if(NOT "${hook_file}" STREQUAL "")
+    file(WRITE ${hook_file} "#include \"esp_bridge_lwip_hook.h\"\n")
+endif()
+
 # Apply ESP-IDF Patch
 execute_process(COMMAND
                 git apply ${CMAKE_CURRENT_LIST_DIR}/patch/dhcp.patch
@@ -59,6 +69,9 @@ execute_process(COMMAND
 execute_process(COMMAND
                 git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_napt.patch
                 WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
+execute_process(COMMAND
+                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/lwip_napt.patch
+                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
 
 execute_process(COMMAND
                 git rev-parse --short HEAD
@@ -70,12 +83,7 @@ set_source_files_properties(SOURCE ${srcs}
                             "COMMIT_ID=\"${SRC_COMMIT_ID}\"")
 
 target_compile_options(__idf_lwip PRIVATE
-                       "-DIP_NAPT_PORTMAP=1"
-                       "-DIP_PORTMAP_MAX=255"
-                       "-DIP_NAPT_MAX=CONFIG_BRIDGE_IP_NAPT_SIZE"
-                       "-DIP_NAPT_TIMEOUT_MS_TCP=CONFIG_BRIDGE_IP_NAPT_TIMEOUT_MS_TCP"
-                       "-DIP_NAPT_ADD_FAILED_HOOK=custom_hook_ip4_napt_add_failed"
-                       "-DESP_IDF_LWIP_HOOK_FILENAME=\"${CMAKE_CURRENT_SOURCE_DIR}/include/customer_hook.h\"")
+                       "-DESP_IDF_LWIP_HOOK_FILENAME=\"customer_lwip_hook.h\"")
 
 idf_component_set_property(${COMPONENT_NAME} WHOLE_ARCHIVE TRUE)
 

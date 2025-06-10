@@ -1,0 +1,15 @@
+diff --git a/src/include/lwip/lwip_napt.h b/src/include/lwip/lwip_napt.h
+index a3d27955..1cd33785 100644
+--- a/src/include/lwip/lwip_napt.h
++++ b/src/include/lwip/lwip_napt.h
+@@ -51,6 +51,10 @@ extern "C" {
+ #if IP_FORWARD
+ #if IP_NAPT
+ 
++#ifdef ESP_IDF_LWIP_HOOK_FILENAME
++#include ESP_IDF_LWIP_HOOK_FILENAME
++#endif
++
+ /* Default size of the tables used for NAPT */
+ #ifndef IP_NAPT_MAX
+ #define IP_NAPT_MAX 512
