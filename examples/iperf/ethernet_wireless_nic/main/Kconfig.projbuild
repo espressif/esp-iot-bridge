@@ -1,0 +1,30 @@
+menu "Bridge Misc Configuration"
+    depends on BRIDGE_ENABLE
+
+    menu "Network Distribution"
+        depends on BRIDGE_EXTERNAL_NETIF_STATION
+
+        config APP_BRIDGE_USE_WEB_SERVER
+            bool "Wi-Fi Provisioning over Web Server"
+            default y
+            help
+                Use Wi-Fi Provisioning over Web Server.
+
+        config APP_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE
+            bool "Wi-Fi Provisioning over Bluetooth Low Energy."
+            depends on !IDF_TARGET_ESP32S2
+            default n
+            help
+                Use Wi-Fi Provisioning over Bluetooth Low Energy.
+    endmenu
+
+    menu "Button Configuration"
+        config APP_GPIO_BUTTON_SW1
+            default 16 if IDF_TARGET_ESP32   || IDF_TARGET_ESP32H2
+            default 38 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default 9
+            int "GPIO button of switch"
+            help
+                Set the GPIO button of switch.
+    endmenu
+endmenu
