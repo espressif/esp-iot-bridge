@@ -1,0 +1,12 @@
+dependencies:
+  espressif/button: 3.*
+  espressif/iot_bridge:
+    version: "*"
+    # Please comment the following line, if this example is installed by idf.py create-project-from-example.
+    override_path: "../../../../components/iot_bridge"
+  wifi_prov_mgr:
+    path: components/wifi_prov_mgr
+    git: https://github.com/espressif/esp-iot-bridge.git
+  web_server:
+    path: components/web_server
+    git: https://github.com/espressif/esp-iot-bridge.git

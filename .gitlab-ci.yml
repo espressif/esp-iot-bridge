@@ -41,6 +41,12 @@ variables: &global-variables
   - echo -e "\nCONFIG_APP_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE=y" >> sdkconfig.defaults.${idf_target}
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
+  - cd -
+
+.build_iperf_examples: &build_iperf_examples
+  - cd examples/iperf/ethernet_wireless_nic
+  - idf.py ${compile_option} set-target ${idf_target}
+  - idf.py build
 
 .build_iot_bridge_esp32: &build_iot_bridge_esp32
   - cd examples/wireless_nic
@@ -54,6 +60,7 @@ variables: &global-variables
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.${idf_target}
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
+  - cd -
 
 .build_iot_bridge_esp32s2: &build_iot_bridge_esp32s2
   - cd examples/wireless_nic
@@ -71,6 +78,7 @@ variables: &global-variables
     fi
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
+  - cd -
 
 .build_iot_bridge_esp32s3: &build_iot_bridge_esp32s3
   - cd examples/wireless_nic
@@ -94,6 +102,7 @@ variables: &global-variables
     fi
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
+  - cd -
 
 .build_wifi_router_examples: &build_wifi_router_examples
   - cd examples/wifi_router
@@ -173,6 +182,7 @@ esp32_build:
     - *setup_esp_idf
     - *build_iot_bridge_examples
     - *build_iot_bridge_esp32
+    - *build_iperf_examples
 
 esp32c2_build:
   stage: build
@@ -194,6 +204,7 @@ esp32c2_build:
     - *setup_esp_idf
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
+    - *build_iperf_examples
 
 esp32c3_build:
   stage: build
@@ -215,6 +226,7 @@ esp32c3_build:
     - *setup_esp_idf
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
+    - *build_iperf_examples
 
 esp32s2_build:
   stage: build
@@ -236,6 +248,7 @@ esp32s2_build:
     - *setup_esp_idf
     - *build_iot_bridge_examples
     - *build_iot_bridge_esp32s2
+    - *build_iperf_examples
 
 esp32s3_build:
   stage: build
@@ -257,6 +270,7 @@ esp32s3_build:
     - *setup_esp_idf
     - *build_iot_bridge_examples
     - *build_iot_bridge_esp32s3
+    - *build_iperf_examples
 
 esp32c6_build:
   stage: build
@@ -278,6 +292,7 @@ esp32c6_build:
     - *setup_esp_idf
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
+    - *build_iperf_examples
 
 esp32c5_build:
   stage: build
@@ -300,6 +315,7 @@ esp32c5_build:
     - *setup_esp_idf
     - *build_iot_bridge_examples
     - *build_iot_bridge_default
+    - *build_iperf_examples
 
 esp32c61_build:
   stage: build
@@ -322,6 +338,7 @@ esp32c61_build:
     - *setup_esp_idf
     - *build_wifi_router_examples
     - *build_4g_hotspot_examples
+    - *build_iperf_examples
 
 push_master_to_github:
   stage: deploy
