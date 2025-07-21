@@ -72,10 +72,7 @@ variables: &global-variables
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
-  - >
-    if [ "$IMAGE" != "espressif/idf:release-v5.0" ]; then
-      echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
-    fi
+  - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
   - cd -
@@ -96,10 +93,7 @@ variables: &global-variables
   - git clean -xdff
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SPI=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_MODEM=y" >> sdkconfig.defaults.${idf_target}
-  - >
-    if [ "$IMAGE" != "espressif/idf:release-v5.0" ]; then
-      echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
-    fi
+  - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB=y" >> sdkconfig.defaults.${idf_target}
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
   - cd -
@@ -169,7 +163,7 @@ esp32_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
+      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
 
   variables:
     <<: *global-variables
@@ -191,7 +185,7 @@ esp32c2_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
+      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
 
   variables:
     <<: *global-variables
@@ -213,7 +207,7 @@ esp32c3_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
+      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
 
   variables:
     <<: *global-variables
@@ -235,7 +229,7 @@ esp32s2_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
+      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
 
   variables:
     <<: *global-variables
@@ -257,7 +251,7 @@ esp32s3_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.0', 'espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
+      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4']
 
   variables:
     <<: *global-variables

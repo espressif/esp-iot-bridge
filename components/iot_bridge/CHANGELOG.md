@@ -1,5 +1,16 @@
 # ChangeLog
 
+## v1.0.2 - 2025.7.21
+
+### Feature
+
+- Add support for ESP-IDF v5.5, and remove support for ESP-IDF v5.0 that is no longer maintained ([7071eb3](https://github.com/espressif/esp-iot-bridge/commit/7071eb3f0cd5775c8a1ad99d01ebc8f3bfbe77c2))
+- Support dynamic configuration of network interface conflict checks ([14cc028](https://github.com/espressif/esp-iot-bridge/commit/14cc028125aa1c0f0f5d3add101d9419a2239064))
+
+### Examples
+
+- Add Ethernet wireless NIC iperf test case ([ff58337](https://github.com/espressif/esp-iot-bridge/commit/ff58337e5914464d937c467fc8f5a5a9cd1e97a9))
+
 ## v1.0.1 - 2025.4.17
 
 ### Supported Socs

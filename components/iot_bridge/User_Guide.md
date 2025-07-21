@@ -24,16 +24,16 @@ ESP-IoT-Bridge solution focuses on connectivity and communication between variou
 
 ESP-IoT-Bridge is supported by various Espressif chips, as shown in the table below:
 
-| Chip     |  ESP-IDF Release/v5.0  |  ESP-IDF Release/v5.1  |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |
+| Chip     |  ESP-IDF Release/v5.1  |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |  ESP-IDF Release/v5.5  |
 | :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
 | ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C6 |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C5 |                        |                        |                        |                        | ![alt text][supported] |
-| ESP32-C61|                        |                        |                        |                        | ![alt text][supported] |
+| ESP32-C6 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C5 |                        |                        |                        | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C61|                        |                        |                        | ![alt text][supported] | ![alt text][supported] |
 
 [supported]: https://img.shields.io/badge/-supported-green "supported"
 
@@ -216,9 +216,9 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - Get Espressif SDK from [ESP-IDF](https://github.com/espressif/esp-idf).
 
-- To ensure that you have successfully installed the complete ESP-IDF, please enter `idf.py --version` in the terminal. If the output is similar to `ESP-IDF v5.0.5-493-ga463942e14`, it means the installation was successful. For detailed installation and configuration instructions, please refer to the [Quick Start Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html).
+- To ensure that you have successfully installed the complete ESP-IDF, please enter `idf.py --version` in the terminal. If the output is similar to `ESP-IDF v5.5-rc1`, it means the installation was successful. For detailed installation and configuration instructions, please refer to the [Quick Start Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html).
 
-- After successfully obtaining ESP-IDF, please switch the ESP-IDF version to `release/v5.0` or above.
+- After successfully obtaining ESP-IDF, please switch the ESP-IDF version to `release/v5.1` or above.
 
 - Due to certain characteristics of the IoT-Bridge component and some limitations of ESP-IDF, the component will apply a [patch](https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge/patch) during compilation for the currently used ESP-IDF. To avoid impacting other projects, it is recommended to maintain a separate ESP-IDF for the IoT-Bridge project.
 
@@ -238,7 +238,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
     | IDF Version               |             | Note                                                                   |
     | ------------------------- | ----------- | ---------------------------------------------------------------------- |
-    | ESP-IDF Release/v5.0-v5.3 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
+    | ESP-IDF Release/v5.1-v5.5 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
 
     ```
                                  +-- USB  <-+->  Computer

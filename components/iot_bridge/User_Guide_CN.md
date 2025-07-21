@@ -22,16 +22,16 @@ ESP-IoT-Bridge 方案主要针对 IoT 应用场景下的各种网络接口之间
 
 乐鑫 ESP-IoT-Bridge 方案已经适配乐鑫多种芯片：
 
-| 芯片     |  ESP-IDF Release/v5.0  |  ESP-IDF Release/v5.1  |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |
+| 芯片     |  ESP-IDF Release/v5.1  |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |  ESP-IDF Release/v5.5  |
 | :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
 | ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 | ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C6 |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C5 |                        |                        |                        |                        | ![alt text][supported] |
-| ESP32-C61|                        |                        |                        |                        | ![alt text][supported] |
+| ESP32-C6 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C5 |                        |                        |                        | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C61|                        |                        |                        | ![alt text][supported] | ![alt text][supported] |
 
 [supported]: https://img.shields.io/badge/-%E6%94%AF%E6%8C%81-green "supported"
 
@@ -231,9 +231,9 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - 获取 Espressif SDK [ESP-IDF](https://github.com/espressif/esp-idf)。
 
-- 为确保成功获取了完整的 ESP-IDF，请在终端中输入 `idf.py --version`，如果输出结果类似于 `ESP-IDF v5.0.5-493-ga463942e14`，则代表安装成功。详细的安装和配置说明请参考[快速入门文档](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32s2/get-started/index.html)。
+- 为确保成功获取了完整的 ESP-IDF，请在终端中输入 `idf.py --version`，如果输出结果类似于 `ESP-IDF v5.5-rc1`，则代表安装成功。详细的安装和配置说明请参考[快速入门文档](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32s2/get-started/index.html)。
 
-- 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v5.0`  及其以上版本。
+- 成功获取到 ESP-IDF 之后，请将 ESP-IDF 版本切换到 `release/v5.1`  及其以上版本。
 
 - 由于 IoT-Bridge 组件的某些特性以及 ESP-IDF 的某些限制，组件在编译时将会给当前使用的 ESP-IDF 打上 [patch](https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge/patch)，为了避免对其他项目的影响，推荐为 IoT-Bridge 项目单独维护 ESP-IDF。
 
@@ -253,7 +253,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
     | IDF Version               |          | 备注                          |
     | ------------------------- | -------- | ---------------------------- |
-    | ESP-IDF Release/v5.0-v5.3 | **支持** | 目前不能同时选择 SDIO 和 SPI 接口 |
+    | ESP-IDF Release/v5.1-v5.5 | **支持** | 目前不能同时选择 SDIO 和 SPI 接口 |
 
     ```
                                  +-- USB  <-+->  Computer

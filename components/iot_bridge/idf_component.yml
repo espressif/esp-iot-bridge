@@ -5,7 +5,7 @@ repository: https://github.com/espressif/esp-iot-bridge.git
 documentation: https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/User_Guide.md
 issues: https://github.com/espressif/esp-iot-bridge/issues
 dependencies:
-  idf: ">=5.0"
+  idf: ">=5.1"
   espressif/cmake_utilities: 0.*
   espressif/esp_modem:
     version: 1.*
