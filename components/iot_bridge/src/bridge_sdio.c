@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -37,8 +37,15 @@
 
 static const char* TAG = "bridge_sdio";
 
+static bool network_adapter_initialized = false;
+
 extern esp_err_t pkt_netif2driver(void *buffer, uint16_t len);
 esp_netif_t* network_adapter_netif;
+
+esp_err_t esp_netif_up(esp_netif_t *esp_netif);
+esp_err_t esp_netif_down(esp_netif_t *esp_netif);
+
+static esp_netif_t* sdio_netif[IOT_BRIDGE_NETIF_MAX];  // 0: data forwarding(wan), 1: external(lan)
 
 static esp_err_t sdio_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
 {
@@ -47,7 +54,13 @@ static esp_err_t sdio_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
 
 static void esp_bridge_network_adapter_init(void)
 {
+    if (network_adapter_initialized) {
+        ESP_LOGI(TAG, "Network Adapter already initialized, skipping");
+        return;
+    }
+
     network_adapter_driver_init();
+    network_adapter_initialized = true;
     ESP_LOGI(TAG, "Network Adapter initialization success");
 }
 struct esp_netif_lwip_vanilla_config {
@@ -268,22 +281,79 @@ static void sdio_got_ip_handler(void *arg, esp_event_base_t event_base,
     ESP_LOGI(TAG, "SDIO connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
 }
 
+esp_err_t esp_bridge_sdio_set_netif_type(esp_bridge_netif_type_t type)
+{
+    if (type < 0 || type >= IOT_BRIDGE_NETIF_MAX) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (sdio_netif[type] == NULL) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (type == IOT_BRIDGE_NETIF_WAN) {
+        if (sdio_netif[IOT_BRIDGE_NETIF_LAN] != NULL) {
+            ESP_LOGI(TAG, "Down sdio netif lan");
+            esp_netif_down(sdio_netif[IOT_BRIDGE_NETIF_LAN]);
+        }
+    } else if (type == IOT_BRIDGE_NETIF_LAN) {
+        if (sdio_netif[IOT_BRIDGE_NETIF_WAN] != NULL) {
+            ESP_LOGI(TAG, "Down sdio netif wan");
+            esp_netif_down(sdio_netif[IOT_BRIDGE_NETIF_WAN]);
+        }
+    }
+
+    network_adapter_netif = sdio_netif[type];
+    ESP_LOGI(TAG, "Up sdio netif");
+    esp_netif_up(network_adapter_netif);
+
+    if (type == IOT_BRIDGE_NETIF_WAN) {
+        esp_netif_dhcpc_start(network_adapter_netif);
+    }
+
+    return ESP_OK;
+}
+
+esp_bridge_netif_type_t esp_bridge_sdio_get_netif_type(void)
+{
+    if (network_adapter_netif == NULL) {
+        return IOT_BRIDGE_NETIF_INVALID;
+    } else if (network_adapter_netif == sdio_netif[IOT_BRIDGE_NETIF_WAN]) {
+        return IOT_BRIDGE_NETIF_WAN;
+    } else if (network_adapter_netif == sdio_netif[IOT_BRIDGE_NETIF_LAN]) {
+        return IOT_BRIDGE_NETIF_LAN;
+    }
+
+    return IOT_BRIDGE_NETIF_INVALID;
+}
+
+esp_netif_t* esp_bridge_sdio_netif_get(esp_bridge_netif_type_t type)
+{
+    if (type < 0 || type >= IOT_BRIDGE_NETIF_MAX) {
+        return NULL;
+    }
+
+    return sdio_netif[type];
+}
+
 esp_netif_t* esp_bridge_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     esp_netif_ip_info_t netif_ip_info = { 0 };
-    const esp_netif_inherent_config_t esp_netif_common_config = {
-#if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
-        .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_SERVER | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
-        .route_prio = 10,
-#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO)
-        .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
-        .route_prio = 50,
-#endif
+    esp_netif_inherent_config_t esp_netif_common_config = {
         .get_ip_event = IP_EVENT_SDIO_GOT_IP,
         .lost_ip_event = IP_EVENT_SDIO_LOST_IP,
-        .if_key = "SDIO_DEF",
+        .if_key = "SDIO_WAN",
         .if_desc = "sdio"
     };
+
+    if (data_forwarding) {
+        esp_netif_common_config.flags = ESP_NETIF_DHCP_SERVER | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED;
+        esp_netif_common_config.if_key = "SDIO_LAN";
+        esp_netif_common_config.route_prio = 10;
+    } else {
+        esp_netif_common_config.flags = ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED;
+        esp_netif_common_config.route_prio = 50;
+    }
 
     esp_netif_config_t sdio_config = {
         .base = &esp_netif_common_config,
@@ -301,8 +371,10 @@ esp_netif_t* esp_bridge_create_sdio_netif(esp_netif_ip_info_t* ip_info, uint8_t 
             esp_netif_get_ip_info(netif, &netif_ip_info);
             ESP_LOGI(TAG, "SDIO IP Address:" IPSTR, IP2STR(&netif_ip_info.ip));
             ip_napt_enable(netif_ip_info.ip.addr, 1);
+            sdio_netif[IOT_BRIDGE_NETIF_LAN] = netif;
         } else {
             esp_bridge_netif_list_add(netif, NULL, NULL);
+            sdio_netif[IOT_BRIDGE_NETIF_WAN] = netif;
         }
 
         if (enable_dhcps) {
