@@ -36,7 +36,7 @@ esp_err_t esp_bridge_wifi_set_config(wifi_interface_t interface, wifi_config_t *
     esp_err_t ret = ESP_FAIL;
     switch (interface) {
     case WIFI_IF_STA:
-        ESP_LOGI(TAG, "[%s] sta ssid: %s password: %s", __func__, conf->sta.ssid, conf->sta.password);
+        ESP_LOGI(TAG, "[%s] sta ssid: %.32s password: %.64s", __func__, conf->sta.ssid, conf->sta.password);
         ret = esp_wifi_set_config(WIFI_IF_STA, conf);
         break;
 
@@ -56,7 +56,7 @@ esp_err_t esp_bridge_wifi_set_config(wifi_interface_t interface, wifi_config_t *
 #endif
         conf->ap.max_connection = BRIDGE_SOFTAP_MAX_CONNECT_NUMBER;
         conf->ap.authmode = strlen((char*)conf->ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
-        ESP_LOGI(TAG, "[%s] softap ssid: %s password: %s", __func__, conf->ap.ssid, conf->ap.password);
+        ESP_LOGI(TAG, "[%s] softap ssid: %.32s password: %.64s", __func__, conf->ap.ssid, conf->ap.password);
         ret = esp_wifi_set_config(WIFI_IF_AP, conf);
 
         ESP_LOGI(TAG, "SoftAP config changed, deauth all station");
@@ -88,9 +88,9 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
         if (bssid != NULL) {
             wifi_cfg.sta.bssid_set = 1;
             memcpy((char *)wifi_cfg.sta.bssid, bssid, sizeof(wifi_cfg.sta.bssid));
-            ESP_LOGI(TAG, "[%s] sta ssid: %s password: %s MAC "MACSTR"", __func__, ssid, password, MAC2STR(wifi_cfg.sta.bssid));
+            ESP_LOGI(TAG, "[%s] sta ssid: %.32s password: %.64s MAC "MACSTR"", __func__, ssid, password, MAC2STR(wifi_cfg.sta.bssid));
         } else {
-            ESP_LOGI(TAG, "[%s] sta ssid: %s password: %s", __func__, ssid, password);
+            ESP_LOGI(TAG, "[%s] sta ssid: %.32s password: %.64s", __func__, ssid, password);
         }
 
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_cfg));
@@ -112,7 +112,7 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
         wifi_cfg.ap.authmode = strlen((char*)wifi_cfg.ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
 
-        ESP_LOGI(TAG, "[%s] softap ssid: %s password: %s", __func__, (char*)wifi_cfg.ap.ssid, (char*)wifi_cfg.ap.password);
+        ESP_LOGI(TAG, "[%s] softap ssid: %.32s password: %.64s", __func__, (char*)wifi_cfg.ap.ssid, (char*)wifi_cfg.ap.password);
         ESP_LOGI(TAG, "SoftAP config changed, deauth all station");
         esp_wifi_deauth_sta(0);
     }
@@ -191,8 +191,8 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
 
     /* Get Wi-Fi Station ssid success */
     if (strlen((const char*)router_config.ssid)) {
-        ESP_LOGI(TAG, "Found ssid %s", (const char*)router_config.ssid);
-        ESP_LOGI(TAG, "Found password %s", (const char*)router_config.password);
+        ESP_LOGI(TAG, "Found ssid %.32s", (const char*)router_config.ssid);
+        ESP_LOGI(TAG, "Found password %.64s", (const char*)router_config.password);
     }
 
     if (ip_info) {
