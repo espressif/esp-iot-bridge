@@ -24,6 +24,7 @@
 #include "lwip/inet.h"
 #include "lwip/ip_addr.h"
 #include "lwip/lwip_napt.h"
+#include "esp_netif_net_stack.h"
 #include "dhcpserver/dhcpserver.h"
 
 #include "esp_bridge.h"
@@ -110,18 +111,16 @@ esp_err_t esp_bridge_netif_list_remove(esp_netif_t *netif)
 static bool esp_bridge_netif_network_segment_is_used(uint32_t ip)
 {
     bridge_netif_t *p = bridge_link;
-    esp_netif_ip_info_t netif_ip = { 0 };
-
+    const ip4_addr_t dest = {
+        .addr = ip
+    };
     while (p) {
-        esp_netif_get_ip_info(p->netif, &netif_ip);
-
-        if (esp_ip4_addr3_16((esp_ip4_addr_t *)&ip) == esp_ip4_addr3_16(&netif_ip.ip)) {
+        struct netif *lwip_netif = esp_netif_get_netif_impl(p->netif);
+        if (ip4_addr_netcmp(&dest, netif_ip4_addr(lwip_netif), netif_ip4_netmask(lwip_netif))) {
             return true;
         }
-
         p = p->next;
     }
-
     return false;
 }
 
@@ -225,7 +224,8 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_neti
     esp_netif_ip_info_t netif_ip;
     esp_netif_ip_info_t allocate_ip_info;
     esp_ip_addr_t esp_ip_addr_info;
-    esp_ip4_addr_t netmask = { .addr = ESP_IP4TOADDR(255, 255, 255, 0) };
+    esp_ip4_addr_t netmask = { .addr = 0 };
+    netmask.addr = netif_ip4_netmask((struct netif *)esp_netif_get_netif_impl(esp_netif))->addr;
     bool ip_segment_is_used = false;
 
     memset(&allocate_ip_info, 0x0, sizeof(esp_netif_ip_info_t));
@@ -242,9 +242,13 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_neti
                 ip_segment_is_used = list->custom_check_cb(netif_ip.ip.addr);
                 list = list->next;
             }
+
+            uint32_t current_mask = netif_ip4_netmask((struct netif *)esp_netif_get_netif_impl(p->netif))->addr;
+            esp_ip4_addr_t valid_netmask = { .addr = netmask.addr & current_mask };
+
             /* The checked network segment does not conflict with the external netif */
             /* And the same ip net segment is not be used by other external netifs */
-            if ((!ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &netmask)) && !ip_segment_is_used) {
+            if ((!ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &valid_netmask)) && !ip_segment_is_used) {
                 p = p->next;
                 continue;
             }
