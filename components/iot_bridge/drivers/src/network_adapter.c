@@ -438,6 +438,20 @@ void task_runtime_stats_task(void* pvParameters)
 }
 #endif
 
+esp_err_t esp_bridge_network_card_reset(void)
+{
+    esp_dhcps_t esp_dhcps = {0};
+    esp_dhcps.set_link = NIC_LINK_DOWN;
+    pkt_dhcp_status_change(&esp_dhcps, sizeof(esp_dhcps_t));
+    ESP_LOGW(TAG, "Down Nic");
+
+    esp_dhcps.set_link = NIC_LINK_UP;
+    pkt_dhcp_status_change(&esp_dhcps, sizeof(esp_dhcps_t));
+    ESP_LOGW(TAG, "Up Nic");
+
+    return ESP_OK;
+}
+
 void network_adapter_driver_init(void)
 {
 	uint8_t capa = 0;

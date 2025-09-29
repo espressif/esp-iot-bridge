@@ -16,3 +16,5 @@ typedef struct {
 void network_adapter_driver_init(void);
 
 esp_err_t pkt_dhcp_status_change(void *buffer, uint16_t len);
+
+esp_err_t esp_bridge_network_card_reset(void);

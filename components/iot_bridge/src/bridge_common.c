@@ -38,6 +38,7 @@
 
 typedef struct bridge_netif {
     esp_netif_t *netif;
+    dns_change_cb_t dns_change_cb;
     dhcps_change_cb_t dhcps_change_cb;
     struct bridge_netif *next;
     bool conflict_check;
@@ -46,7 +47,7 @@ typedef struct bridge_netif {
 static const char *TAG = "bridge_common";
 static bridge_netif_t *bridge_link = NULL;
 
-esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dhcps_change_cb_t dhcps_change_cb, const char *commit_id)
+esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dns_change_cb_t dns_change_cb, dhcps_change_cb_t dhcps_change_cb, const char *commit_id)
 {
     bridge_netif_t *new = bridge_link;
     bridge_netif_t *tail = NULL;
@@ -70,6 +71,7 @@ esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dhcps_change_cb_t dhcps
 
     printf("Add netif %s with %s(commit id)\r\n", esp_netif_get_desc(netif), commit_id);
     new->netif = netif;
+    new->dns_change_cb = dns_change_cb;
     new->dhcps_change_cb = dhcps_change_cb;
     new->next = NULL;
 
@@ -333,6 +335,17 @@ static void esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_t *data_f
     }
     ESP_ERROR_CHECK(esp_netif_set_dns_info(data_forwarding_netif, ESP_NETIF_DNS_MAIN, dns_info));
     ESP_LOGI(TAG, "[%-12s]Name Server1: " IPSTR, esp_netif_get_ifkey(data_forwarding_netif), IP2STR(&dns_info->ip.u_addr.ip4));
+
+    bridge_netif_t *p = bridge_link;
+    while (p) {
+        if (p->netif == data_forwarding_netif) {
+            if (p->dns_change_cb) {
+                p->dns_change_cb(NULL);
+            }
+            break;
+        }
+        p = p->next;
+    }
 }
 
 static esp_netif_dns_info_t old_dns_info = {0};
