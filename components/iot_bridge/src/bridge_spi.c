@@ -27,6 +27,7 @@
 #include "esp_netif_net_stack.h"
 
 #include "esp_bridge.h"
+#include "esp_bridge_config.h"
 #include "esp_bridge_internal.h"
 #include "network_adapter.h"
 
@@ -284,8 +285,8 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
         .route_prio = 50,
 #endif
-        .get_ip_event = IP_EVENT_STA_GOT_IP,
-        .lost_ip_event = IP_EVENT_STA_LOST_IP,
+        .get_ip_event = IP_EVENT_SPI_GOT_IP,
+        .lost_ip_event = IP_EVENT_SPI_LOST_IP,
         .if_key = "SPI_DEF",
         .if_desc = "spi"
     };
@@ -314,8 +315,8 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
             esp_netif_dhcps_start(netif);
         } else {
             esp_netif_dhcpc_start(netif);
-            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &spi_got_ip_handler, NULL, NULL);
-            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_LOST_IP, &spi_lost_ip_handler, NULL, NULL);
+            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_SPI_GOT_IP, &spi_got_ip_handler, NULL, NULL);
+            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_SPI_LOST_IP, &spi_lost_ip_handler, NULL, NULL);
         }
     }
 

@@ -64,6 +64,13 @@ enum {
     BRIDGE_EXTERNAL_NETIF_MAX
 };
 
+typedef enum {
+    IP_EVENT_SPI_GOT_IP = 100,
+    IP_EVENT_SPI_LOST_IP,
+    IP_EVENT_SDIO_GOT_IP,
+    IP_EVENT_SDIO_LOST_IP,
+} iot_bridge_event_t;
+
 #ifdef __cplusplus
 }
 #endif
