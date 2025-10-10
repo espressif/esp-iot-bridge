@@ -1,0 +1,12 @@
+[dhcp.patch]
+    path = esp-idf/components/lwip/lwip
+
+[dhcpserver.patch]
+    path = esp-idf
+    idf_version < 5.4
+
+[ip4_napt.patch]
+    path = esp-idf/components/lwip/lwip
+
+[lwip_napt.patch]
+    path = esp-idf/components/lwip/lwip

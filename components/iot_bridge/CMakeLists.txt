@@ -56,22 +56,12 @@ if(NOT "${hook_file}" STREQUAL "")
     file(WRITE ${hook_file} "#include \"esp_bridge_lwip_hook.h\"\n")
 endif()
 
-# Apply ESP-IDF Patch
-execute_process(COMMAND
-                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/dhcp.patch
-                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip)
-execute_process(COMMAND
-                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/dhcpserver.patch
-                WORKING_DIRECTORY $ENV{IDF_PATH})
-execute_process(COMMAND
-                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_forward.patch
-                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
-execute_process(COMMAND
-                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/ip4_napt.patch
-                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
-execute_process(COMMAND
-                git apply ${CMAKE_CURRENT_LIST_DIR}/patch/lwip_napt.patch
-                WORKING_DIRECTORY $ENV{IDF_PATH}/components/lwip/lwip/)
+# Apply ESP-IDF Patch from patches.list
+# Include patch utilities for reusable functions
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/patch_utils.cmake)
+
+# Apply patches using the utility function
+apply_patches_from_list()
 
 execute_process(COMMAND
                 git rev-parse --short HEAD

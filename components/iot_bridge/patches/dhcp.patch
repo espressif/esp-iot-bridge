@@ -1,10 +1,10 @@
 diff --git a/src/core/ipv4/dhcp.c b/src/core/ipv4/dhcp.c
-index e05ce8f6..088b32c2 100644
+index e881c53a..0d9e47a2 100644
 --- a/src/core/ipv4/dhcp.c
 +++ b/src/core/ipv4/dhcp.c
-@@ -689,6 +689,16 @@ dhcp_t2_timeout(struct netif *netif)
-   }
- }
+@@ -270,6 +270,16 @@ static u16_t dhcp_option_hostname(u16_t options_out_len, u8_t *options, struct n
+ /* always add the DHCP options trailer to end and pad */
+ static void dhcp_option_trailer(u16_t options_out_len, u8_t *options, struct pbuf *p_out);
  
 +__attribute__((weak)) void dhcp_dns_before_updated_customer_cb(void)
 +{
@@ -16,9 +16,9 @@ index e05ce8f6..088b32c2 100644
 +    return;
 +}
 +
- /**
-  * Handle a DHCP ACK packet
-  *
+ /** Ensure DHCP PCB is allocated and bound */
+ static err_t
+ dhcp_inc_pcb_refcount(void)
 @@ -769,6 +779,7 @@ dhcp_handle_ack(struct netif *netif, struct dhcp_msg *msg_in)
  
  #if LWIP_DHCP_PROVIDE_DNS_SERVERS
@@ -27,9 +27,9 @@ index e05ce8f6..088b32c2 100644
    for (n = 0; (n < LWIP_DHCP_PROVIDE_DNS_SERVERS) && dhcp_option_given(dhcp, DHCP_OPTION_IDX_DNS_SERVER + n); n++) {
      ip_addr_t dns_addr;
  #if ESP_DNS
-@@ -779,6 +790,7 @@ dhcp_handle_ack(struct netif *netif, struct dhcp_msg *msg_in)
-     ip_addr_set_ip4_u32_val(dns_addr, lwip_htonl(dhcp_get_option_value(dhcp, DHCP_OPTION_IDX_DNS_SERVER + n)));
+@@ -783,6 +794,7 @@ dhcp_handle_ack(struct netif *netif, struct dhcp_msg *msg_in)
      dns_setserver(n, &dns_addr);
+ #endif
    }
 +  dhcp_dns_updated_customer_cb();
  #endif /* LWIP_DHCP_PROVIDE_DNS_SERVERS */
