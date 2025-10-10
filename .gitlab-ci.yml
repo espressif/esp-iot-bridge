@@ -295,7 +295,7 @@ esp32c5_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.5']
 
   variables:
     <<: *global-variables
