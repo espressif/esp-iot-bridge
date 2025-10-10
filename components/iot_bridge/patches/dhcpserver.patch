@@ -1,8 +1,8 @@
 diff --git a/components/lwip/apps/dhcpserver/dhcpserver.c b/components/lwip/apps/dhcpserver/dhcpserver.c
-index 7fab9627fd..c5e2ca999e 100644
+index bea9ebb1bc..f1bfb9a18d 100644
 --- a/components/lwip/apps/dhcpserver/dhcpserver.c
 +++ b/components/lwip/apps/dhcpserver/dhcpserver.c
-@@ -1267,6 +1267,7 @@ err_t dhcps_start(dhcps_t *dhcps, struct netif *netif, ip4_addr_t ip)
+@@ -1360,6 +1360,7 @@ err_t dhcps_start(dhcps_t *dhcps, struct netif *netif, ip4_addr_t ip)
  
      dhcps->client_address_plus.addr = dhcps->dhcps_poll.start_ip.addr;
  
