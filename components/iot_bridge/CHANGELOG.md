@@ -1,14 +1,21 @@
 # ChangeLog
 
-## v1.0.2 - 2025.10.10
+## v1.0.2 - 2025.10.22
 
 ### Feature
 
+- Refactored the implementation logic of esp_bridge_netif_network_segment_conflict_update API when the input parameter is NULL ([6d1389e](https://github.com/espressif/esp-iot-bridge/commit/6d1389e5b96401f390f98a5717e731c16ae95ccf))
 - Add support for ESP-IDF v5.5, and remove support for ESP-IDF v5.0 that is no longer maintained ([7071eb3](https://github.com/espressif/esp-iot-bridge/commit/7071eb3f0cd5775c8a1ad99d01ebc8f3bfbe77c2))
 - Support dynamic configuration of network interface conflict checks ([14cc028](https://github.com/espressif/esp-iot-bridge/commit/14cc028125aa1c0f0f5d3add101d9419a2239064))
 
+### Bugfix
+
+- fix: It fails to forward the data when the netmask of the external netif is not 255.255.255.0 ([8f8dca9](https://github.com/espressif/esp-iot-bridge/commit/8f8dca96bc5e7d7ce1dc413b874d64e93e657a6b))
+- fix: reset data forwarding netif after dns info update ([71adf58](https://github.com/espressif/esp-iot-bridge/commit/71adf58a79031dceb2d542260e8865346a3a94bf))
+
 ### Chore
 
+- Replace generic IP_EVENT_STA_GOT_IP/LOST_IP with interface-specific events in bridge_spi.c and bridge_sdio.c ([b2952ad](https://github.com/espressif/esp-iot-bridge/commit/b2952adae83f1de9aecfae0b5fb44769da2cadc1))
 - Optimize patch applying workflow ([7c69d9d](https://github.com/espressif/esp-iot-bridge/commit/7c69d9d4d6be1687fd00629f5c2bc181b8f8b92a))
 
 ### Examples
