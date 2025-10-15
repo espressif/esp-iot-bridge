@@ -35,6 +35,7 @@
 
 // DHCP_Server has to be enabled for this netif
 #define DHCPS_NETIF_ID(netif) (ESP_NETIF_DHCP_SERVER & esp_netif_get_flags(netif))
+#define DHCPC_NETIF_ID(netif) (ESP_NETIF_DHCP_CLIENT & esp_netif_get_flags(netif))
 
 typedef struct bridge_netif {
     esp_netif_t *netif;
@@ -220,62 +221,104 @@ esp_err_t esp_bridge_netif_request_mac(uint8_t *mac)
     return ESP_OK;
 }
 
-esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t* esp_netif)
+esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t *esp_netif)
 {
-    bridge_netif_t* p = bridge_link;
-    esp_netif_ip_info_t netif_ip;
-    esp_netif_ip_info_t allocate_ip_info;
-    esp_ip_addr_t esp_ip_addr_info;
-    esp_ip4_addr_t netmask = { .addr = 0 };
-    netmask.addr = netif_ip4_netmask((struct netif *)esp_netif_get_netif_impl(esp_netif))->addr;
-    bool ip_segment_is_used = false;
+    if (esp_netif && !DHCPC_NETIF_ID(esp_netif)) {
+        return ESP_ERR_INVALID_ARG;
+    }
 
-    memset(&allocate_ip_info, 0x0, sizeof(esp_netif_ip_info_t));
+    bridge_netif_t *dhcpc_netif = bridge_link;
 
-    while (p) {
-        esp_bridge_network_segment_custom_check_t* list = custom_check_list;
-        if ((esp_netif != p->netif) && DHCPS_NETIF_ID(p->netif) && p->conflict_check) { /* DHCP_Server has to be enabled for this netif */
-            if (esp_netif) {
-                esp_netif_get_ip_info(esp_netif, &allocate_ip_info);
-            }
-            esp_netif_get_ip_info(p->netif, &netif_ip);
+    while (dhcpc_netif) {
+        while(dhcpc_netif && !DHCPC_NETIF_ID(dhcpc_netif->netif)) {
+            dhcpc_netif = dhcpc_netif->next;
+        }
 
-            while (list) {
-                ip_segment_is_used = list->custom_check_cb(netif_ip.ip.addr);
-                list = list->next;
-            }
-
-            uint32_t current_mask = netif_ip4_netmask((struct netif *)esp_netif_get_netif_impl(p->netif))->addr;
-            esp_ip4_addr_t valid_netmask = { .addr = netmask.addr & current_mask };
-
-            /* The checked network segment does not conflict with the external netif */
-            /* And the same ip net segment is not be used by other external netifs */
-            if ((!ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &valid_netmask)) && !ip_segment_is_used) {
-                p = p->next;
-                continue;
-            }
-
-            ESP_LOGI(TAG, "[%-12s]", esp_netif_get_ifkey(p->netif));
-            if (esp_bridge_netif_request_ip(&allocate_ip_info) != ESP_OK) {
-                ESP_LOGE(TAG, "ip reallocate fail");
-                break;
-            }
-
-            ESP_ERROR_CHECK(esp_netif_dhcps_stop(p->netif));
-            esp_netif_set_ip_info(p->netif, &allocate_ip_info);
-            ESP_LOGI(TAG, "ip reallocate new:" IPSTR, IP2STR(&allocate_ip_info.ip));
-            ESP_ERROR_CHECK(esp_netif_dhcps_start(p->netif));
-
-            esp_ip_addr_info.type = ESP_IPADDR_TYPE_V4;
-            esp_ip_addr_info.u_addr.ip4.addr = allocate_ip_info.ip.addr;
-
-            if (p->dhcps_change_cb) {
-                p->dhcps_change_cb(&esp_ip_addr_info);
-            }
-
+        if (!esp_netif || (dhcpc_netif && dhcpc_netif->netif == esp_netif)) {
             break;
         }
-        p = p->next;
+        dhcpc_netif = dhcpc_netif->next;
+    }
+
+    while (dhcpc_netif) {
+        esp_netif_ip_info_t netif_ip;
+        esp_netif_ip_info_t allocate_ip_info;
+        esp_ip_addr_t esp_ip_addr_info;
+        esp_ip4_addr_t netmask = { .addr = 0 };
+
+        struct netif * lwip_netif = esp_netif_get_netif_impl(dhcpc_netif->netif);
+        if (lwip_netif) {
+            netmask.addr = netif_ip4_netmask(lwip_netif)->addr;
+        }
+
+        // Skip if we can't get valid netmask
+        if (netmask.addr == 0) {
+            ESP_LOGW(TAG, "Failed to get netmask for netif, skipping conflict check");
+            goto next_netif;
+        }
+
+        bool ip_segment_is_used = false;
+
+        memset(&allocate_ip_info, 0x0, sizeof(esp_netif_ip_info_t));
+
+        bridge_netif_t *p = bridge_link; // Reset p for each dhcpc_netif iteration
+
+        while (p) {
+            esp_bridge_network_segment_custom_check_t* list = custom_check_list;
+            if ((dhcpc_netif->netif != p->netif) && DHCPS_NETIF_ID(p->netif) && p->conflict_check) { /* DHCP_Server has to be enabled for this netif */
+                esp_netif_get_ip_info(dhcpc_netif->netif, &allocate_ip_info);
+                esp_netif_get_ip_info(p->netif, &netif_ip);
+
+                while (list) {
+                    ip_segment_is_used = list->custom_check_cb(netif_ip.ip.addr);
+                    list = list->next;
+                }
+
+                uint32_t current_mask = 0;
+                struct netif * lwip_netif = esp_netif_get_netif_impl(p->netif);
+                if (lwip_netif) {
+                    current_mask = netif_ip4_netmask(lwip_netif)->addr;
+                }
+                esp_ip4_addr_t valid_netmask = { .addr = netmask.addr & current_mask };
+
+                /* The checked network segment does not conflict with the external netif */
+                /* And the same ip net segment is not be used by other external netifs */
+                if ((!ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &valid_netmask)) && !ip_segment_is_used) {
+                    p = p->next;
+                    continue;
+                }
+
+                ESP_LOGI(TAG, "[%-12s]", esp_netif_get_ifkey(p->netif));
+                if (esp_bridge_netif_request_ip(&allocate_ip_info) != ESP_OK) {
+                    ESP_LOGE(TAG, "ip reallocate fail");
+                    break;
+                }
+
+                ESP_ERROR_CHECK(esp_netif_dhcps_stop(p->netif));
+                esp_netif_set_ip_info(p->netif, &allocate_ip_info);
+                ESP_LOGI(TAG, "ip reallocate new:" IPSTR, IP2STR(&allocate_ip_info.ip));
+                ESP_ERROR_CHECK(esp_netif_dhcps_start(p->netif));
+
+                esp_ip_addr_info.type = ESP_IPADDR_TYPE_V4;
+                esp_ip_addr_info.u_addr.ip4.addr = allocate_ip_info.ip.addr;
+
+                if (p->dhcps_change_cb) {
+                    p->dhcps_change_cb(&esp_ip_addr_info);
+                }
+
+                break;
+            }
+            p = p->next;
+        }
+
+next_netif:
+        if (esp_netif) {
+            break;
+        }
+
+        do {
+            dhcpc_netif = dhcpc_netif->next;
+        } while(dhcpc_netif && !DHCPC_NETIF_ID(dhcpc_netif->netif));
     }
     return ESP_OK;
 }
