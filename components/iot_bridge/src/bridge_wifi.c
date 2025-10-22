@@ -146,7 +146,7 @@ static void ip_event_sta_got_ip_handler(void *arg, esp_event_base_t event_base,
     int32_t event_id, void *event_data)
 {
     ip_event_got_ip_t *event = (ip_event_got_ip_t*)event_data;
-    ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
+    ESP_LOGI(TAG, "Station connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
 
     esp_bridge_update_dns_info(event->esp_netif, NULL);
 
@@ -177,7 +177,7 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
 
     esp_bridge_wifi_init();
     wifi_netif = esp_netif_create_default_wifi_sta();
-    esp_bridge_netif_list_add(wifi_netif, NULL);
+    esp_bridge_netif_list_add(wifi_netif, NULL, NULL);
 
     esp_wifi_get_mode(&mode);
     if (mode != WIFI_MODE_STA && mode != WIFI_MODE_APSTA) {
@@ -296,7 +296,7 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_
         ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
     }
 
-    esp_bridge_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb);
+    esp_bridge_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb, softap_netif_dhcp_status_change_cb);
 
     if (ip_info) {
         esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true, true);

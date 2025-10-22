@@ -27,6 +27,7 @@
 #include "esp_netif_net_stack.h"
 
 #include "esp_bridge.h"
+#include "esp_bridge_config.h"
 #include "esp_bridge_internal.h"
 #include "network_adapter.h"
 
@@ -41,16 +42,7 @@ esp_netif_t* network_adapter_netif;
 
 static esp_err_t spi_netif_dhcp_status_change_cb(esp_ip_addr_t *ip_info)
 {
-    esp_dhcps_t esp_dhcps = {0};
-    esp_dhcps.set_link = NIC_LINK_DOWN;
-    pkt_dhcp_status_change(&esp_dhcps, sizeof(esp_dhcps_t));
-    ESP_LOGW(TAG, "Down SPI Nic");
-
-    esp_dhcps.set_link = NIC_LINK_UP;
-    pkt_dhcp_status_change(&esp_dhcps, sizeof(esp_dhcps_t));
-    ESP_LOGW(TAG, "Up SPI Nic");
-
-    return ESP_OK;
+    return esp_bridge_network_card_reset();
 }
 
 static void esp_bridge_network_adapter_init(void)
@@ -273,7 +265,7 @@ static void spi_got_ip_handler(void *arg, esp_event_base_t event_base,
 {
     ip_event_got_ip_t *event = (ip_event_got_ip_t*)event_data;
     esp_bridge_update_dns_info(event->esp_netif, NULL);
-    ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
+    ESP_LOGI(TAG, "SPI connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
 }
 
 static void spi_lost_ip_handler(void *arg, esp_event_base_t event_base,
@@ -293,8 +285,8 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         .flags = (esp_netif_flags_t)(ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
         .route_prio = 50,
 #endif
-        .get_ip_event = IP_EVENT_STA_GOT_IP,
-        .lost_ip_event = IP_EVENT_STA_LOST_IP,
+        .get_ip_event = IP_EVENT_SPI_GOT_IP,
+        .lost_ip_event = IP_EVENT_SPI_LOST_IP,
         .if_key = "SPI_DEF",
         .if_desc = "spi"
     };
@@ -311,20 +303,20 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         esp_netif_up(netif);
 
         if (data_forwarding) {
-            esp_bridge_netif_list_add(netif, spi_netif_dhcp_status_change_cb);
+            esp_bridge_netif_list_add(netif, spi_netif_dhcp_status_change_cb, spi_netif_dhcp_status_change_cb);
             esp_netif_get_ip_info(netif, &netif_ip_info);
             ESP_LOGI(TAG, "SPI IP Address:" IPSTR, IP2STR(&netif_ip_info.ip));
             ip_napt_enable(netif_ip_info.ip.addr, 1);
         } else {
-            esp_bridge_netif_list_add(netif, NULL);
+            esp_bridge_netif_list_add(netif, NULL, NULL);
         }
 
         if (enable_dhcps) {
             esp_netif_dhcps_start(netif);
         } else {
             esp_netif_dhcpc_start(netif);
-            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &spi_got_ip_handler, NULL, NULL);
-            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_LOST_IP, &spi_lost_ip_handler, NULL, NULL);
+            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_SPI_GOT_IP, &spi_got_ip_handler, NULL, NULL);
+            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_SPI_LOST_IP, &spi_lost_ip_handler, NULL, NULL);
         }
     }
 

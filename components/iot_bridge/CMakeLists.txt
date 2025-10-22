@@ -2,6 +2,10 @@ set(srcs "src/bridge_common.c" "src/bridge_lwip_hook.c")
 set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "nvs_flash" "esp_modem")
 set(include_dirs "include")
 
+if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}.${IDF_VERSION_PATCH}" VERSION_GREATER_EQUAL "5.4.0")
+    list(APPEND requires "esp_driver_gpio" "esp_driver_sdio")
+endif()
+
 if (CONFIG_BRIDGE_EXTERNAL_NETIF_STATION OR CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
     list(APPEND srcs "src/bridge_wifi.c")
 endif()

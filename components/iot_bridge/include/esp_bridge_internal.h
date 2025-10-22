@@ -24,6 +24,7 @@ extern "C"
 /* Definitions for error constants. */
 #define ESP_ERR_DUPLICATE_ADDITION    0x110   /*!< Netif was added repeatedly */
 
+typedef esp_err_t(*dns_change_cb_t)(esp_ip_addr_t *ip_info);
 typedef esp_err_t(*dhcps_change_cb_t)(esp_ip_addr_t *ip_info);
 
 #ifndef IOT_BRIDGE_NAPT_TABLE_CLEAR
@@ -63,16 +64,17 @@ esp_netif_t *esp_bridge_create_netif(esp_netif_config_t *config, esp_netif_ip_in
  * @brief  Add netif instance to the list.
  *
  * @param[in]  netif netif instance
+ * @param[in]  dns_change_cb dns change callback
  * @param[in]  dhcps_change_cb reset Nic when netif IP was changed
  *
  * @return
  *     - ESP_OK: Add netif instance successfully
  *     - others: other failure occurred include netif duplicate addition or Out of memory
  */
-#define esp_bridge_netif_list_add(netif, dhcps_change_cb) \
-    _esp_bridge_netif_list_add(netif, dhcps_change_cb, COMMIT_ID)
+#define esp_bridge_netif_list_add(netif, dns_change_cb, dhcps_change_cb) \
+    _esp_bridge_netif_list_add(netif, dns_change_cb, dhcps_change_cb, COMMIT_ID)
 
-esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dhcps_change_cb_t dhcps_change_cb, const char *commit_id);
+esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dns_change_cb_t dns_change_cb, dhcps_change_cb_t dhcps_change_cb, const char *commit_id);
 
 /**
  * @brief  Remove netif instance to the list.
