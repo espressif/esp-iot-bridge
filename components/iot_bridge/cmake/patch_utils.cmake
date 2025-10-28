@@ -70,7 +70,10 @@ function(apply_patches_from_list)
                 if("$ENV{IDF_PATH}" STREQUAL "")
                     message(FATAL_ERROR "IDF_PATH environment variable is not set")
                 endif()
-                string(REGEX REPLACE "^esp-idf" "$ENV{IDF_PATH}" current_path "${current_path}")
+                # Normalize IDF_PATH to forward slashes to avoid backslash escape sequences in replacement
+                set(_idf_path_raw "$ENV{IDF_PATH}")
+                file(TO_CMAKE_PATH "${_idf_path_raw}" _idf_path_norm)
+                string(REGEX REPLACE "^esp-idf" "${_idf_path_norm}" current_path "${current_path}")
             endif()
 
         # Check if this is a version condition (support multiple operators: <, <=, >, >=, =, ==)
