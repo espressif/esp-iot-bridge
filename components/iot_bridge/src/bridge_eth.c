@@ -303,7 +303,7 @@ esp_bridge_spi_eth_module_t esp_bridge_spi_eth_module[] = {
 #endif
 };
 
-esp_err_t esp_bridge_eth_spi_init(esp_netif_t* eth_netif_spi)
+esp_err_t esp_bridge_eth_spi_init(esp_netif_t* eth_netif_spi, uint8_t mac[6])
 {
     esp_err_t ret = ESP_FAIL;
     static bool eth_is_start = false;
@@ -341,9 +341,17 @@ esp_err_t esp_bridge_eth_spi_init(esp_netif_t* eth_netif_spi)
         /* The SPI Ethernet module might not have a burned factory MAC address, we can set it manually.
         02:00:00 is a Locally Administered OUI range so should not be used except when testing on a LAN under your control.
         */
-        ESP_ERROR_CHECK(esp_eth_ioctl(eth_handle_spi, ETH_CMD_S_MAC_ADDR, (uint8_t[]) {
-            0x02, 0x00, 0x00, 0x12, 0x34, 0x56
-        }));
+        if (mac != NULL) {
+            ESP_LOGI(TAG, "Set SPI Ethernet MAC address: %02x:%02x:%02x:%02x:%02x:%02x",
+                     mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            ESP_ERROR_CHECK(esp_eth_ioctl(eth_handle_spi, ETH_CMD_S_MAC_ADDR, mac));
+        } else {
+            // Use default MAC address if not provided
+            ESP_LOGI(TAG, "Set SPI Ethernet default MAC address: 02:00:00:12:34:56");
+            ESP_ERROR_CHECK(esp_eth_ioctl(eth_handle_spi, ETH_CMD_S_MAC_ADDR, (uint8_t[]) {
+                0x02, 0x00, 0x00, 0x12, 0x34, 0x56
+            }));
+        }
 
         // attach Ethernet driver to TCP/IP stack
 #if defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
@@ -441,7 +449,7 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 #if CONFIG_BRIDGE_USE_INTERNAL_ETHERNET
         esp_bridge_eth_init(netif);
 #elif CONFIG_BRIDGE_USE_SPI_ETHERNET
-        esp_bridge_eth_spi_init(netif);
+        esp_bridge_eth_spi_init(netif, mac);
 #endif
         esp_netif_up(netif);
 
