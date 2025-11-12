@@ -8,7 +8,7 @@ menu "Bridge Configuration"
 
     config BRIDGE_WIFI_PMF_DISABLE
         bool "Wi-Fi PMF Disable"
-        default y
+        default n
 
     config BRIDGE_ETHERNET_NETIF_ENABLE
         bool "Enable Ethernet interface"
