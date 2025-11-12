@@ -17,6 +17,7 @@
 #include "driver/spi_slave.h"
 #include "driver/gpio.h"
 #include "endian.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "mempool.h"
 

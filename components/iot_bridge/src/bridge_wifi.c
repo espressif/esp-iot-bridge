@@ -100,7 +100,7 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
             ESP_LOGI(TAG, "[%s] sta ssid: %.32s password: %.64s", __func__, ssid, password);
         }
 
-        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_cfg));
+        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_cfg));
 #if defined(CONFIG_BRIDGE_WIFI_PMF_DISABLE)
         esp_wifi_disable_pmf_config(WIFI_IF_STA);
 #endif
@@ -120,7 +120,7 @@ esp_err_t esp_bridge_wifi_set(wifi_mode_t mode,
         strlcpy((char*)wifi_cfg.ap.password, password, sizeof(wifi_cfg.ap.password));
         wifi_cfg.ap.max_connection = BRIDGE_SOFTAP_MAX_CONNECT_NUMBER;
         wifi_cfg.ap.authmode = strlen((char*)wifi_cfg.ap.password) < 8 ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK;
-        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_cfg));
+        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_cfg));
 #if defined(CONFIG_BRIDGE_WIFI_PMF_DISABLE)
         esp_wifi_disable_pmf_config(WIFI_IF_AP);
 #endif

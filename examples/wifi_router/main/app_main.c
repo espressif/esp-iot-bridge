@@ -22,17 +22,15 @@
 #include "web_server.h"
 #endif
 #include "iot_button.h"
+#include "button_gpio.h"
 #if defined(CONFIG_APP_BRIDGE_USE_WIFI_PROVISIONING_OVER_BLE)
 #include "wifi_prov_mgr.h"
 #endif
 
-#define BUTTON_NUM            1
-#define BUTTON_SW1            CONFIG_APP_GPIO_BUTTON_SW1
 #define BUTTON_PRESS_TIME     5000000
 #define BUTTON_REPEAT_TIME    5
 
 static const char *TAG = "main";
-static button_handle_t g_btns[BUTTON_NUM] = { 0 };
 static bool button_long_press = false;
 static esp_timer_handle_t restart_timer;
 
@@ -88,17 +86,22 @@ static void esp_bridge_create_button(void)
     };
     ESP_ERROR_CHECK(esp_timer_create(&restart_timer_args, &restart_timer));
 
-    button_config_t cfg = {
-        .type = BUTTON_TYPE_GPIO,
-        .gpio_button_config = {
-            .gpio_num = BUTTON_SW1,
-            .active_level = 0,
-        },
+    button_config_t btn_cfg = {0};
+    button_gpio_config_t gpio_cfg = {
+        .gpio_num = CONFIG_APP_GPIO_BUTTON_SW1,
+        .active_level = 0,
     };
-    g_btns[0] = iot_button_create(&cfg);
-    iot_button_register_cb(g_btns[0], BUTTON_PRESS_UP, button_press_up_cb, 0);
-    iot_button_register_cb(g_btns[0], BUTTON_PRESS_REPEAT, button_press_repeat_cb, 0);
-    iot_button_register_cb(g_btns[0], BUTTON_LONG_PRESS_START, button_long_press_start_cb, 0);
+
+    button_handle_t btn = NULL;
+    esp_err_t err = iot_button_new_gpio_device(&btn_cfg, &gpio_cfg, &btn);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to create GPIO button: %s", esp_err_to_name(err));
+        return;
+    }
+
+    iot_button_register_cb(btn, BUTTON_PRESS_UP, NULL, button_press_up_cb, NULL);
+    iot_button_register_cb(btn, BUTTON_PRESS_REPEAT, NULL, button_press_repeat_cb, NULL);
+    iot_button_register_cb(btn, BUTTON_LONG_PRESS_START, NULL, button_long_press_start_cb, NULL);
 }
 
 void app_main(void)

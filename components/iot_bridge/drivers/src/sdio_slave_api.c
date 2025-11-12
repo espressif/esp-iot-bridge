@@ -13,7 +13,12 @@
 #include "wifi_dongle_adapter.h"
 #include "sdio_slave_api.h"
 #include "driver/sdio_slave.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "hal/sdio_slave_periph.h"
+#else
 #include "soc/sdio_slave_periph.h"
+#endif
 #include "endian.h"
 #include "mempool.h"
 
@@ -192,9 +197,7 @@ static interface_handle_t * sdio_init(void)
 #endif
 	};
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 	config.flags |= SDIO_SLAVE_FLAG_DEFAULT_SPEED;
-#endif
 
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
 	ESP_LOGI(TAG, "%s: ESP32-C6 SDIO timing: %u\n", __func__, config.timing);

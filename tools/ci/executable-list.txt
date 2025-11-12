@@ -1,2 +1,4 @@
+components/iot_bridge/docs/_static/generate_bridge_diagram.py
+components/iot_bridge/docs/_static/generate_gpio_map_diagram.py
 tools/ci/check_executables.py
 tools/ci/idf_ci_utils.py
