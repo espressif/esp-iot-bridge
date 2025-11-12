@@ -1,5 +1,17 @@
 # ChangeLog
 
+## v1.0.3-dev - 2025.11.12
+
+### Feature
+
+- feat: set BRIDGE_WIFI_PMF_DISABLE default to n ([5803a16](https://github.com/espressif/esp-iot-bridge/commit/5803a16f3e21b21507f45cdd0037c5c1664eacc6))
+- feat(bridge_eth): support configurable MAC address for SPI Ethernet ([bd9aa48](https://github.com/espressif/esp-iot-bridge/commit/bd9aa480f64c8504323d00a7510392e1d8b6d4f2))
+
+### Bugfix
+
+- fix: re-disable PMF after esp_wifi_set_config if BRIDGE_WIFI_PMF_DISABLE is set ([687e476](https://github.com/espressif/esp-iot-bridge/commit/687e4765a383a16041cb5aa5248f0d1c62130693))
+- fix: windows compilation issues in patch_utils.cmake ([e2df506](https://github.com/espressif/esp-iot-bridge/commit/e2df50687453396b3e647afbdf8b5cc1c0217044))
+
 ## v1.0.2 - 2025.10.22
 
 ### Feature
