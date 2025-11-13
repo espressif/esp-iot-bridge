@@ -171,6 +171,9 @@ esp_err_t __attribute__((weak)) esp_web_wifi_connect(wifi_sta_config_t *conf)
     esp_wifi_set_storage(WIFI_STORAGE_FLASH);
     esp_err_t ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t *)conf);
     esp_wifi_set_storage(WIFI_STORAGE_RAM);
+#if defined(CONFIG_BRIDGE_WIFI_PMF_DISABLE)
+    esp_wifi_disable_pmf_config(WIFI_IF_STA);
+#endif
     esp_wifi_disconnect();
     esp_wifi_connect();
 
