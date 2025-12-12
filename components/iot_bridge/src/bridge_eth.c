@@ -16,8 +16,8 @@
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 
-#if CONFIG_BRIDGE_USE_SPI_ETHERNET
 #include "driver/gpio.h"
+#if CONFIG_BRIDGE_USE_SPI_ETHERNET
 #include "driver/spi_master.h"
 #endif
 
