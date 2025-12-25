@@ -1,5 +1,5 @@
 diff --git a/src/core/ipv4/ip4_napt.c b/src/core/ipv4/ip4_napt.c
-index c02b599e..c1d518d5 100644
+index afc2695d..5472c5dc 100644
 --- a/src/core/ipv4/ip4_napt.c
 +++ b/src/core/ipv4/ip4_napt.c
 @@ -41,6 +41,10 @@
@@ -13,19 +13,30 @@ index c02b599e..c1d518d5 100644
  #include <assert.h>
  #include <stdbool.h>
  #include <string.h>
-@@ -613,6 +617,11 @@ ip_napt_add(u8_t proto, u32_t src, u16_t sport, u32_t dest, u16_t dport, u32_t s
+@@ -624,6 +628,11 @@ ip_napt_add(u8_t proto, u32_t src, u16_t sport, u32_t dest, u16_t dport, u32_t s
      return mport;
    }
    LWIP_DEBUGF(NAPT_DEBUG, ("ip_napt_add() failed to insert\n"));
 +
 +#ifdef IP_NAPT_ADD_FAILED_HOOK
-+    IP_NAPT_ADD_FAILED_HOOK();
++  IP_NAPT_ADD_FAILED_HOOK();
 +#endif
 +
    return 0;
  }
  
-@@ -1075,4 +1084,45 @@ ip_napt_get_stats(struct stats_ip_napt *stats)
+@@ -1069,6 +1078,10 @@ ip_napt_maint(void)
+   }
+   ip_napt_gc(now, false /* make_room */);
+   s_last_now = now;
++
++#ifdef IOT_BRIDGE_NAPT_TABLE_CLEAR
++  IOT_BRIDGE_NAPT_TABLE_CLEAR();
++#endif
+ }
+ 
+ static void
+@@ -1086,4 +1099,33 @@ ip_napt_get_stats(struct stats_ip_napt *stats)
  }
  #endif /* LWIP_STATS */
  
@@ -48,26 +59,14 @@ index c02b599e..c1d518d5 100644
 +        }
 +    }
 +
-+    uint32_t count = 0;
-+    for (i = napt_list; i != NO_IDX; i = next) {
-+        t = NT(i);
-+        next = t->next;
-+        count++;
-+    }
-+    LWIP_DEBUGF(NAPT_DEBUG, ("before napt count=%"PRIu32"\r\n", count));
-+
++    uint32_t deleted_count = 0;
 +    for (i = napt_list; i != NO_IDX; i = next) {
 +        t = NT(i);
 +        next = t->next;
 +        ip_napt_free(t);
++        deleted_count++;
 +    }
-+
-+    for (i = napt_list; i != NO_IDX; i = next) {
-+        t = NT(i);
-+        next = t->next;
-+        count++;
-+    }
-+    LWIP_DEBUGF(NAPT_DEBUG, ("after napt count=%"PRIu32"\r\n", count));
++    LWIP_DEBUGF(NAPT_DEBUG, ("deleted napt count=%"PRIu32"\r\n", deleted_count));
 +}
 +
  #endif /* ESP_LWIP && LWIP_IPV4 && IP_NAPT */

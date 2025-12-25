@@ -511,7 +511,7 @@ esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t
     size_t required_size = sizeof(esp_netif_ip_info_t);
     err = nvs_get_blob(nvs_handle, name, ip_info, &required_size);
     if (err != ESP_OK) {
-        ESP_LOGE("NVS", "Failed to read IP info from NVS");
+        ESP_LOGD("NVS", "Failed to read IP info from NVS");
         nvs_close(nvs_handle);
         return err;
     }
@@ -521,7 +521,7 @@ esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t
     asprintf(&conflict_check_name, "%.8s_check", name);
     err = nvs_get_u8(nvs_handle, conflict_check_name, &value);
     if (err != ESP_OK) {
-        ESP_LOGE("NVS", "Failed to read conflict_check from NVS");
+        ESP_LOGD("NVS", "Failed to read conflict_check from NVS");
         *conflict_check = true;
     }
     *conflict_check = value;
