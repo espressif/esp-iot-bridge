@@ -3,6 +3,17 @@ stages:
   - build
   - deploy
 
+# Define when to create pipelines
+workflow:
+  rules:
+    # Run pipeline for merge requests
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    # Prevent duplicate pipelines: skip branch pipeline if there's an open MR
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    # Run pipeline for pushes to branches without MR
+    - if: '$CI_COMMIT_BRANCH'
+
 # global variables
 variables: &global-variables
   GIT_STRATEGY: clone
@@ -149,11 +160,29 @@ variables: &global-variables
 check_pre_commit:
   extends:
     - .pre_check_template
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
     - pip install pre-commit
   script:
     - pre-commit install --allow-missing-config -t pre-commit -t commit-msg
-    - pre-commit run -a
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME --depth=1
+    - git fetch origin $CI_COMMIT_REF_NAME --depth=1
+
+    - |
+      echo "Target branch: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+      echo "Source branch: $CI_COMMIT_REF_NAME"
+
+      MODIFIED_FILES=$(git diff --name-only origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME..origin/$CI_COMMIT_REF_NAME)
+
+      echo "Modified files to check:"
+      echo "$MODIFIED_FILES"
+
+      if [ -n "$MODIFIED_FILES" ]; then
+          CI=true pre-commit run --files $MODIFIED_FILES
+      else
+          echo "No modified files to check."
+      fi
 
 esp32_build:
   stage: build
@@ -336,8 +365,8 @@ esp32c61_build:
 
 push_master_to_github:
   stage: deploy
-  only:
-    - master
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "merge_request_event"'
 #  when: on_success
   image: $CI_DOCKER_REGISTRY/esp32-ci-env
   variables:

@@ -28,7 +28,7 @@ esp_err_t tusb_run_task(void);
 /**
  * @brief This helper function stops and destroys the task created by `tusb_run_task()`
  *
- * @retval ESP_OK stop and destory tinyusb main task successfully
+ * @retval ESP_OK stop and destroy tinyusb main task successfully
  * @retval ESP_ERR_INVALID_STATE tinyusb main task hasn't been created yet
  */
 esp_err_t tusb_stop_task(void);
