@@ -50,12 +50,14 @@ variables: &global-variables
 
 .build_iot_bridge_esp32: &build_iot_bridge_esp32
   - cd examples/wireless_nic
+  - echo -e "\nCONFIG_ESP_WIFI_IRAM_OPT=n" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO=y" >> sdkconfig.defaults.${idf_target}
   - idf.py ${compile_option} set-target ${idf_target}
   - idf.py build
 
   - git checkout -- .
   - git clean -xdff
+  - echo -e "\nCONFIG_ESP_WIFI_IRAM_OPT=n" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_SDIO=y" >> sdkconfig.defaults.${idf_target}
   - echo -e "\nCONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET=y" >> sdkconfig.defaults.${idf_target}
   - idf.py ${compile_option} set-target ${idf_target}

@@ -268,12 +268,6 @@ static void spi_got_ip_handler(void *arg, esp_event_base_t event_base,
     ESP_LOGI(TAG, "SPI connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
 }
 
-static void spi_lost_ip_handler(void *arg, esp_event_base_t event_base,
-                                int32_t event_id, void *event_data)
-{
-    IOT_BRIDGE_NAPT_TABLE_CLEAR();
-}
-
 esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     esp_netif_ip_info_t netif_ip_info = { 0 };
@@ -316,7 +310,6 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         } else {
             esp_netif_dhcpc_start(netif);
             esp_event_handler_instance_register(IP_EVENT, IP_EVENT_SPI_GOT_IP, &spi_got_ip_handler, NULL, NULL);
-            esp_event_handler_instance_register(IP_EVENT, IP_EVENT_SPI_LOST_IP, &spi_lost_ip_handler, NULL, NULL);
         }
     }
 

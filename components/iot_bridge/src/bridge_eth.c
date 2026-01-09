@@ -69,7 +69,6 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
 
         case ETHERNET_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "Ethernet Link Down");
-            IOT_BRIDGE_NAPT_TABLE_CLEAR();
             break;
 
         case ETHERNET_EVENT_START:
