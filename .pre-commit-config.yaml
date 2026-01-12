@@ -73,3 +73,9 @@ repos:
         # If you are modifying astyle version, update tools/format.sh as well
         args: ['--astyle-version=3.4.7', '--rules=tools/ci/astyle-rules.yml']
         exclude: 'components/iot_bridge/drivers/.*|examples/spi_and_sdio_host/.*'
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        args: [--config=.codespellrc]

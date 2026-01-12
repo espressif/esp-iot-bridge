@@ -308,7 +308,7 @@ esp_err_t esp_bridge_eth_spi_init(esp_netif_t* eth_netif_spi, uint8_t mac[6])
     static bool eth_is_start = false;
     static esp_eth_handle_t eth_handle_spi = NULL;
     if (!eth_is_start) {
-        // Install GPIO ISR handler to be able to service SPI Eth modlues interrupts
+        // Install GPIO ISR handler to be able to service SPI Eth modules interrupts
         gpio_install_isr_service(0);
 
         // Init SPI bus

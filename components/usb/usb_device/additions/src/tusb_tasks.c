@@ -28,7 +28,7 @@ static void tusb_device_task(void *arg)
 
 esp_err_t tusb_run_task(void)
 {
-    // This function is not garanteed to be thread safe, if invoked multiple times without calling `tusb_stop_task`, will cause memory leak
+    // This function is not guaranteed to be thread safe, if invoked multiple times without calling `tusb_stop_task`, will cause memory leak
     // doing a sanity check anyway
     ESP_RETURN_ON_FALSE(!s_tusb_tskh, ESP_ERR_INVALID_STATE, TAG, "TinyUSB main task already started");
     // Create a task for tinyusb device stack:

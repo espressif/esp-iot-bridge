@@ -21,7 +21,7 @@ if(CONFIG_TINYUSB)
         set(tusb_mcu "OPT_MCU_ESP32S2")
         set(tusb_family "esp32sx")
     else()
-        # CONFIG_TINYUSB dependency has been garanteed by Kconfig logic,
+        # CONFIG_TINYUSB dependency has been guaranteed by Kconfig logic,
         # So it's not possible that cmake goes here
         message(FATAL_ERROR "TinyUSB is not support on ${target}.")
         return()

@@ -36,7 +36,7 @@
 #endif
 
 #include "esp_http_server.h"
-// AT web can use fatfs to storge html or use embeded file to storge html.
+// AT web can use fatfs to storage html or use embedded file to storage html.
 // If use fatfs,we should enable AT FS Command support.
 #ifdef CONFIG_WEB_USE_FATFS
 #include "esp_vfs_fat.h"
@@ -142,7 +142,7 @@ static const char *s_ota_receive_fail_response = "ota_receive_fail\r\n";
 static SLIST_HEAD(router_fail_list_head_, router_obj) s_router_fail_list = SLIST_HEAD_INITIALIZER(s_router_fail_list);
 static const char *TAG = "Web Server";
 
-// web can use fatfs to storge html or use embeded file to storge html.
+// web can use fatfs to storage html or use embedded file to storage html.
 #ifdef CONFIG_WEB_USE_FATFS
 static wl_handle_t s_wl_handle = WL_INVALID_HANDLE; // Handle of the wear levelling library instance
 static BYTE pdrv = 0xFF;
@@ -497,7 +497,7 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
             memcpy(item->mac, ap_info[loop].bssid, sizeof(item->mac));
             // copy ssid
             memcpy(item->ssid, ap_info[loop].ssid, sizeof(item->ssid));
-            // cpoy rssi
+            // copy rssi
             item->rssi = ap_info[loop].rssi;
 
             if (last == NULL) {
@@ -516,7 +516,7 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
 
         // If have mobile phone mac, first consider connect the router which has similar mac
         if (phone_mac != NULL) {
-            ESP_LOGI(TAG, "Try to macth MAC");
+            ESP_LOGI(TAG, "Try to match MAC");
 
             for (item = SLIST_FIRST(&s_router_all_list); (item != NULL) && (try_connect_count < max_try_connect_num); item = SLIST_NEXT(item, next)) {
                 // some phone(like XIAOMI10), the difference between SOFTAP and STA is two bytes
@@ -539,7 +539,7 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
             }
 
             if (item == NULL) {
-                ESP_LOGI(TAG, "No macth MAC");
+                ESP_LOGI(TAG, "No match MAC");
             }
         }
 
@@ -565,7 +565,7 @@ static esp_err_t esp_web_start_scan_filter(uint8_t *phone_mac, uint8_t *password
                             s_connect_success_flag = 1;
                         }
 
-                        break; // find ssid, skip seach
+                        break; // find ssid, skip search
                     }
                 }
             }
@@ -768,7 +768,7 @@ static int esp_web_find_arg(char *line, char *arg, char *buff, int buffLen)
     return -1; // not found
 }
 
-// AT web can use fatfs to storge html or use embeded file to storge html.
+// AT web can use fatfs to storage html or use embedded file to storage html.
 // If use fatfs,we should enable AT FS Command support.
 #ifdef CONFIG_WEB_USE_FATFS
 /* Send HTTP response with the contents of the requested file */
@@ -953,7 +953,7 @@ static void listen_sta_connect_status_timer_cb(TimerHandle_t timer)
     esp_netif_t *sta_if = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
 
     if (connect_count < connect_max_count) {
-        sta_got_ip = esp_web_get_sta_got_ip_flag(); // to check whether sta has connnected to appointed ap(like at_wifi_station_get_connect_status())
+        sta_got_ip = esp_web_get_sta_got_ip_flag(); // to check whether sta has connected to appointed ap(like at_wifi_station_get_connect_status())
 
         if (sta_got_ip != true) {
             connect_count++;
@@ -1049,7 +1049,7 @@ static void listen_sta_connect_success_timer_cb(TimerHandle_t timer)
     wifi_sta_connection_info_t *current_connection_info = esp_web_get_sta_connection_info();
 
     if (current_connection_info->config_status == BRIDGE_WIFI_STA_CONNECTING) {
-        sta_got_ip = esp_web_get_sta_got_ip_flag(); // to check whether sta has connnected to appointed ap(like at_wifi_station_get_connect_status())
+        sta_got_ip = esp_web_get_sta_got_ip_flag(); // to check whether sta has connected to appointed ap(like at_wifi_station_get_connect_status())
 
         if (sta_got_ip != true) {
             return;
@@ -1065,7 +1065,7 @@ static void listen_sta_connect_success_timer_cb(TimerHandle_t timer)
 /**
  * @brief Apply WiFi connect info to try connect
  *
- * @param[in] udp_port: indicates the device in use, -1: brower, others: WeChat;
+ * @param[in] udp_port: indicates the device in use, -1: browser, others: WeChat;
  *  when Wechat is in use and ssid is null, we use udp send wifi connect result.
  *
  * @return
@@ -1493,7 +1493,7 @@ static esp_err_t ap_record_get_handler(httpd_req_t *req)
     json_len += sprintf(temp_json_str + json_len, "{\"state\":0,\"message\":\"scan done\",\"aplist\":["); // to get a json array format str
 
     for (loop = 0; loop < ap_number; loop++) {
-        if (strlen((const char *)ap_info[loop].ssid) != 0) { // ingore hidden ssid
+        if (strlen((const char *)ap_info[loop].ssid) != 0) { // ignore hidden ssid
             json_len += sprintf(temp_json_str + json_len, "{\"ssid\":\"%s\",\"auth_mode\":%d},", (char *)ap_info[loop].ssid, ap_info[loop].authmode);
             valid_ap_count++;
         }
@@ -1826,7 +1826,7 @@ static esp_err_t esp_web_start(uint16_t server_port)
     esp_err_t err;
 
     if (s_server == NULL) {
-        /*AT web can use fatfs to storge html or use embeded file to storge html.If use fatfs, we should enable AT FS Command support*/
+        /*AT web can use fatfs to storage html or use embedded file to storage html.If use fatfs, we should enable AT FS Command support*/
 #ifdef CONFIG_WEB_USE_FATFS
         err = esp_web_fatfs_spiflash_init();
         if (err != ESP_OK) {
