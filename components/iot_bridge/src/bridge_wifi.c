@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2021-2026 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -205,12 +205,17 @@ esp_netif_t* esp_bridge_create_station_netif(esp_netif_ip_info_t* ip_info, uint8
     }
 
     if (ip_info) {
-        esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true, true);
+        if (esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true, true) != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to set IP info");
+        }
     } else {
         esp_netif_ip_info_t ip_info_from_nvs;
         bool conflict_check = true;
         if (esp_bridge_load_ip_info_from_nvs(esp_netif_get_ifkey(wifi_netif), &ip_info_from_nvs, &conflict_check) == ESP_OK) {
-            esp_bridge_netif_set_ip_info(wifi_netif, &ip_info_from_nvs, true, conflict_check);
+            if (esp_bridge_netif_set_ip_info(wifi_netif, &ip_info_from_nvs, true, conflict_check) != ESP_OK) {
+                ESP_LOGE(TAG, "Failed to set IP info from NVS");
+                return NULL;
+            }
         }
     }
 
@@ -285,6 +290,7 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_
     esp_netif_ip_info_t allocate_ip_info;
     esp_netif_t* wifi_netif = NULL;
     wifi_mode_t mode = WIFI_MODE_NULL;
+    bool conflict_check = true;
 
     if (!data_forwarding) {
         return wifi_netif;
@@ -307,16 +313,26 @@ esp_netif_t* esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_
 
     esp_bridge_netif_list_add(wifi_netif, softap_netif_dhcp_status_change_cb, softap_netif_dhcp_status_change_cb);
 
-    if (ip_info) {
-        esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true, true);
-    } else {
-        bool conflict_check = true;
+    if (!ip_info) {
         if (esp_bridge_load_ip_info_from_nvs(esp_netif_get_ifkey(wifi_netif), &allocate_ip_info, &conflict_check) != ESP_OK) {
             if (enable_dhcps) {
-                esp_bridge_netif_request_ip(&allocate_ip_info);
+                if (esp_bridge_netif_request_ip(wifi_netif, &allocate_ip_info) == ESP_OK) {
+                    ip_info = &allocate_ip_info;
+                }
+            }
+        } else {
+            ip_info = &allocate_ip_info;
+        }
+    }
+
+    if (ip_info) {
+        if (esp_bridge_netif_set_ip_info(wifi_netif, ip_info, true, conflict_check) != ESP_OK) {
+            if (esp_bridge_netif_request_ip(wifi_netif, &allocate_ip_info) == ESP_OK) {
+                if (esp_bridge_netif_set_ip_info(wifi_netif, &allocate_ip_info, true, conflict_check) != ESP_OK) {
+                    ESP_LOGE(TAG, "Failed to set IP info");
+                }
             }
         }
-        esp_bridge_netif_set_ip_info(wifi_netif, &allocate_ip_info, true, conflict_check);
     }
 
     esp_bridge_softap_dhcps = enable_dhcps;

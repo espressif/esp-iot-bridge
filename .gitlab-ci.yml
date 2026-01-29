@@ -37,7 +37,7 @@ variables: &global-variables
   - chmod 600 ~/.ssh/id_rsa
   - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - export IDF_PATH=/opt/esp/idf
-  - python -m pip install --upgrade idf-component-manager
+  # - python -m pip install --upgrade idf-component-manager
 
 .build_iot_bridge_default: &build_iot_bridge_default
   - cd examples/wireless_nic
@@ -194,7 +194,7 @@ esp32_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
 
   variables:
     <<: *global-variables
@@ -216,7 +216,7 @@ esp32c2_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
 
   variables:
     <<: *global-variables
@@ -238,7 +238,7 @@ esp32c3_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
 
   variables:
     <<: *global-variables
@@ -260,7 +260,7 @@ esp32s2_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
 
   variables:
     <<: *global-variables
@@ -282,7 +282,7 @@ esp32s3_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
 
   variables:
     <<: *global-variables
@@ -304,7 +304,7 @@ esp32c6_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.1', 'espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
 
   variables:
     <<: *global-variables

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -14,6 +14,7 @@
 #include <sys/select.h>
 
 #include "esp_log.h"
+#include "nvs.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_system.h"
@@ -32,6 +33,7 @@
 #include "esp_bridge_internal.h"
 
 #define NVS_NAMESPACE "netif_ip_info"
+#define NVS_KEY_NET_SEGMENT_PREFIX "net_seg_prefix"
 
 // DHCP_Server has to be enabled for this netif
 #define DHCPS_NETIF_ID(netif) (ESP_NETIF_DHCP_SERVER & esp_netif_get_flags(netif))
@@ -47,6 +49,43 @@ typedef struct bridge_netif {
 
 static const char *TAG = "bridge_common";
 static bridge_netif_t *bridge_link = NULL;
+
+#define NET_SEGMENT_IP_PREFIX_DEFAULT_IP        0xC0A80000
+#define NET_SEGMENT_IP_PREFIX_DEFAULT_NETMASK   0xFFFFFF00
+
+static esp_netif_ip_info_t net_segment_ip_prefix = {
+    .ip = { .addr = htonl(NET_SEGMENT_IP_PREFIX_DEFAULT_IP) },
+    .netmask = { .addr = htonl(NET_SEGMENT_IP_PREFIX_DEFAULT_NETMASK) }
+};
+static bool net_segment_loaded_from_nvs = false;
+
+static esp_err_t bridge_net_segment_save_to_nvs(void)
+{
+    nvs_handle_t nvs_h;
+    esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_h);
+    if (err != ESP_OK) {
+        return err;
+    }
+    err = nvs_set_blob(nvs_h, NVS_KEY_NET_SEGMENT_PREFIX, &net_segment_ip_prefix, sizeof(esp_netif_ip_info_t));
+    if (err == ESP_OK) {
+        err = nvs_commit(nvs_h);
+    }
+    nvs_close(nvs_h);
+    return err;
+}
+
+static esp_err_t bridge_net_segment_load_from_nvs(void)
+{
+    nvs_handle_t nvs_h;
+    esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_h);
+    if (err != ESP_OK) {
+        return err;
+    }
+    size_t len = sizeof(esp_netif_ip_info_t);
+    err = nvs_get_blob(nvs_h, NVS_KEY_NET_SEGMENT_PREFIX, &net_segment_ip_prefix, &len);
+    nvs_close(nvs_h);
+    return err;
+}
 
 esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dns_change_cb_t dns_change_cb, dhcps_change_cb_t dhcps_change_cb, const char *commit_id)
 {
@@ -111,15 +150,155 @@ esp_err_t esp_bridge_netif_list_remove(esp_netif_t *netif)
     return ESP_OK;
 }
 
-static bool esp_bridge_netif_network_segment_is_used(uint32_t ip)
+static __inline__ bool subnet_mask_is_valid(uint32_t mask)
+{
+    mask = ntohl(mask);
+    if (mask == 0 || mask == 0xFFFFFFFF) {
+        return false;
+    }
+
+    if (((mask - 1) | mask) != 0xFFFFFFFF) {
+        return false;
+    }
+    return true;
+}
+
+static __inline__ bool subnet_ip_is_valid(uint32_t mask, uint32_t ip)
+{
+    if (ip == 0) {
+        return false;
+    }
+
+    mask = ntohl(mask);
+    ip = ntohl(ip);
+    uint32_t start_ip = ip & mask;
+    uint32_t end_ip = start_ip | ~mask;
+
+    if (ip == end_ip || ip != start_ip) {
+        return false;
+    }
+
+    for (uint32_t i = 0; i < 32; i++) {
+        if (mask & (1U << i)) {
+            if (ip & (1U << i)) {
+                return false;
+            } else {
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
+const esp_netif_ip_info_t * esp_bridge_netif_get_net_segment_ip_prefix(void)
+{
+    if (!net_segment_loaded_from_nvs) {
+        net_segment_loaded_from_nvs = true;
+        if (bridge_net_segment_load_from_nvs() == ESP_OK) {
+            ESP_LOGI(TAG, "Loaded net segment from NVS: " IPSTR "/" IPSTR,
+                     IP2STR(&net_segment_ip_prefix.ip), IP2STR(&net_segment_ip_prefix.netmask));
+        }
+    }
+    return &net_segment_ip_prefix;
+}
+
+esp_err_t esp_bridge_netif_set_net_segment_ip_prefix(esp_netif_ip_info_t *ip_info, bool save_to_nvs)
+{
+    bool need_set_ip = false;
+    if (!ip_info) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!subnet_mask_is_valid(ip_info->netmask.addr)) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!subnet_ip_is_valid(ip_info->netmask.addr, ip_info->ip.addr)) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    (void)esp_bridge_netif_get_net_segment_ip_prefix();
+
+    uint32_t new_start_host = ntohl(ip_info->ip.addr) & ntohl(ip_info->netmask.addr);
+    uint32_t new_end_host = new_start_host | ~ntohl(ip_info->netmask.addr);
+    uint32_t old_ip_host = ntohl(net_segment_ip_prefix.ip.addr);
+    if ((net_segment_ip_prefix.netmask.addr != ip_info->netmask.addr)
+            || (old_ip_host < new_start_host)
+            || (old_ip_host > new_end_host)) {
+        need_set_ip = true;
+    }
+
+    net_segment_ip_prefix.ip.addr = ip_info->ip.addr;
+    net_segment_ip_prefix.netmask.addr = ip_info->netmask.addr;
+
+    ESP_LOGI(TAG, "IP Address Prefix:" IPSTR, IP2STR(&net_segment_ip_prefix.ip));
+    ESP_LOGI(TAG, "IP Netmask:" IPSTR, IP2STR(&net_segment_ip_prefix.netmask));
+
+    if (need_set_ip) {
+        bridge_netif_t *p = bridge_link;
+        while (p) {
+            if (DHCPS_NETIF_ID(p->netif)) {
+                esp_netif_ip_info_t allocate_ip_info;
+                memset(&allocate_ip_info, 0x0, sizeof(esp_netif_ip_info_t));
+                if (esp_bridge_netif_request_ip(p->netif, &allocate_ip_info) == ESP_OK) {
+                    esp_bridge_netif_set_ip_info(p->netif, &allocate_ip_info, true, true);
+                }
+            }
+            p = p->next;
+        }
+    }
+
+    if (save_to_nvs) {
+        if (bridge_net_segment_save_to_nvs() != ESP_OK) {
+            ESP_LOGW(TAG, "Failed to save net segment to NVS");
+        }
+    }
+
+    return ESP_OK;
+}
+
+static bool esp_bridge_netif_network_segment_is_valid(esp_netif_ip_info_t *ip_info)
+{
+    if (!ip_info) {
+        return false;
+    }
+    uint32_t start_ip = 0;
+    uint32_t end_ip = 0;
+    uint32_t subnet_size = 0;
+    const esp_netif_ip_info_t *ip_prefix = esp_bridge_netif_get_net_segment_ip_prefix();
+
+    if (ip_info->netmask.addr != ip_prefix->netmask.addr) {
+        return false;
+    }
+
+    if (esp_bridge_netif_get_network_segment_info(&start_ip, &end_ip, &subnet_size) != ESP_OK) {
+        return true;
+    }
+
+    if (ntohl(ip_info->ip.addr) < start_ip || ntohl(ip_info->ip.addr) > end_ip) {
+        return false;
+    }
+
+    return true;
+}
+
+static bool esp_bridge_netif_network_segment_is_used(esp_netif_t *netif, uint32_t ip)
 {
     bridge_netif_t *p = bridge_link;
     const ip4_addr_t dest = {
         .addr = ip
     };
+    const esp_netif_ip_info_t * ip_prefix = esp_bridge_netif_get_net_segment_ip_prefix();
+    ip4_addr_t segment_mask;
+    segment_mask.addr = ip_prefix->netmask.addr;
     while (p) {
+        if (netif && p->netif == netif) {
+            p = p->next;
+            continue;
+        }
         struct netif *lwip_netif = esp_netif_get_netif_impl(p->netif);
-        if (ip4_addr_netcmp(&dest, netif_ip4_addr(lwip_netif), netif_ip4_netmask(lwip_netif))) {
+        if (lwip_netif && ip4_addr_netcmp(&dest, netif_ip4_addr(lwip_netif), &segment_mask)) {
             return true;
         }
         p = p->next;
@@ -149,23 +328,80 @@ bool esp_bridge_network_segment_check_register(bool (*custom_check_cb)(uint32_t 
     return true;
 }
 
-esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t *ip_info)
+esp_err_t esp_bridge_netif_get_network_segment_info(uint32_t *start_ip, uint32_t *end_ip, uint32_t *subnet_size)
+{
+    const esp_netif_ip_info_t *ip_prefix = esp_bridge_netif_get_net_segment_ip_prefix();
+
+    // Convert to host byte order for calculations
+    uint32_t ip_host = ntohl(ip_prefix->ip.addr);
+    uint32_t mask_host = ntohl(ip_prefix->netmask.addr);
+
+    uint32_t prefix_network_host = ip_host & mask_host;
+    uint32_t subnet_size_tmp = (~mask_host & 0xFFFFFFFF) + 1;
+
+    if (subnet_size_tmp == 0) {
+        ESP_LOGE(TAG, "Invalid subnet size: 0");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    uint32_t start_ip_tmp = prefix_network_host;
+
+    if (ip_host == 0 || mask_host == 0) {
+        ESP_LOGE(TAG, "Invalid prefix: ip=0x%lx mask=0x%lx", (unsigned long)ip_host, (unsigned long)mask_host);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    uint32_t mask_zero_bits = __builtin_ctz(mask_host);
+    uint32_t ip_zero_bits = __builtin_ctz(ip_host);
+
+    if (ip_zero_bits <= mask_zero_bits) {
+        ESP_LOGE(TAG, "IP zero bits (%ld) is less than or equal to mask zero bits (%ld)", ip_zero_bits, mask_zero_bits);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    uint32_t end_ip_tmp = prefix_network_host + ((1U << ip_zero_bits) - 1);
+
+    if (end_ip_tmp < start_ip_tmp || end_ip_tmp == 0) {
+        end_ip_tmp = 0xFFFFFFFF;
+    }
+
+    if (start_ip) {
+        *start_ip = start_ip_tmp;
+    }
+    if (end_ip) {
+        *end_ip = end_ip_tmp;
+    }
+    if (subnet_size) {
+        *subnet_size = subnet_size_tmp;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t esp_bridge_netif_request_ip(esp_netif_t *netif, esp_netif_ip_info_t *ip_info)
 {
     bool ip_segment_is_used = true;
 
-    for (uint8_t bridge_ip = 4; bridge_ip < 255; bridge_ip++) {
-        esp_bridge_network_segment_custom_check_t *list = custom_check_list;
-        ip_segment_is_used = esp_bridge_netif_network_segment_is_used(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
+    uint32_t start_ip = 0;
+    uint32_t end_ip = 0;
+    uint32_t subnet_size = 0;
+    if (esp_bridge_netif_get_network_segment_info(&start_ip, &end_ip, &subnet_size) != ESP_OK) {
+        return ESP_ERR_INVALID_STATE;
+    }
 
+    for (uint32_t bridge_ip_host = start_ip; (bridge_ip_host >= start_ip) && (bridge_ip_host <= end_ip); bridge_ip_host += subnet_size) {
+        uint32_t bridge_ip_net = htonl(bridge_ip_host);
+        esp_bridge_network_segment_custom_check_t *list = custom_check_list;
+        ip_segment_is_used = esp_bridge_netif_network_segment_is_used(netif, bridge_ip_net);
         while (!ip_segment_is_used && list) {
-            ip_segment_is_used = list->custom_check_cb(ESP_IP4TOADDR(192, 168, bridge_ip, 1));
+            ip_segment_is_used = list->custom_check_cb(bridge_ip_net);
             list = list->next;
         }
 
         if (!ip_segment_is_used) {
-            ip_info->ip.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
-            ip_info->gw.addr = ESP_IP4TOADDR(192, 168, bridge_ip, 1);
-            ip_info->netmask.addr = ESP_IP4TOADDR(255, 255, 255, 0);
+            ip_info->ip.addr = htonl(bridge_ip_host + 1);
+            ip_info->gw.addr = ip_info->ip.addr;
+            ip_info->netmask.addr = net_segment_ip_prefix.netmask.addr;
             ESP_LOGI(TAG, "IP Address:" IPSTR, IP2STR(&ip_info->ip));
             ESP_LOGI(TAG, "GW Address:" IPSTR, IP2STR(&ip_info->gw));
             ESP_LOGI(TAG, "NM Address:" IPSTR, IP2STR(&ip_info->netmask));
@@ -253,7 +489,8 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t *esp_neti
 
         // Skip if we can't get valid netmask
         if (netmask.addr == 0) {
-            ESP_LOGW(TAG, "Failed to get netmask for netif, skipping conflict check");
+            ESP_LOGW(TAG, "Failed to get netmask for netif [%s], skipping conflict check",
+                     esp_netif_get_ifkey(dhcpc_netif->netif));
             goto next_netif;
         }
 
@@ -264,40 +501,45 @@ esp_err_t esp_bridge_netif_network_segment_conflict_update(esp_netif_t *esp_neti
         bridge_netif_t *p = bridge_link; // Reset p for each dhcpc_netif iteration
 
         while (p) {
-            esp_bridge_network_segment_custom_check_t* list = custom_check_list;
             if ((dhcpc_netif->netif != p->netif) && DHCPS_NETIF_ID(p->netif) && p->conflict_check) { /* DHCP_Server has to be enabled for this netif */
                 esp_netif_get_ip_info(dhcpc_netif->netif, &allocate_ip_info);
                 esp_netif_get_ip_info(p->netif, &netif_ip);
 
+                esp_bridge_network_segment_custom_check_t* list = custom_check_list;
                 while (list) {
                     ip_segment_is_used = list->custom_check_cb(netif_ip.ip.addr);
                     list = list->next;
                 }
 
                 uint32_t current_mask = 0;
-                struct netif * lwip_netif = esp_netif_get_netif_impl(p->netif);
+                lwip_netif = esp_netif_get_netif_impl(p->netif);
                 if (lwip_netif) {
                     current_mask = netif_ip4_netmask(lwip_netif)->addr;
                 }
                 esp_ip4_addr_t valid_netmask = { .addr = netmask.addr & current_mask };
 
+                bool netcmp = ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &valid_netmask);
                 /* The checked network segment does not conflict with the external netif */
                 /* And the same ip net segment is not be used by other external netifs */
-                if ((!ip4_addr_netcmp(&netif_ip.ip, &allocate_ip_info.ip, &valid_netmask)) && !ip_segment_is_used) {
+                if ((!netcmp) && !ip_segment_is_used) {
                     p = p->next;
                     continue;
                 }
 
-                ESP_LOGI(TAG, "[%-12s]", esp_netif_get_ifkey(p->netif));
-                if (esp_bridge_netif_request_ip(&allocate_ip_info) != ESP_OK) {
+                if (esp_bridge_netif_request_ip(p->netif, &allocate_ip_info) != ESP_OK) {
                     ESP_LOGE(TAG, "ip reallocate fail");
-                    break;
+                    return ESP_FAIL;
                 }
 
-                ESP_ERROR_CHECK(esp_netif_dhcps_stop(p->netif));
+                if (esp_netif_dhcps_stop(p->netif) != ESP_OK) {
+                    ESP_LOGE(TAG, "dhcps stop fail");
+                    return ESP_FAIL;
+                }
                 esp_netif_set_ip_info(p->netif, &allocate_ip_info);
-                ESP_LOGI(TAG, "ip reallocate new:" IPSTR, IP2STR(&allocate_ip_info.ip));
-                ESP_ERROR_CHECK(esp_netif_dhcps_start(p->netif));
+                if (esp_netif_dhcps_start(p->netif) != ESP_OK) {
+                    ESP_LOGE(TAG, "dhcps start fail");
+                    return ESP_FAIL;
+                }
 
                 esp_ip_addr_info.type = ESP_IPADDR_TYPE_V4;
                 esp_ip_addr_info.u_addr.ip4.addr = allocate_ip_info.ip.addr;
@@ -335,7 +577,7 @@ esp_netif_t* esp_bridge_create_netif(esp_netif_config_t* config, esp_netif_ip_in
         esp_netif_set_ip_info(netif, custom_ip_info);
     } else {
         if (enable_dhcps) {
-            esp_bridge_netif_request_ip(&allocate_ip_info);
+            esp_bridge_netif_request_ip(netif, &allocate_ip_info);
             esp_netif_set_ip_info(netif, &allocate_ip_info);
         }
     }
@@ -625,6 +867,12 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
         if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_SERVER) {
             esp_netif_ip_info_t ip_old;
             memset(&ip_old, 0x0, sizeof(esp_netif_ip_info_t));
+
+            if (!esp_bridge_netif_network_segment_is_valid(ip_info)) {
+                ESP_LOGE(TAG, "Invalid IP info: " IPSTR, IP2STR(&ip_info->ip));
+                ESP_LOGE(TAG, "Invalid netmask: " IPSTR, IP2STR(&ip_info->netmask));
+                return ESP_ERR_INVALID_ARG;
+            }
             if (esp_netif_get_ip_info(netif, &ip_old) == ESP_OK) {
                 if (ip4_addr_cmp(&ip_old.ip, &ip_info->ip)
                     && ip4_addr_cmp(&ip_old.netmask, &ip_info->netmask)
@@ -641,9 +889,26 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
             if (state != ESP_NETIF_DHCP_STOPPED) {
                 ESP_ERROR_CHECK(esp_netif_dhcps_stop(netif));
             }
-            ESP_ERROR_CHECK(esp_netif_set_ip_info(netif, ip_info));
+            esp_err_t err = esp_netif_set_ip_info(netif, ip_info);
+            if (err != ESP_OK) {
+                ESP_LOGE(TAG, "Failed to set ip info: %x", err);
+                esp_netif_set_ip_info(netif, &ip_old);
+                err = esp_netif_dhcps_start(netif);
+                if (err != ESP_OK) {
+                    ESP_LOGE(TAG, "Failed to start dhcps: %x", err);
+                }
+                return ESP_FAIL;
+            }
             ESP_LOGI(TAG, "Set ip info:" IPSTR, IP2STR(&ip_info->ip));
-            ESP_ERROR_CHECK(esp_netif_dhcps_start(netif));
+            ESP_LOGI(TAG, "Set netmask:" IPSTR, IP2STR(&ip_info->netmask));
+            ESP_LOGI(TAG, "Set gw:" IPSTR, IP2STR(&ip_info->gw));
+            err = esp_netif_dhcps_start(netif);
+            if (err != ESP_OK) {
+                esp_netif_set_ip_info(netif, &ip_old);
+                esp_netif_dhcps_start(netif);
+                ESP_LOGE(TAG, "Failed to start dhcps: %x", err);
+                return ESP_FAIL;
+            }
 
             bridge_netif_t *p = bridge_link;
             while (p) {

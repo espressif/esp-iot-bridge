@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -228,6 +228,61 @@ esp_err_t esp_bridge_netif_set_conflict_check(esp_netif_t *netif, bool enable);
  *     - Other: Error code indicating failure during setting.
  */
 esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *ip_info, bool save_to_nvs, bool conflict_check);
+
+/**
+ * @brief Get the network segment IP prefix configuration.
+ *
+ * This function returns a pointer to the global network segment IP prefix configuration.
+ * The IP prefix is used to allocate network segments for bridge interfaces.
+ * The returned pointer points to a static structure and should not be freed.
+ *
+ * @return
+ *     - Pointer to the network segment IP prefix structure
+ */
+const esp_netif_ip_info_t * esp_bridge_netif_get_net_segment_ip_prefix(void);
+
+/**
+ * @brief Initialize the network segment IP prefix configuration.
+ *
+ * This function initializes the global network segment IP prefix with the provided
+ * IP information. It validates the subnet mask and IP address before setting the prefix.
+ * The prefix is used as a base for allocating network segments to bridge interfaces.
+ *
+ * @param[in] ip_info A pointer to the IP information structure containing the prefix IP and netmask.
+ *                    The IP address should be a valid network address (not a host address).
+ *                    The netmask must be valid (not 0 or 0xFFFFFFFF, and must be contiguous).
+ *                    ip_info->gw is not used, set to 0.0.0.0.
+ * @param[in] save_to_nvs Whether to save the IP prefix to NVS.
+ *
+ * @example
+ *     esp_netif_ip_info_t ip_info = {
+ *         .ip = { .addr = htonl(0xc0a80000) },  // network byte order, 192.168.0.0, ip prefix address is 192.168.x.x
+ *         .netmask = { .addr = htonl(0xffffff00) },  // network byte order,255.255.255.0
+ *         .gw = { .addr = 0x00000000 },  // 0.0.0.0
+ *     };
+ *     esp_bridge_netif_set_net_segment_ip_prefix(&ip_info, true);
+ *     // 192.168.0.0 is 11000000 10101000 00000000 00000000(mask: 255.255.255.0) in binary,
+ *     // so the first valid network segment is 192.168.0.1, and the last valid network segment is 192.168.255.254.
+ * @note After changing the prefix, bridge netifs may be re-allocated IPs if their current IPs do not fall within the new segment;
+ *       see conflict check and esp_bridge_netif_network_segment_conflict_update.
+ * @return
+ *     - ESP_OK: IP prefix initialized successfully.
+ *     - ESP_ERR_INVALID_ARG: Invalid argument (NULL pointer, invalid mask, or invalid IP).
+ */
+esp_err_t esp_bridge_netif_set_net_segment_ip_prefix(esp_netif_ip_info_t *ip_info, bool save_to_nvs);
+
+/**
+ * @brief Get the network segment information.
+ *
+ * @param[out] start_ip The start IP address of the network segment.
+ * @param[out] end_ip The end IP address of the network segment.
+ * @param[out] subnet_size The subnet size of the network segment.
+ *
+ * @return
+ *     - ESP_OK: Network segment information retrieved successfully.
+ *     - ESP_ERR_INVALID_STATE: Invalid state (e.g., network segment not initialized).
+ */
+esp_err_t esp_bridge_netif_get_network_segment_info(uint32_t *start_ip, uint32_t *end_ip, uint32_t *subnet_size);
 
 #ifdef __cplusplus
 }
