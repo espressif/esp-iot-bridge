@@ -1,5 +1,5 @@
 set(srcs "src/bridge_common.c" "src/bridge_lwip_hook.c")
-set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "nvs_flash" "esp_modem")
+set(requires "esp_eth" "esp_netif" "esp_wifi" "esp_timer" "nvs_flash" "esp_modem" "esp_driver_gpio")
 set(include_dirs "include")
 
 if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}.${IDF_VERSION_PATCH}" VERSION_GREATER_EQUAL "5.4.0")
