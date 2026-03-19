@@ -84,13 +84,14 @@ esp_err_t esp_bridge_netif_list_remove(esp_netif_t *netif);
 /**
  * @brief  Request to allocate an ip information that does not conflict with the existing netif ip network segment.
  *
+ * @param[in]   netif   The netif for which to request IP (e.g. the DHCPS netif that will use this IP). Can be NULL.
  * @param[out]  ip_info ip information
  *
  * @return
  *     - ESP_OK: request ip successfully
  *     - ESP_FAIL: request ip failure
  */
-esp_err_t esp_bridge_netif_request_ip(esp_netif_ip_info_t *ip_info);
+esp_err_t esp_bridge_netif_request_ip(esp_netif_t *netif, esp_netif_ip_info_t *ip_info);
 
 /**
  * @brief  Request to allocate an mac that does not conflict with the existing netif ip network segment.

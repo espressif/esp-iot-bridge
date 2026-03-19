@@ -1,9 +1,9 @@
 # ChangeLog
 
-## v1.0.3-dev - 2025.11.12
+## v1.0.3-dev - 2026.03.19
 
 ### Feature
-
+- feat: Support user to customize ip segment ([7aa26d6](https://github.com/espressif/esp-iot-bridge/commit/7aa26d6fbcf5e6419a2730f562a7804ea62b9323))
 - feat: set BRIDGE_WIFI_PMF_DISABLE default to n ([5803a16](https://github.com/espressif/esp-iot-bridge/commit/5803a16f3e21b21507f45cdd0037c5c1664eacc6))
 - feat(bridge_eth): support configurable MAC address for SPI Ethernet ([bd9aa48](https://github.com/espressif/esp-iot-bridge/commit/bd9aa480f64c8504323d00a7510392e1d8b6d4f2))
 
