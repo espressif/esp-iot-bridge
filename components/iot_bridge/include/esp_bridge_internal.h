@@ -14,6 +14,9 @@
 #include "lwip/sys.h"
 #include "lwip/lwip_napt.h"
 
+typedef esp_err_t(*dns_change_cb_t)(esp_ip_addr_t *ip_info);
+typedef esp_err_t(*dhcps_change_cb_t)(esp_ip_addr_t *ip_info);
+
 #include "esp_bridge.h"
 
 #ifdef __cplusplus
@@ -23,9 +26,6 @@ extern "C"
 
 /* Definitions for error constants. */
 #define ESP_ERR_DUPLICATE_ADDITION    0x110   /*!< Netif was added repeatedly */
-
-typedef esp_err_t(*dns_change_cb_t)(esp_ip_addr_t *ip_info);
-typedef esp_err_t(*dhcps_change_cb_t)(esp_ip_addr_t *ip_info);
 
 /**
  * @brief  Cause the TCP/IP stack to bring up an interface

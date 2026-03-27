@@ -87,6 +87,30 @@ static esp_err_t bridge_net_segment_load_from_nvs(void)
     return err;
 }
 
+esp_err_t esp_bridge_netif_update_cb(esp_netif_t *netif, dns_change_cb_t dns_change_cb, dhcps_change_cb_t dhcps_change_cb)
+{
+    bridge_netif_t *current = bridge_link;
+
+    while (current) {
+        if (current->netif == netif) {
+            break;
+        }
+
+        current = current->next;
+    }
+
+    if (current == NULL) {
+        ESP_LOGE(TAG, "netif not found");
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    current->dns_change_cb = dns_change_cb;
+    current->dhcps_change_cb = dhcps_change_cb;
+
+    ESP_LOGI(TAG, "Update netif %s cb\r\n", esp_netif_get_desc(netif));
+    return ESP_OK;
+}
+
 esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dns_change_cb_t dns_change_cb, dhcps_change_cb_t dhcps_change_cb, const char *commit_id)
 {
     bridge_netif_t *new = bridge_link;

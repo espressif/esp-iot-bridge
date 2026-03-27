@@ -12,6 +12,7 @@ extern "C"
 #endif
 
 #include "esp_netif.h"
+#include "esp_bridge_internal.h"
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 #include "esp_wifi_types.h"
@@ -214,6 +215,20 @@ esp_err_t esp_bridge_load_ip_info_from_nvs(const char *name, esp_netif_ip_info_t
  *     - ESP_ERR_NOT_FOUND: Network interface not found in bridge list.
  */
 esp_err_t esp_bridge_netif_set_conflict_check(esp_netif_t *netif, bool enable);
+
+/**
+ * @brief Update DNS and DHCP server change callback for a network interface.
+ *
+ * @param[in] netif The network interface to update the callback for.
+ * @param[in] dns_change_cb The new DNS change callback.
+ * @param[in] dhcps_change_cb The new DHCP server change callback.
+ *
+ * @return
+ *     - ESP_OK: Callback updated successfully.
+ *     - ESP_ERR_INVALID_ARG: Invalid netif argument.
+ *     - ESP_ERR_NOT_FOUND: Network interface not found in bridge list.
+ */
+esp_err_t esp_bridge_netif_update_cb(esp_netif_t *netif, dns_change_cb_t dns_change_cb, dhcps_change_cb_t dhcps_change_cb);
 
 /**
  * @brief Set the IP information for a network interface and optionally save it to NVS.
