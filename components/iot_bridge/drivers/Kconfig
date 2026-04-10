@@ -37,7 +37,7 @@ menu "Bridge Driver Configuration"
 
         config ESP_SPI_GPIO_HANDSHAKE
             int "GPIO pin for handshake"
-            default 3 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6
+            default 3 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C5
             default 2
             help
                 GPIO pin to use for handshake with other spi controller
@@ -83,7 +83,7 @@ menu "Bridge Driver Configuration"
     config EXAMPLE_HCI_UART_BAUDRATE
         int "UART Baudrate for HCI: Only applicable for ESP32-C3/ESP32-S3"
         range 115200 921600
-        depends on IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C6
+        depends on IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C5
         depends on BT_CTRL_HCI_MODE_UART_H4
         default 921600
         help
