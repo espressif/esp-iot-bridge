@@ -13,6 +13,7 @@ extern "C"
 
 #include "esp_netif.h"
 #include "esp_bridge_internal.h"
+#include "esp_bridge_events.h"
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 #include "esp_wifi_types.h"
