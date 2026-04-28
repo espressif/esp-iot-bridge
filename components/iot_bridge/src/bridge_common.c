@@ -17,6 +17,7 @@
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
+#include "esp_event.h"
 #include "esp_system.h"
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
 #include "esp_mac.h"
@@ -35,10 +36,14 @@
 #define NVS_NAMESPACE "netif_ip_info"
 #define NVS_KEY_NET_SEGMENT_PREFIX "net_seg_prefix"
 
+ESP_EVENT_DEFINE_BASE(BRIDGE_EVENT);
+
 // DHCP_Server has to be enabled for this netif
 #define DHCPS_NETIF_ID(netif) (ESP_NETIF_DHCP_SERVER & esp_netif_get_flags(netif))
 #define DHCPC_NETIF_ID(netif) (ESP_NETIF_DHCP_CLIENT & esp_netif_get_flags(netif))
 
+#define NET_SEGMENT_IP_PREFIX_DEFAULT_IP        0xC0A80000
+#define NET_SEGMENT_IP_PREFIX_DEFAULT_NETMASK   0xFFFFFF00
 typedef struct bridge_netif {
     esp_netif_t *netif;
     dns_change_cb_t dns_change_cb;
@@ -49,9 +54,6 @@ typedef struct bridge_netif {
 
 static const char *TAG = "bridge_common";
 static bridge_netif_t *bridge_link = NULL;
-
-#define NET_SEGMENT_IP_PREFIX_DEFAULT_IP        0xC0A80000
-#define NET_SEGMENT_IP_PREFIX_DEFAULT_NETMASK   0xFFFFFF00
 
 static esp_netif_ip_info_t net_segment_ip_prefix = {
     .ip = { .addr = htonl(NET_SEGMENT_IP_PREFIX_DEFAULT_IP) },
@@ -657,38 +659,6 @@ static void esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_t *data_f
     }
 }
 
-static esp_netif_dns_info_t old_dns_info = {0};
-
-void dhcp_dns_before_updated_customer_cb(void)
-{
-    esp_netif_t *netif = NULL;
-#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
-    netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-#elif (defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN))
-    netif = esp_netif_get_handle_from_ifkey("ETH_WAN");
-#endif
-    if (netif) {
-        esp_netif_get_dns_info(netif, ESP_NETIF_DNS_MAIN, &old_dns_info);
-    }
-}
-
-void dhcp_dns_updated_customer_cb(void)
-{
-    esp_netif_t *netif = NULL;
-#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
-    netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-#elif (defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN))
-    netif = esp_netif_get_handle_from_ifkey("ETH_WAN");
-#endif
-    if (netif) {
-        esp_netif_dns_info_t dns_info = {0};
-        esp_netif_get_dns_info(netif, ESP_NETIF_DNS_MAIN, &dns_info);
-        if (dns_info.ip.u_addr.ip4.addr != old_dns_info.ip.u_addr.ip4.addr) {
-            esp_bridge_update_dns_info(netif, NULL);
-        }
-    }
-}
-
 esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *data_forwarding_netif)
 {
     esp_netif_dns_info_t dns_info = {0};
@@ -720,6 +690,38 @@ esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *d
 #endif
     }
     return ESP_OK;
+}
+
+static void bridge_dns_update_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+{
+    (void)arg;
+    (void)event_base;
+    if (event_id != BRIDGE_EVENT_ID_DNS_UPDATE || event_data == NULL) {
+        return;
+    }
+    const bridge_dns_update_event_data_t *d = (const bridge_dns_update_event_data_t *)event_data;
+    if (d->esp_netif == NULL) {
+        return;
+    }
+    esp_bridge_update_dns_info(d->esp_netif, NULL);
+}
+
+void dhcp_dns_update_customer_cb(struct netif *netif, void *param)
+{
+    (void)param;
+    if (netif == NULL) {
+        return;
+    }
+    esp_netif_t *esp_netif = esp_netif_get_handle_from_netif_impl(netif);
+    if (esp_netif == NULL) {
+        ESP_LOGW(TAG, "dhcp_dns_update_customer_cb: no esp_netif for lwIP netif %p", (void *)netif);
+        return;
+    }
+    bridge_dns_update_event_data_t data = {.esp_netif = esp_netif};
+    esp_err_t err = esp_event_post(BRIDGE_EVENT, BRIDGE_EVENT_ID_DNS_UPDATE, &data, sizeof(data), portMAX_DELAY);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "BRIDGE_EVENT DNS_UPDATE post err: %s", esp_err_to_name(err));
+    }
 }
 
 esp_err_t esp_bridge_save_ip_info_to_nvs(const char *name, esp_netif_ip_info_t *ip_info, bool conflict_check)
@@ -981,6 +983,8 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
 void esp_bridge_create_all_netif(void)
 {
     ESP_LOGI(TAG, "esp-iot-bridge version: %d.%d.%d", IOT_BRIDGE_VER_MAJOR, IOT_BRIDGE_VER_MINOR, IOT_BRIDGE_VER_PATCH);
+
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(BRIDGE_EVENT, BRIDGE_EVENT_ID_DNS_UPDATE, &bridge_dns_update_event_handler, NULL, NULL));
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
     esp_bridge_create_softap_netif(NULL, NULL, true, true);
