@@ -677,10 +677,10 @@ esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *d
         esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &dns_info);
 #endif
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
-        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SDIO_DEF"), &dns_info);
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SDIO_LAN"), &dns_info);
 #endif
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
-        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SPI_DEF"), &dns_info);
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SPI_LAN"), &dns_info);
 #endif
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
         esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("ETH_LAN"), &dns_info);
@@ -1001,15 +1001,19 @@ void esp_bridge_create_all_netif(void)
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
     esp_bridge_create_spi_netif(NULL, NULL, true, true);
-#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI)
+#endif
+
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI)
     uint8_t spi_mac[6] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6};
     esp_bridge_create_spi_netif(NULL, spi_mac, false, false);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
     esp_bridge_create_sdio_netif(NULL, NULL, true, true);
-#elif defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO)
-    uint8_t sdio_mac[6] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6};
+#endif
+
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO)
+    uint8_t sdio_mac[6] = {0x7, 0x8, 0x9, 0xa, 0xb, 0xc};
     esp_bridge_create_sdio_netif(NULL, sdio_mac, false, false);
 #endif
 

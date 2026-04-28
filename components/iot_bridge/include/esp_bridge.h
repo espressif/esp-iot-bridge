@@ -12,8 +12,9 @@ extern "C"
 #endif
 
 #include "esp_netif.h"
-#include "esp_bridge_internal.h"
 #include "esp_bridge_events.h"
+#include "esp_bridge_config.h"
+#include "esp_bridge_internal.h"
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 #include "esp_wifi_types.h"
@@ -109,6 +110,17 @@ esp_netif_t *esp_bridge_create_usb_netif(esp_netif_ip_info_t *ip_info, uint8_t m
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
 /**
+ * @brief Set the netif type for sdio netif.
+ *
+ * @param[in] type: the netif type to set
+ *
+ * @return
+ *     - ESP_OK: Netif type set successfully.
+ *     - Other: Error code indicating failure during setting.
+ */
+esp_err_t esp_bridge_sdio_set_netif_type(esp_bridge_netif_type_t type);
+
+/**
 * @brief Create sdio netif for bridge.
 *
 * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
@@ -124,6 +136,18 @@ esp_netif_t *esp_bridge_create_sdio_netif(esp_netif_ip_info_t *ip_info, uint8_t 
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
+
+/**
+ * @brief Set the netif type for spi netif.
+ *
+ * @param[in] type: the netif type to set
+ *
+ * @return
+ *     - ESP_OK: Netif type set successfully.
+ *     - Other: Error code indicating failure during setting.
+ */
+esp_err_t esp_bridge_spi_set_netif_type(esp_bridge_netif_type_t type);
+
 /**
 * @brief Create spi netif for bridge.
 *

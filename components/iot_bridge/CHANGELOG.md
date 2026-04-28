@@ -2,8 +2,15 @@
 
 ## v1.0.3-dev - 2026.04.28
 
+### Breaking Change
+
+- **SPI / SDIO bridge netif**: `esp_bridge_config.h` removes the compile-time `NUM_DEFINED_MACROS` guard and the legacy `BRIDGE_EXTERNAL_NETIF_*` enum; introduces `esp_bridge_netif_type_t` (`IOT_BRIDGE_NETIF_WAN` / `IOT_BRIDGE_NETIF_LAN`). Netif `if_key` values change from `SPI_DEF` / `SDIO_DEF` to **`SPI_LAN` / `SDIO_LAN`** (data forwarding / DHCPS) and **`SPI_WAN` / `SDIO_WAN`** (external / DHCP client). Code or scripts that look up netifs by the old keys must be updated ([7b66e21](https://github.com/espressif/esp-iot-bridge/commit/7b66e21e71f1c448626da3644df31117cc29be4f))
+- **Kconfig**: SPI and SDIO external vs data-forwarding options are mutually exclusive via `depends on` (replacing long in-menu warnings only); Ethernet external option label/help text shortened (behavior unchanged) ([7b66e21](https://github.com/espressif/esp-iot-bridge/commit/7b66e21e71f1c448626da3644df31117cc29be4f))
+
 ### Feature
 
+- feat(bridge_spi, bridge_sdio): When both Kconfig options are enabled, create **both** data-forwarding and external SPI/SDIO netifs; add `esp_bridge_spi_set_netif_type` / `esp_bridge_sdio_set_netif_type` (in `esp_bridge.h`) to select the active path ([7b66e21](https://github.com/espressif/esp-iot-bridge/commit/7b66e21e71f1c448626da3644df31117cc29be4f))
+- feat(bridge_common): DNS update path uses `BRIDGE_EVENT` and lwIP `netif` via `esp_netif_get_handle_from_netif_impl`, removing hard-coded external ifkeys for DHCP DNS sync ([c5a9742](https://github.com/espressif/esp-iot-bridge/commit/c5a9742d132d175f7a9c81a60732cb3fe43d0408))
 - feat: Add api to update netif changed cb ([9af64aa](https://github.com/espressif/esp-iot-bridge/commit/9af64aa70599ce2acbdf33e9d926813c3861f5c3))
 - feat: Support user to customize ip segment ([7aa26d6](https://github.com/espressif/esp-iot-bridge/commit/7aa26d6fbcf5e6419a2730f562a7804ea62b9323))
 - feat: set BRIDGE_WIFI_PMF_DISABLE default to n ([5803a16](https://github.com/espressif/esp-iot-bridge/commit/5803a16f3e21b21507f45cdd0037c5c1664eacc6))
@@ -11,6 +18,7 @@
 
 ### Bugfix
 
+- refactor: Improve user callback API for DHCP change ([c5a9742](https://github.com/espressif/esp-iot-bridge/commit/c5a9742d132d175f7a9c81a60732cb3fe43d0408))
 - fix: re-disable PMF after esp_wifi_set_config if BRIDGE_WIFI_PMF_DISABLE is set ([687e476](https://github.com/espressif/esp-iot-bridge/commit/687e4765a383a16041cb5aa5248f0d1c62130693))
 - fix: windows compilation issues in patch_utils.cmake ([e2df506](https://github.com/espressif/esp-iot-bridge/commit/e2df50687453396b3e647afbdf8b5cc1c0217044))
 
