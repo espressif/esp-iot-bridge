@@ -32,12 +32,13 @@
 
 static const char *TAG = "bridge_eth";
 
+static esp_netif_t *eth_wan_netif = NULL;
+static esp_netif_t *eth_lan_netif = NULL;
+
 static esp_eth_phy_t *phy = NULL;
 
 #if defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
 esp_eth_netif_glue_handle_t esp_bridge_eth_new_netif_glue(esp_eth_handle_t eth_hdl);
-esp_err_t esp_bridge_set_eth_lan_netif(esp_netif_t* netif);
-esp_err_t esp_bridge_set_eth_wan_netif(esp_netif_t* netif);
 #endif
 
 /**
@@ -400,6 +401,26 @@ static esp_err_t eth_io_transmit_wrap(void *h, void *buffer, size_t len, void *n
     return eth_io_transmit(h, buffer, len);
 }
 
+static esp_err_t esp_bridge_set_eth_netif(esp_bridge_netif_type_t type, esp_netif_t* netif)
+{
+    if (type == IOT_BRIDGE_NETIF_WAN) {
+        eth_wan_netif = netif;
+    } else if (type == IOT_BRIDGE_NETIF_LAN) {
+        eth_lan_netif = netif;
+    }
+    return ESP_OK;
+}
+
+esp_netif_t* esp_bridge_get_eth_netif(esp_bridge_netif_type_t type)
+{
+    if (type == IOT_BRIDGE_NETIF_WAN) {
+        return eth_wan_netif;
+    } else if (type == IOT_BRIDGE_NETIF_LAN) {
+        return eth_lan_netif;
+    }
+    return NULL;
+}
+
 esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps)
 {
     esp_netif_ip_info_t netif_ip_info = { 0 };
@@ -437,13 +458,11 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
 
     esp_netif_t* netif = esp_bridge_create_netif(&eth_config, ip_info, mac, enable_dhcps);
     if (netif) {
-#if defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
         if (data_forwarding) {
-            esp_bridge_set_eth_lan_netif(netif);
+            esp_bridge_set_eth_netif(IOT_BRIDGE_NETIF_LAN, netif);
         } else {
-            esp_bridge_set_eth_wan_netif(netif);
+            esp_bridge_set_eth_netif(IOT_BRIDGE_NETIF_WAN, netif);
         }
-#endif
         esp_netif_action_stop(netif, NULL, 0, NULL);
 #if CONFIG_BRIDGE_USE_INTERNAL_ETHERNET
         esp_bridge_eth_init(netif);

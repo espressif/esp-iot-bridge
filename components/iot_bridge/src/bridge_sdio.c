@@ -327,7 +327,7 @@ esp_bridge_netif_type_t esp_bridge_sdio_get_netif_type(void)
     return IOT_BRIDGE_NETIF_INVALID;
 }
 
-esp_netif_t* esp_bridge_sdio_netif_get(esp_bridge_netif_type_t type)
+esp_netif_t* esp_bridge_get_sdio_netif(esp_bridge_netif_type_t type)
 {
     if (type < 0 || type >= IOT_BRIDGE_NETIF_MAX) {
         return NULL;

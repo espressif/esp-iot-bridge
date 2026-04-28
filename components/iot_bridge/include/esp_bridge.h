@@ -30,82 +30,129 @@ esp_err_t esp_bridge_wifi_set_config(wifi_interface_t interface, wifi_config_t *
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
 /**
-* @brief Create modem netif for bridge.
-*
-* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
-* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
-* @param[in] data_forwarding: whether to use as data forwarding netif
-* @param[in] enable_dhcps: whether to enable DHCP server
-*
-* @return
-*      - instance: the netif instance created successfully
-*      - NULL: failed because some error occurred
-*/
+ * @brief Create modem netif for bridge.
+ *
+ * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+ * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+ * @param[in] data_forwarding: whether to use as data forwarding netif
+ * @param[in] enable_dhcps: whether to enable DHCP server
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
 esp_netif_t *esp_bridge_create_modem_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+
+/**
+ * @brief Get modem netif instance.
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
+esp_netif_t *esp_bridge_get_modem_netif(void);
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_STATION)
 /**
-* @brief Create station netif for bridge.
-*
-* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
-* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
-* @param[in] data_forwarding: whether to use as data forwarding netif
-* @param[in] enable_dhcps: whether to enable DHCP server
-*
-* @return
-*      - instance: the netif instance created successfully
-*      - NULL: failed because some error occurred
-*/
+ * @brief Create station netif for bridge.
+ *
+ * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+ * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+ * @param[in] data_forwarding: whether to use as data forwarding netif
+ * @param[in] enable_dhcps: whether to enable DHCP server
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
 esp_netif_t *esp_bridge_create_station_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+
+/**
+ * @brief Get station netif instance.
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
+esp_netif_t *esp_bridge_get_station_netif(void);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
 /**
-* @brief Create softap netif for bridge.
-*
-* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
-* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
-* @param[in] data_forwarding: whether to use as data forwarding netif
-* @param[in] enable_dhcps: whether to enable DHCP server
-*
-* @return
-*      - instance: the netif instance created successfully
-*      - NULL: failed because some error occurred
-*/
+ * @brief Create softap netif for bridge.
+ *
+ * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+ * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+ * @param[in] data_forwarding: whether to use as data forwarding netif
+ * @param[in] enable_dhcps: whether to enable DHCP server
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
 esp_netif_t *esp_bridge_create_softap_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+
+/**
+ * @brief Get softap netif instance. (for bridge data forwarding)
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred (not created)
+ */
+esp_netif_t *esp_bridge_get_softap_netif(void);
 #endif
 
 #if defined(CONFIG_BRIDGE_ETHERNET_NETIF_ENABLE)
 /**
-* @brief Create eth netif for bridge.
-*
-* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
-* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
-* @param[in] data_forwarding: whether to use as data forwarding netif
-* @param[in] enable_dhcps: whether to enable DHCP server
-*
-* @return
-*      - instance: the netif instance created successfully
-*      - NULL: failed because some error occurred
-*/
+ * @brief Create eth netif for bridge.
+ *
+ * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+ * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+ * @param[in] data_forwarding: whether to use as data forwarding netif
+ * @param[in] enable_dhcps: whether to enable DHCP server
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
 esp_netif_t *esp_bridge_create_eth_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+
+/**
+ * @brief
+ *
+ * @param[in] type The network interface type (e.g., IOT_BRIDGE_NETIF_WAN or IOT_BRIDGE_NETIF_LAN).
+ *
+ * @return
+ *      - Pointer to the Ethernet netif instance if successful.
+ *      - NULL if not created or on error.
+ */
+esp_netif_t* esp_bridge_get_eth_netif(esp_bridge_netif_type_t type);
 #endif
 
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
 /**
-* @brief Create usb netif for bridge.
-*
-* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
-* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
-* @param[in] data_forwarding: whether to use as data forwarding netif
-* @param[in] enable_dhcps: whether to enable DHCP server
-*
-* @return
-*      - instance: the netif instance created successfully
-*      - NULL: failed because some error occurred
-*/
+ * @brief Create usb netif for bridge.
+ *
+ * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+ * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+ * @param[in] data_forwarding: whether to use as data forwarding netif
+ * @param[in] enable_dhcps: whether to enable DHCP server
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
 esp_netif_t *esp_bridge_create_usb_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+
+/**
+ * @brief Get usb netif instance. (for bridge data forwarding)
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred (not created) (not created)
+ */
+esp_netif_t *esp_bridge_get_usb_netif(void);
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
@@ -121,22 +168,35 @@ esp_netif_t *esp_bridge_create_usb_netif(esp_netif_ip_info_t *ip_info, uint8_t m
 esp_err_t esp_bridge_sdio_set_netif_type(esp_bridge_netif_type_t type);
 
 /**
-* @brief Create sdio netif for bridge.
-*
-* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
-* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
-* @param[in] data_forwarding: whether to use as data forwarding netif
-* @param[in] enable_dhcps: whether to enable DHCP server
-*
-* @return
-*      - instance: the netif instance created successfully
-*      - NULL: failed because some error occurred
-*/
+ * @brief Create sdio netif for bridge.
+ *
+ * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+ * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+ * @param[in] data_forwarding: whether to use as data forwarding netif
+ * @param[in] enable_dhcps: whether to enable DHCP server
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
 esp_netif_t *esp_bridge_create_sdio_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+
+/**
+ * @brief Get the SDIO netif instance by type.
+ *
+ * This function returns the SDIO netif instance for the specified network interface type
+ * (WAN or LAN). Returns NULL if the interface has not been created or an invalid type is provided.
+ *
+ * @param[in] type The network interface type (e.g., IOT_BRIDGE_NETIF_WAN or IOT_BRIDGE_NETIF_LAN).
+ *
+ * @return
+ *      - Pointer to the SDIO netif instance if successful.
+ *      - NULL if not created or on error.
+ */
+esp_netif_t* esp_bridge_get_sdio_netif(esp_bridge_netif_type_t type);
 #endif
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
-
 /**
  * @brief Set the netif type for spi netif.
  *
@@ -149,18 +209,32 @@ esp_netif_t *esp_bridge_create_sdio_netif(esp_netif_ip_info_t *ip_info, uint8_t 
 esp_err_t esp_bridge_spi_set_netif_type(esp_bridge_netif_type_t type);
 
 /**
-* @brief Create spi netif for bridge.
-*
-* @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
-* @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
-* @param[in] data_forwarding: whether to use as data forwarding netif
-* @param[in] enable_dhcps: whether to enable DHCP server
-*
-* @return
-*      - instance: the netif instance created successfully
-*      - NULL: failed because some error occurred
-*/
+ * @brief Create spi netif for bridge.
+ *
+ * @param[in] ip_info: custom ip address, if set NULL, it will automatically be assigned.
+ * @param[in] mac: custom mac address, if set NULL, it will automatically be assigned.
+ * @param[in] data_forwarding: whether to use as data forwarding netif
+ * @param[in] enable_dhcps: whether to enable DHCP server
+ *
+ * @return
+ *      - instance: the netif instance created successfully
+ *      - NULL: failed because some error occurred
+ */
 esp_netif_t *esp_bridge_create_spi_netif(esp_netif_ip_info_t *ip_info, uint8_t mac[6], bool data_forwarding, bool enable_dhcps);
+
+/**
+ * @brief Get the SPI netif instance by type.
+ *
+ * This function returns the SPI netif instance for the specified network interface type
+ * (WAN or LAN). Returns NULL if the interface has not been created or an invalid type is provided.
+ *
+ * @param[in] type The network interface type (e.g., IOT_BRIDGE_NETIF_WAN or IOT_BRIDGE_NETIF_LAN).
+ *
+ * @return
+ *      - Pointer to the SPI netif instance if successful.
+ *      - NULL if not created or on error.
+ */
+esp_netif_t* esp_bridge_get_spi_netif(esp_bridge_netif_type_t type);
 #endif
 
 /**

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include "esp_netif.h"
+#include "esp_bridge.h"
 #include "esp_eth_driver.h"
 #include "esp_eth_netif_glue.h"
 #include "esp_netif_net_stack.h"
@@ -18,8 +19,6 @@
 const static char *TAG = "esp_eth.netif.netif_glue";
 
 typedef struct esp_eth_netif_glue_t esp_eth_netif_glue_t;
-esp_netif_t* eth_lan_netif;
-esp_netif_t* eth_wan_netif;
 
 struct esp_eth_netif_glue_t {
     esp_netif_driver_base_t base;
@@ -36,20 +35,11 @@ esp_err_t esp_netif_up(esp_netif_t *esp_netif);
 esp_err_t esp_netif_down(esp_netif_t *esp_netif);
 
 static eth_link_t state = ETH_LINK_DOWN;
-esp_err_t esp_bridge_set_eth_lan_netif(esp_netif_t* netif)
-{
-    eth_lan_netif = netif;
-    return ESP_OK;
-}
-
-esp_err_t esp_bridge_set_eth_wan_netif(esp_netif_t* netif)
-{
-    eth_wan_netif = netif;
-    return ESP_OK;
-}
 
 static esp_err_t eth_input_to_netif(esp_eth_handle_t eth_handle, uint8_t *buffer, uint32_t length, void *priv)
 {
+    esp_netif_t* eth_lan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN);
+    esp_netif_t* eth_wan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_WAN);
     if (eth_lan_netif && esp_netif_is_netif_up(eth_lan_netif)) {
         uint8_t *buffer2 = malloc(length);
         if (buffer2) {
@@ -111,6 +101,8 @@ static void eth_action_start(void *handler_args, esp_event_base_t base, int32_t 
     esp_eth_netif_glue_t *netif_glue = handler_args;
     ESP_LOGD(TAG, "eth_action_start: %p, %p, %" PRIi32 ", %p, %p", netif_glue, base, event_id, event_data, *(esp_eth_handle_t *)event_data);
     if (netif_glue->eth_driver == eth_handle) {
+        esp_netif_t* eth_lan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN);
+        esp_netif_t* eth_wan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_WAN);
         if (eth_lan_netif && !esp_netif_is_netif_up(eth_lan_netif)) {
             esp_netif_action_start(eth_lan_netif, base, event_id, event_data);
         }
@@ -127,6 +119,8 @@ static void eth_action_stop(void *handler_args, esp_event_base_t base, int32_t e
     esp_eth_netif_glue_t *netif_glue = handler_args;
     ESP_LOGD(TAG, "eth_action_stop: %p, %p, %" PRIi32 ", %p, %p", netif_glue, base, event_id, event_data, *(esp_eth_handle_t *)event_data);
     if (netif_glue->eth_driver == eth_handle) {
+        esp_netif_t* eth_lan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN);
+        esp_netif_t* eth_wan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_WAN);
         if (eth_lan_netif && esp_netif_is_netif_up(eth_lan_netif)) {
             esp_netif_action_stop(eth_lan_netif, base, event_id, event_data);
         }
@@ -144,6 +138,8 @@ static void eth_action_connected(void *handler_args, esp_event_base_t base, int3
     if (netif_glue->eth_driver == eth_handle) {
         eth_speed_t speed;
         esp_eth_ioctl(eth_handle, ETH_CMD_G_SPEED, &speed);
+        esp_netif_t* eth_lan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN);
+        esp_netif_t* eth_wan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_WAN);
         if (eth_lan_netif && !esp_netif_is_netif_up(eth_lan_netif)) {
             esp_netif_up(eth_lan_netif);
             esp_netif_set_link_speed(eth_lan_netif, speed == ETH_SPEED_100M ? 100000000 : 10000000);
@@ -165,6 +161,8 @@ static void eth_action_disconnected(void *handler_args, esp_event_base_t base, i
     esp_eth_netif_glue_t *netif_glue = handler_args;
     ESP_LOGD(TAG, "eth_action_disconnected: %p, %p, %" PRIi32 ", %p, %p", netif_glue, base, event_id, event_data, *(esp_eth_handle_t *)event_data);
     if (netif_glue->eth_driver == eth_handle) {
+        esp_netif_t* eth_lan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN);
+        esp_netif_t* eth_wan_netif = esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_WAN);
         if (eth_lan_netif && esp_netif_is_netif_up(eth_lan_netif)) {
             esp_netif_down(eth_lan_netif);
             esp_netif_action_disconnected(eth_lan_netif, base, event_id, event_data);
@@ -182,8 +180,8 @@ static void eth_action_got_ip(void *handler_args, esp_event_base_t base, int32_t
     ip_event_got_ip_t *ip_event = (ip_event_got_ip_t *)event_data;
     esp_eth_netif_glue_t *netif_glue = handler_args;
     ESP_LOGD(TAG, "eth_action_got_ip: %p, %p, %" PRIi32 ", %p, %p %p", netif_glue, base, event_id, event_data, *(esp_eth_handle_t *)event_data, ip_event->esp_netif);
-    if (eth_wan_netif == ip_event->esp_netif) {
-        esp_netif_down(eth_lan_netif);
+    if (esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_WAN) == ip_event->esp_netif) {
+        esp_netif_down(esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN));
         esp_netif_action_got_ip(ip_event->esp_netif, base, event_id, event_data);
     }
 }
@@ -193,8 +191,8 @@ static void eth_action_assigned_ip(void *handler_args, esp_event_base_t base, in
     ip_event_ap_staipassigned_t *ip_event = (ip_event_ap_staipassigned_t *)event_data;
     esp_eth_netif_glue_t *netif_glue = handler_args;
     ESP_LOGD(TAG, "eth_action_assigned_ip: %p, %p, %" PRIi32 ", %p, %p", netif_glue, base, event_id, event_data, *(esp_eth_handle_t *)event_data);
-    if (eth_lan_netif == ip_event->esp_netif) {
-        esp_netif_down(eth_wan_netif);
+    if (esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN) == ip_event->esp_netif) {
+        esp_netif_down(esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_WAN));
         // esp_netif_action_got_ip(ip_event->esp_netif, base, event_id, event_data);
         ESP_LOGI(TAG, "DHCP server assigned IP to LAN, IP is: " IPSTR, IP2STR(&ip_event->ip));
     }
