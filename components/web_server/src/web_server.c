@@ -1715,7 +1715,7 @@ static esp_err_t start_web_server(const char *base_path, uint16_t server_port)
     s_web_redirect_url = malloc(sizeof(char) * redirect_url_sz);
     *s_web_redirect_url = '\0';
     esp_netif_ip_info_t ip_info;
-    esp_netif_get_ip_info(esp_bridge_softap_netif_get(), &ip_info);
+    esp_netif_get_ip_info(esp_bridge_get_softap_netif(), &ip_info);
     snprintf(s_web_redirect_url, redirect_url_sz, "http://"IPSTR"%s", IP2STR(&ip_info.ip), BRIDGE_WEB_ROOT_DIR_DEFAULT);
 
     httpd_register_err_handler(s_server, HTTPD_404_NOT_FOUND, http_common_error_handler);
