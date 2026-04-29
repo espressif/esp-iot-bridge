@@ -950,7 +950,7 @@ static void listen_sta_connect_status_timer_cb(TimerHandle_t timer)
     static int connect_count = 1;
     ESP_LOGD(TAG, "Connect callback timer %p count = %d", timer, connect_count);
     esp_netif_ip_info_t sta_ip = { 0 };
-    esp_netif_t *sta_if = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+    esp_netif_t *sta_if = esp_bridge_get_station_netif();
 
     if (connect_count < connect_max_count) {
         sta_got_ip = esp_web_get_sta_got_ip_flag(); // to check whether sta has connected to appointed ap(like at_wifi_station_get_connect_status())
@@ -1147,7 +1147,7 @@ static esp_err_t esp_web_apply_wifi_connect_info(int32_t udp_port)
         esp_web_clear_sta_connect_config();
 
         esp_netif_ip_info_t sta_ip = { 0 };
-        esp_netif_t *sta_if = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+        esp_netif_t *sta_if = esp_bridge_get_station_netif();
 
         // according to connect result to update or report results
         if (ret != ESP_OK) { // connect fail
@@ -1715,7 +1715,7 @@ static esp_err_t start_web_server(const char *base_path, uint16_t server_port)
     s_web_redirect_url = malloc(sizeof(char) * redirect_url_sz);
     *s_web_redirect_url = '\0';
     esp_netif_ip_info_t ip_info;
-    esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
+    esp_netif_get_ip_info(esp_bridge_get_softap_netif(), &ip_info);
     snprintf(s_web_redirect_url, redirect_url_sz, "http://"IPSTR"%s", IP2STR(&ip_info.ip), BRIDGE_WEB_ROOT_DIR_DEFAULT);
 
     httpd_register_err_handler(s_server, HTTPD_404_NOT_FOUND, http_common_error_handler);

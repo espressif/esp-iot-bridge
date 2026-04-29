@@ -42,6 +42,7 @@ static const char *TAG = "bridge_modem";
 static EventGroupHandle_t event_group = NULL;
 static const int CONNECT_BIT = BIT0;
 static const int USB_DISCONNECTED_BIT = BIT3; // Used only with USB DTE but we define it unconditionally, to avoid too many #ifdefs in the code
+static esp_netif_t *modem_netif = NULL;
 
 #if (defined(CONFIG_BRIDGE_SERIAL_VIA_USB)) && (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0))
 #include "esp_modem_usb_c_api.h"
@@ -223,5 +224,11 @@ esp_netif_t *esp_bridge_create_modem_netif(esp_netif_ip_info_t *custom_ip_info, 
     /* Wait for IP address */
     ESP_LOGI(TAG, "Waiting for IP address");
     xEventGroupWaitBits(event_group, CONNECT_BIT | USB_DISCONNECTED_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    return esp_netif;
+    modem_netif = esp_netif;
+    return modem_netif;
+}
+
+esp_netif_t* esp_bridge_get_modem_netif(void)
+{
+    return modem_netif;
 }

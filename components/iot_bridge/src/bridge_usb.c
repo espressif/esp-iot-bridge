@@ -367,3 +367,8 @@ esp_netif_t* esp_bridge_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t m
     usb_netif = netif;
     return netif;
 }
+
+esp_netif_t* esp_bridge_get_usb_netif(void)
+{
+    return usb_netif;
+}

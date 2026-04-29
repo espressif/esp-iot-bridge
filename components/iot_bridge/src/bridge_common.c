@@ -674,19 +674,19 @@ esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *d
         esp_bridge_update_data_forwarding_netif_dns_info(data_forwarding_netif, &dns_info);
     } else {
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SOFTAP)
-        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &dns_info);
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_bridge_get_softap_netif(), &dns_info);
 #endif
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
-        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SDIO_LAN"), &dns_info);
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_bridge_get_sdio_netif(IOT_BRIDGE_NETIF_LAN), &dns_info);
 #endif
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SPI)
-        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("SPI_LAN"), &dns_info);
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_bridge_get_spi_netif(IOT_BRIDGE_NETIF_LAN), &dns_info);
 #endif
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
-        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("ETH_LAN"), &dns_info);
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN), &dns_info);
 #endif
 #if defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_USB)
-        esp_bridge_update_data_forwarding_netif_dns_info(esp_netif_get_handle_from_ifkey("USB_DEF"), &dns_info);
+        esp_bridge_update_data_forwarding_netif_dns_info(esp_bridge_get_usb_netif(), &dns_info);
 #endif
     }
     return ESP_OK;
