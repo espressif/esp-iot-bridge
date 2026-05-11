@@ -392,19 +392,12 @@ bool netd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_
     return true;
 }
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 bool tud_network_can_xmit(uint16_t size)
 {
     (void)size;
 
     return can_xmit;
 }
-#else
-bool tud_network_can_xmit(void)
-{
-    return can_xmit;
-}
-#endif /* ESP_IDF_VERSION >= 5.0.0 */
 
 void tud_network_xmit(void *ref, uint16_t arg)
 {

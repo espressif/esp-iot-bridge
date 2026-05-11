@@ -169,7 +169,7 @@ static uint8_t esp_web_get_mac_match_len(uint8_t *mac1, uint8_t *mac2, uint8_t m
 esp_err_t __attribute__((weak)) esp_web_wifi_connect(wifi_sta_config_t *conf)
 {
     esp_wifi_set_storage(WIFI_STORAGE_FLASH);
-    esp_err_t ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t *)conf);
+    esp_err_t ret = esp_wifi_set_config(WIFI_IF_STA, (wifi_config_t *)conf);
     esp_wifi_set_storage(WIFI_STORAGE_RAM);
 #if defined(CONFIG_BRIDGE_WIFI_PMF_DISABLE)
     esp_wifi_disable_pmf_config(WIFI_IF_STA);

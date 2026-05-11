@@ -89,4 +89,11 @@ menu "Bridge Wi-Fi Provisioning Configuration"
         default y
         help
             This enables BLE 4.2 features for Bluedroid.
+
+    config PROV_REPROVISIONING
+        bool "Re-provisioning"
+        default n
+        help
+            Enable re-provisioning - allow the device to provision for new credentials
+            after previous successful provisioning.
 endmenu
