@@ -9,6 +9,7 @@
 
 __attribute__((weak)) int custom_hook_ip4_napt_add_failed(void)
 {
-    printf("IP_NAPT_MAX:%d, IP_PORTMAP_MAX:%d, IP_NAPT_TIMEOUT_MS_TCP:%d\r\n", IP_NAPT_MAX, IP_PORTMAP_MAX, IP_NAPT_TIMEOUT_MS_TCP);
+    printf("IP_NAPT_MAX:%d, IP_PORTMAP_MAX:%d, IP_NAPT_TIMEOUT_MS_TCP:%d, IP_NAPT_TIMEOUT_MS_UDP:%d\r\n",
+           IP_NAPT_MAX, IP_PORTMAP_MAX, IP_NAPT_TIMEOUT_MS_TCP, IP_NAPT_TIMEOUT_MS_UDP);
     return 0;
 }
