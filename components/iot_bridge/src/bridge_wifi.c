@@ -15,7 +15,6 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 #include "lwip/ip_addr.h"
-#include "lwip/lwip_napt.h"
 #include "dhcpserver/dhcpserver.h"
 
 #include "esp_bridge_config.h"
@@ -264,7 +263,7 @@ static void wifi_event_ap_start_handler(void *arg, esp_event_base_t event_base,
         esp_netif_ip_info_t netif_ip;
         esp_netif_get_ip_info(softap_netif, &netif_ip);
 #if CONFIG_LWIP_IPV4_NAPT
-        ip_napt_enable(netif_ip.ip.addr, 1);
+        esp_netif_napt_enable(softap_netif);
 #endif
     }
 }
