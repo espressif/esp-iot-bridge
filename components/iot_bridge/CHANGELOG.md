@@ -1,6 +1,6 @@
 # ChangeLog
 
-## v1.0.3-dev - 2026.05.11
+## v1.0.3-dev - 2026.06.17
 
 ### Breaking Change
 
@@ -9,6 +9,9 @@
 
 ### Feature
 
+- feat(napt): Add Kconfig `BRIDGE_IP_NAPT_TIMEOUT_MS_UDP` (default 2000 ms) and expose `IP_NAPT_TIMEOUT_MS_UDP` through `esp_bridge_lwip_hook.h` for UDP NAPT entry lifetime tuning ([d041df7](https://github.com/espressif/esp-iot-bridge/commit/d041df754a404eb026ed5598b91aaab8a29c0406))
+- feat(napt): Enable NAPT via `esp_netif_napt_enable()` on Wi-Fi SoftAP, Ethernet, SDIO, SPI, and USB data-forwarding netifs (replacing direct `ip_napt_enable()` calls); guard with `CONFIG_LWIP_IPV4_NAPT`; drop unused `lwip/lwip_napt.h` includes ([e88295f](https://github.com/espressif/esp-iot-bridge/commit/e88295fc772809eddaf8b564f0d1bf1a5aca10db))
+- feat(drivers): Add ESP32-C5 support for SPI bridge handshake GPIO default and HCI UART baudrate Kconfig ([4e8b40b](https://github.com/espressif/esp-iot-bridge/commit/4e8b40b0522ea6aecdb9bc884f2a888f67c1be13))
 - feat: Add `esp_bridge_get_*_netif()` APIs ([6ce4c73](https://github.com/espressif/esp-iot-bridge/commit/6ce4c73376b2cfba8ef438a4cdbc2c99f78525cd))
 - feat(bridge_spi, bridge_sdio): When both Kconfig options are enabled, create **both** data-forwarding and external SPI/SDIO netifs; add `esp_bridge_spi_set_netif_type` / `esp_bridge_sdio_set_netif_type` (in `esp_bridge.h`) to select the active path ([98b3309](https://github.com/espressif/esp-iot-bridge/commit/98b33095fed681ffeeb6b3b84484eb9f33ed6816))
 - feat(bridge_common): DNS update path uses `BRIDGE_EVENT` and lwIP `netif` via `esp_netif_get_handle_from_netif_impl`, removing hard-coded external ifkeys for DHCP DNS sync ([c5a9742](https://github.com/espressif/esp-iot-bridge/commit/c5a9742d132d175f7a9c81a60732cb3fe43d0408))
