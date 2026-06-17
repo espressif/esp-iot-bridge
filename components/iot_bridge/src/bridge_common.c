@@ -26,7 +26,7 @@
 
 #include "lwip/inet.h"
 #include "lwip/ip_addr.h"
-#include "lwip/lwip_napt.h"
+#include "lwip/netif.h"
 #include "esp_netif_net_stack.h"
 #include "dhcpserver/dhcpserver.h"
 
@@ -1020,7 +1020,9 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
                 p = p->next;
             }
 
-            ip_napt_enable(ip_info->ip.addr, 1);
+#if CONFIG_LWIP_IPV4_NAPT
+            esp_netif_napt_enable(netif);
+#endif
         } else if (esp_netif_get_flags(netif) & ESP_NETIF_DHCP_CLIENT) {
             ESP_ERROR_CHECK(esp_netif_dhcpc_get_status(netif, &state));
 

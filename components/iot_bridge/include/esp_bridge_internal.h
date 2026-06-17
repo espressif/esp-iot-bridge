@@ -12,7 +12,6 @@
 #include "lwip/opt.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
-#include "lwip/lwip_napt.h"
 
 typedef esp_err_t(*dns_change_cb_t)(esp_ip_addr_t *ip_info);
 typedef esp_err_t(*dhcps_change_cb_t)(esp_ip_addr_t *ip_info);

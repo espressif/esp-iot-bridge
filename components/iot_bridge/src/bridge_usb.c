@@ -360,7 +360,9 @@ esp_netif_t* esp_bridge_create_usb_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         if (data_forwarding) {
             esp_netif_get_ip_info(netif, &netif_ip_info);
             ESP_LOGI(TAG, "USB IP Address:" IPSTR, IP2STR(&netif_ip_info.ip));
-            ip_napt_enable(netif_ip_info.ip.addr, 1);
+#if CONFIG_LWIP_IPV4_NAPT
+            esp_netif_napt_enable(netif);
+#endif
         }
     }
 

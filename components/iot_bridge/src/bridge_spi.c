@@ -370,7 +370,9 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
             esp_bridge_netif_list_add(netif, spi_netif_dhcp_status_change_cb, spi_netif_dhcp_status_change_cb);
             esp_netif_get_ip_info(netif, &netif_ip_info);
             ESP_LOGI(TAG, "SPI IP Address:" IPSTR, IP2STR(&netif_ip_info.ip));
-            ip_napt_enable(netif_ip_info.ip.addr, 1);
+#if CONFIG_LWIP_IPV4_NAPT
+            esp_netif_napt_enable(netif);
+#endif
             spi_netif[IOT_BRIDGE_NETIF_LAN] = netif;
         } else {
             esp_bridge_netif_list_add(netif, NULL, NULL);
