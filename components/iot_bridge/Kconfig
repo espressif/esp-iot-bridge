@@ -53,7 +53,7 @@ menu "Bridge Configuration"
         config BRIDGE_EXTERNAL_NETIF_SDIO
             depends on !BRIDGE_EXTERNAL_NETIF_SPI
             bool "Use SDIO interface to connect to the external network"
-            depends on IDF_TARGET_ESP32 || IDF_TARGET_ESP32C6
+            depends on IDF_TARGET_ESP32 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C5
             default n
             help
                 "NETIF_SDIO" cannot be enabled simultaneously with "NETIF_SPI".
@@ -135,7 +135,7 @@ menu "Bridge Configuration"
         config BRIDGE_DATA_FORWARDING_NETIF_SDIO
             depends on !BRIDGE_EXTERNAL_NETIF_SPI && !BRIDGE_DATA_FORWARDING_NETIF_SPI
             bool "Use SDIO interface to provide network data forwarding for other devices"
-            depends on IDF_TARGET_ESP32 || IDF_TARGET_ESP32C6
+            depends on IDF_TARGET_ESP32 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C5
             default n
             help
                 "NETIF_SDIO" cannot be enabled simultaneously with "NETIF_SPI".
