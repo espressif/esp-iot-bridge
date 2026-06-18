@@ -1,6 +1,6 @@
 # ChangeLog
 
-## v1.0.3-dev - 2026.06.17
+## v1.0.3-dev - 2026.06.18
 
 ### Breaking Change
 
@@ -9,6 +9,7 @@
 
 ### Feature
 
+- feat(drivers): Add ESP32-C5 support for SDIO bridge netif ([4245e9b](https://github.com/espressif/esp-iot-bridge/commit/4245e9bd75dbb08488ab2d3b5b4d1d43f3cfbd7b))
 - feat(napt): Add Kconfig `BRIDGE_IP_NAPT_TIMEOUT_MS_UDP` (default 2000 ms) and expose `IP_NAPT_TIMEOUT_MS_UDP` through `esp_bridge_lwip_hook.h` for UDP NAPT entry lifetime tuning ([d041df7](https://github.com/espressif/esp-iot-bridge/commit/d041df754a404eb026ed5598b91aaab8a29c0406))
 - feat(napt): Enable NAPT via `esp_netif_napt_enable()` on Wi-Fi SoftAP, Ethernet, SDIO, SPI, and USB data-forwarding netifs (replacing direct `ip_napt_enable()` calls); guard with `CONFIG_LWIP_IPV4_NAPT`; drop unused `lwip/lwip_napt.h` includes ([e88295f](https://github.com/espressif/esp-iot-bridge/commit/e88295fc772809eddaf8b564f0d1bf1a5aca10db))
 - feat(drivers): Add ESP32-C5 support for SPI bridge handshake GPIO default and HCI UART baudrate Kconfig ([4e8b40b](https://github.com/espressif/esp-iot-bridge/commit/4e8b40b0522ea6aecdb9bc884f2a888f67c1be13))
