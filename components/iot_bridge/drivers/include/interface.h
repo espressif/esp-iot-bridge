@@ -10,7 +10,7 @@
 
 #if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SDIO) || defined(CONFIG_BRIDGE_DATA_FORWARDING_NETIF_SDIO)
 
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32C5)
 	#include "driver/sdio_slave.h"
 #else
 	#error "SDIO is not supported for this chipset"
