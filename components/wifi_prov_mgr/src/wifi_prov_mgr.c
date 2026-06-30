@@ -16,20 +16,19 @@
 #include <esp_event.h>
 #include <esp_timer.h>
 
-#include <wifi_provisioning/manager.h>
+#include <network_provisioning/manager.h>
 
 #ifdef CONFIG_PROV_TRANSPORT_BLE
-#include <wifi_provisioning/scheme_ble.h>
+#include <network_provisioning/scheme_ble.h>
 #endif /* CONFIG_PROV_TRANSPORT_BLE */
 
 #ifdef CONFIG_PROV_TRANSPORT_SOFTAP
-#include <wifi_provisioning/scheme_softap.h>
+#include <network_provisioning/scheme_softap.h>
 #endif /* CONFIG_PROV_TRANSPORT_SOFTAP */
 #include "qrcode.h"
 
 static const char *TAG = "esp_bridge_wifi_prov_mgr";
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #if CONFIG_PROV_SECURITY_VERSION_2
 #if CONFIG_PROV_SEC2_DEV_MODE
 #define BRIDGE_PROV_SEC2_USERNAME          "wifiprov"
@@ -97,7 +96,6 @@ static esp_err_t esp_bridge_get_sec2_verifier(const char **verifier, uint16_t *v
 #endif
 }
 #endif
-#endif /* ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) */
 
 static bool wifi_prov_status = false;
 static esp_timer_handle_t deinit_wifi_prov_mgr_timer = NULL;
@@ -118,25 +116,11 @@ bool wifi_provision_in_progress(void)
     return wifi_prov_status;
 }
 
-esp_err_t __attribute__((weak)) wifi_prov_wifi_connect(wifi_sta_config_t *conf)
-{
-    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
-    esp_err_t ret = esp_wifi_set_config(ESP_IF_WIFI_STA, (wifi_config_t *)conf);
-    esp_wifi_set_storage(WIFI_STORAGE_RAM);
-#if defined(CONFIG_BRIDGE_WIFI_PMF_DISABLE)
-    esp_wifi_disable_pmf_config(WIFI_IF_STA);
-#endif
-    esp_wifi_disconnect();
-    esp_wifi_connect();
-
-    return ret;
-}
-
 static void deinit_wifi_prov_mgr_timer_callback(void *arg)
 {
     ESP_LOGW(TAG, "Provisioning timed out. Please reboot device to restart provisioning.");
-    wifi_prov_mgr_stop_provisioning();
-    esp_event_post(WIFI_PROV_EVENT, WIFI_PROV_END, NULL, 0, portMAX_DELAY);
+    network_prov_mgr_stop_provisioning();
+    esp_event_post(NETWORK_PROV_EVENT, NETWORK_PROV_END, NULL, 0, portMAX_DELAY);
 }
 
 /* Event handler for catching system events */
@@ -151,34 +135,33 @@ static void event_handler(void *arg, esp_event_base_t event_base,
     static int retries;
 #endif
 
-    if (event_base == WIFI_PROV_EVENT) {
+    if (event_base == NETWORK_PROV_EVENT) {
         switch (event_id) {
-        case WIFI_PROV_START:
+        case NETWORK_PROV_START:
             ESP_LOGI(TAG, "Provisioning started");
             break;
 
-        case WIFI_PROV_CRED_RECV: {
+        case NETWORK_PROV_WIFI_CRED_RECV: {
             wifi_sta_config_t *wifi_sta_cfg = (wifi_sta_config_t *)event_data;
             ESP_LOGI(TAG, "Received Wi-Fi credentials"
                      "\n\tSSID     : %s\n\tPassword : %s",
                      (const char *)wifi_sta_cfg->ssid,
                      (const char *)wifi_sta_cfg->password);
-            wifi_prov_wifi_connect(wifi_sta_cfg);
             break;
         }
 
-        case WIFI_PROV_CRED_FAIL: {
-            wifi_prov_sta_fail_reason_t *reason = (wifi_prov_sta_fail_reason_t *)event_data;
+        case NETWORK_PROV_WIFI_CRED_FAIL: {
+            network_prov_wifi_sta_fail_reason_t *reason = (network_prov_wifi_sta_fail_reason_t *)event_data;
             ESP_LOGE(TAG, "Provisioning failed!\n\tReason : %s"
                      "\n\tPlease reset to factory and retry provisioning",
-                     (*reason == WIFI_PROV_STA_AUTH_ERROR) ?
+                     (*reason == NETWORK_PROV_WIFI_STA_AUTH_ERROR) ?
                      "Wi-Fi station authentication failed" : "Wi-Fi access-point not found");
 #ifdef CONFIG_PROV_RESET_PROV_MGR_ON_FAILURE
             retries++;
 
             if (retries >= CONFIG_PROV_MGR_MAX_RETRY_CNT) {
                 ESP_LOGI(TAG, "Failed to connect with provisioned AP, resetting provisioned credentials");
-                wifi_prov_mgr_reset_sm_state_on_failure();
+                network_prov_mgr_reset_wifi_sm_state_on_failure();
                 retries = 0;
             }
 
@@ -186,18 +169,18 @@ static void event_handler(void *arg, esp_event_base_t event_base,
             break;
         }
 
-        case WIFI_PROV_CRED_SUCCESS:
+        case NETWORK_PROV_WIFI_CRED_SUCCESS:
             ESP_LOGI(TAG, "Provisioning successful");
 #ifdef CONFIG_PROV_RESET_PROV_MGR_ON_FAILURE
             retries = 0;
 #endif
             break;
 
-        case WIFI_PROV_END:
+        case NETWORK_PROV_END:
             esp_timer_stop(deinit_wifi_prov_mgr_timer);
             esp_timer_delete(deinit_wifi_prov_mgr_timer);
             /* De-initialize manager once provisioning is finished */
-            wifi_prov_mgr_deinit();
+            network_prov_mgr_deinit();
             wifi_prov_status = false;
             break;
 
@@ -216,7 +199,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 static void wifi_prov_event_register(void)
 {
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_PROV_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(NETWORK_PROV_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
 }
@@ -264,11 +247,6 @@ static void wifi_prov_print_qr(const char *name, const char *username, const cha
     char payload[150] = { 0 };
 
     if (pop) {
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-        snprintf(payload, sizeof(payload), "{\"ver\":\"%s\",\"name\":\"%s\"" \
-                 ",\"pop\":\"%s\",\"transport\":\"%s\"}",
-                 PROV_QR_VERSION, name, pop, transport);
-#else
 #if CONFIG_PROV_SECURITY_VERSION_1
         snprintf(payload, sizeof(payload), "{\"ver\":\"%s\",\"name\":\"%s\"" \
                  ",\"pop\":\"%s\",\"transport\":\"%s\"}",
@@ -278,7 +256,6 @@ static void wifi_prov_print_qr(const char *name, const char *username, const cha
                  ",\"username\":\"%s\",\"pop\":\"%s\",\"transport\":\"%s\"}",
                  PROV_QR_VERSION, name, username, pop, transport);
 #endif
-#endif /* ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0) */
     } else {
         snprintf(payload, sizeof(payload), "{\"ver\":\"%s\",\"name\":\"%s\"" \
                  ",\"transport\":\"%s\"}",
@@ -304,11 +281,11 @@ void esp_bridge_wifi_prov_mgr(void)
 #endif /* CONFIG_PROV_TRANSPORT_SOFTAP */
 
     /* Configuration for the provisioning manager */
-    wifi_prov_mgr_config_t config = {
+    network_prov_mgr_config_t config = {
         /* What is the Provisioning Scheme that we want ?
-         * wifi_prov_scheme_softap or wifi_prov_scheme_ble */
+         * wifi_prov_scheme_softap or network_prov_scheme_ble */
 #ifdef CONFIG_PROV_TRANSPORT_BLE
-        .scheme = wifi_prov_scheme_ble,
+        .scheme = network_prov_scheme_ble,
 #endif /* CONFIG_PROV_TRANSPORT_BLE */
 #ifdef CONFIG_PROV_TRANSPORT_SOFTAP
         .scheme = wifi_prov_scheme_softap,
@@ -323,7 +300,7 @@ void esp_bridge_wifi_prov_mgr(void)
          * to take care of this automatically. This can be set to
          * WIFI_PROV_EVENT_HANDLER_NONE when using wifi_prov_scheme_softap*/
 #ifdef CONFIG_PROV_TRANSPORT_BLE
-        .scheme_event_handler = WIFI_PROV_SCHEME_BLE_EVENT_HANDLER_FREE_BTDM
+        .scheme_event_handler = NETWORK_PROV_SCHEME_BLE_EVENT_HANDLER_FREE_BTDM
 #endif /* CONFIG_PROV_TRANSPORT_BLE */
 #ifdef CONFIG_PROV_TRANSPORT_SOFTAP
         .scheme_event_handler = WIFI_PROV_EVENT_HANDLER_NONE
@@ -332,152 +309,156 @@ void esp_bridge_wifi_prov_mgr(void)
 
     /* Initialize provisioning manager with the
      * configuration parameters set above */
-    ESP_ERROR_CHECK(wifi_prov_mgr_init(config));
+    ESP_ERROR_CHECK(network_prov_mgr_init(config));
 
+    bool provisioned = false;
 #ifdef CONFIG_PROV_RESET_PROVISIONED
-    wifi_prov_mgr_reset_provisioning();
+    network_prov_mgr_reset_wifi_provisioning();
+#else
+    /* Let's find out if the device is provisioned */
+    ESP_ERROR_CHECK(network_prov_mgr_is_wifi_provisioned(&provisioned));
 #endif
+    if (!provisioned) {
+        ESP_LOGI(TAG, "Starting provisioning");
 
-    ESP_LOGI(TAG, "Starting provisioning");
+        /* What is the Device Service Name that we want
+        * This translates to :
+        *     - Wi-Fi SSID when scheme is wifi_prov_scheme_softap
+        *     - device name when scheme is network_prov_scheme_ble
+        */
+        char service_name[12];
+        get_device_service_name(service_name, sizeof(service_name));
 
-    /* What is the Device Service Name that we want
-     * This translates to :
-     *     - Wi-Fi SSID when scheme is wifi_prov_scheme_softap
-     *     - device name when scheme is wifi_prov_scheme_ble
-     */
-    char service_name[12];
-    get_device_service_name(service_name, sizeof(service_name));
-
-    /* What is the security level that we want (0, 1, 2):
-     *      - WIFI_PROV_SECURITY_0 is simply plain text communication.
-     *      - WIFI_PROV_SECURITY_1 is secure communication which consists of secure handshake
-     *          using X25519 key exchange and proof of possession (pop) and AES-CTR
-     *          for encryption/decryption of messages.
-     *      - WIFI_PROV_SECURITY_2 SRP6a based authentication and key exchange
-     *        + AES-GCM encryption/decryption of messages
-     */
-    wifi_prov_security_t security = WIFI_PROV_SECURITY_1;
-
-    /* Do we want a proof-of-possession (ignored if Security 0 is selected):
-     *      - this should be a string with length > 0
-     *      - NULL if not used
-     */
-    const char *pop = "abcd1234";
-
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #ifdef CONFIG_PROV_SECURITY_VERSION_1
-    /* This is the structure for passing security parameters
-     * for the protocomm security 1.
-     */
-    wifi_prov_security1_params_t *sec_params = pop;
+        /* What is the security level that we want (0, 1, 2):
+        *      - WIFI_PROV_SECURITY_0 is simply plain text communication.
+        *      - NETWORK_PROV_SECURITY_2 is secure communication which consists of secure handshake
+        *          using X25519 key exchange and proof of possession (pop) and AES-CTR
+        *          for encryption/decryption of messages.
+        *      - NETWORK_PROV_SECURITY_2 SRP6a based authentication and key exchange
+        *        + AES-GCM encryption/decryption of messages
+        */
+        network_prov_security_t security = NETWORK_PROV_SECURITY_2;
 
-    const char *username = NULL;
+        /* Do we want a proof-of-possession (ignored if Security 0 is selected):
+        *      - this should be a string with length > 0
+        *      - NULL if not used
+        */
+        const char *pop = "abcd1234";
+
+        /* This is the structure for passing security parameters
+        * for the protocomm security 1.
+        */
+        network_prov_security1_params_t *sec_params = pop;
+
+        const char *username = NULL;
 
 #elif CONFIG_PROV_SECURITY_VERSION_2
-    security = WIFI_PROV_SECURITY_2;
-    /* The username must be the same one, which has been used in the generation of salt and verifier */
+        network_prov_security_t security = NETWORK_PROV_SECURITY_2;
+        /* The username must be the same one, which has been used in the generation of salt and verifier */
 
 #if CONFIG_PROV_SEC2_DEV_MODE
-    /* This pop field represents the password that will be used to generate salt and verifier.
-     * The field is present here in order to generate the QR code containing password.
-     * In production this password field shall not be stored on the device */
-    const char *username = BRIDGE_PROV_SEC2_USERNAME;
-    pop = BRIDGE_PROV_SEC2_PWD;
+        /* This pop field represents the password that will be used to generate salt and verifier.
+        * The field is present here in order to generate the QR code containing password.
+        * In production this password field shall not be stored on the device */
+        const char *username = BRIDGE_PROV_SEC2_USERNAME;
+        const char *pop = BRIDGE_PROV_SEC2_PWD;
 #elif CONFIG_PROV_SEC2_PROD_MODE
-    /* The username and password shall not be embedded in the firmware,
-     * they should be provided to the user by other means.
-     * e.g. QR code sticker */
-    const char *username = NULL;
-    pop = NULL;
+        /* The username and password shall not be embedded in the firmware,
+        * they should be provided to the user by other means.
+        * e.g. QR code sticker */
+        const char *username = NULL;
+        const char *pop = NULL;
 #endif
-    /* This is the structure for passing security parameters
-     * for the protocomm security 2.
-     * This does not need not be static i.e. could be dynamically allocated
-     */
-    wifi_prov_security2_params_t sec2_params = {};
+        /* This is the structure for passing security parameters
+        * for the protocomm security 2.
+        * This does not need not be static i.e. could be dynamically allocated
+        */
+        network_prov_security2_params_t sec2_params = {};
 
-    ESP_ERROR_CHECK(esp_bridge_get_sec2_salt(&sec2_params.salt, &sec2_params.salt_len));
-    ESP_ERROR_CHECK(esp_bridge_get_sec2_verifier(&sec2_params.verifier, &sec2_params.verifier_len));
+        ESP_ERROR_CHECK(esp_bridge_get_sec2_salt(&sec2_params.salt, &sec2_params.salt_len));
+        ESP_ERROR_CHECK(esp_bridge_get_sec2_verifier(&sec2_params.verifier, &sec2_params.verifier_len));
 
-    wifi_prov_security2_params_t *sec_params = &sec2_params;
+        network_prov_security2_params_t *sec_params = &sec2_params;
 #endif
-#endif /* ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) */
 
-    /* What is the service key (could be NULL)
-     * This translates to :
-     *     - Wi-Fi password when scheme is wifi_prov_scheme_softap
-     *          (Minimum expected length: 8, maximum 64 for WPA2-PSK)
-     *     - simply ignored when scheme is wifi_prov_scheme_ble
-     */
-    const char *service_key = NULL;
+        /* What is the service key (could be NULL)
+        * This translates to :
+        *     - Wi-Fi password when scheme is wifi_prov_scheme_softap
+        *          (Minimum expected length: 8, maximum 64 for WPA2-PSK)
+        *     - simply ignored when scheme is network_prov_scheme_ble
+        */
+        const char *service_key = NULL;
 
 #ifdef CONFIG_PROV_TRANSPORT_BLE
-    /* This step is only useful when scheme is wifi_prov_scheme_ble. This will
-     * set a custom 128 bit UUID which will be included in the BLE advertisement
-     * and will correspond to the primary GATT service that provides provisioning
-     * endpoints as GATT characteristics. Each GATT characteristic will be
-     * formed using the primary service UUID as base, with different auto assigned
-     * 12th and 13th bytes (assume counting starts from 0th byte). The client side
-     * applications must identify the endpoints by reading the User Characteristic
-     * Description descriptor (0x2901) for each characteristic, which contains the
-     * endpoint name of the characteristic */
-    uint8_t custom_service_uuid[] = {
-        /* LSB <---------------------------------------
-            * ---------------------------------------> MSB */
-        0xb4, 0xdf, 0x5a, 0x1c, 0x3f, 0x6b, 0xf4, 0xbf,
-        0xea, 0x4a, 0x82, 0x03, 0x04, 0x90, 0x1a, 0x02,
-    };
+        /* This step is only useful when scheme is network_prov_scheme_ble. This will
+        * set a custom 128 bit UUID which will be included in the BLE advertisement
+        * and will correspond to the primary GATT service that provides provisioning
+        * endpoints as GATT characteristics. Each GATT characteristic will be
+        * formed using the primary service UUID as base, with different auto assigned
+        * 12th and 13th bytes (assume counting starts from 0th byte). The client side
+        * applications must identify the endpoints by reading the User Characteristic
+        * Description descriptor (0x2901) for each characteristic, which contains the
+        * endpoint name of the characteristic */
+        uint8_t custom_service_uuid[] = {
+            /* LSB <---------------------------------------
+                * ---------------------------------------> MSB */
+            0xb4, 0xdf, 0x5a, 0x1c, 0x3f, 0x6b, 0xf4, 0xbf,
+            0xea, 0x4a, 0x82, 0x03, 0x04, 0x90, 0x1a, 0x02,
+        };
 
-    /* If your build fails with linker errors at this point, then you may have
-     * forgotten to enable the BT stack or BTDM BLE settings in the SDK (e.g. see
-     * the sdkconfig.defaults in the example project) */
-    wifi_prov_scheme_ble_set_service_uuid(custom_service_uuid);
+        /* If your build fails with linker errors at this point, then you may have
+        * forgotten to enable the BT stack or BTDM BLE settings in the SDK (e.g. see
+        * the sdkconfig.defaults in the example project) */
+        network_prov_scheme_ble_set_service_uuid(custom_service_uuid);
 #endif /* CONFIG_PROV_TRANSPORT_BLE */
 
-    /* An optional endpoint that applications can create if they expect to
-     * get some additional custom data during provisioning workflow.
-     * The endpoint name can be anything of your choice.
-     * This call must be made before starting the provisioning.
-     */
-    wifi_prov_mgr_endpoint_create("custom-data");
-    /* Start provisioning service */
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-    ESP_ERROR_CHECK(wifi_prov_mgr_start_provisioning(security, pop, service_name, service_key));
-#else
-    ESP_ERROR_CHECK(wifi_prov_mgr_start_provisioning(security, (const void *)sec_params, service_name, service_key));
+        /* An optional endpoint that applications can create if they expect to
+        * get some additional custom data during provisioning workflow.
+        * The endpoint name can be anything of your choice.
+        * This call must be made before starting the provisioning.
+        */
+        network_prov_mgr_endpoint_create("custom-data");
+
+        /* Do not stop and de-init provisioning even after success,
+         * so that we can restart it later. */
+#ifdef CONFIG_PROV_REPROVISIONING
+        network_prov_mgr_disable_auto_stop(1000);
 #endif
+        /* Start provisioning service */
+        ESP_ERROR_CHECK(network_prov_mgr_start_provisioning(security, (const void *)sec_params, service_name, service_key));
 
-    /* The handler for the optional endpoint created above.
-     * This call must be made after starting the provisioning, and only if the endpoint
-     * has already been created above.
-     */
-    wifi_prov_mgr_endpoint_register("custom-data", custom_prov_data_handler, NULL);
+        /* The handler for the optional endpoint created above.
+        * This call must be made after starting the provisioning, and only if the endpoint
+        * has already been created above.
+        */
+        network_prov_mgr_endpoint_register("custom-data", custom_prov_data_handler, NULL);
 
-    /* Uncomment the following to wait for the provisioning to finish and then release
-     * the resources of the manager. Since in this case de-initialization is triggered
-     * by the default event loop handler, we don't need to call the following */
-    // wifi_prov_mgr_wait();
-    // wifi_prov_mgr_deinit();
-    /* Print QR code for provisioning */
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
+        /* Uncomment the following to wait for the provisioning to finish and then release
+        * the resources of the manager. Since in this case de-initialization is triggered
+        * by the default event loop handler, we don't need to call the following */
+        // wifi_prov_mgr_wait();
+        // network_prov_mgr_deinit();
+        /* Print QR code for provisioning */
 #ifdef CONFIG_PROV_TRANSPORT_BLE
-    wifi_prov_print_qr(service_name, NULL, pop, PROV_TRANSPORT_BLE);
+        wifi_prov_print_qr(service_name, username, pop, PROV_TRANSPORT_BLE);
 #else /* CONFIG_PROV_TRANSPORT_SOFTAP */
-    wifi_prov_print_qr(service_name, NULL, pop, PROV_TRANSPORT_SOFTAP);
+        wifi_prov_print_qr(service_name, username, pop, PROV_TRANSPORT_SOFTAP);
 #endif /* CONFIG_PROV_TRANSPORT_BLE */
-#else
-#ifdef CONFIG_PROV_TRANSPORT_BLE
-    wifi_prov_print_qr(service_name, username, pop, PROV_TRANSPORT_BLE);
-#else /* CONFIG_PROV_TRANSPORT_SOFTAP */
-    wifi_prov_print_qr(service_name, username, pop, PROV_TRANSPORT_SOFTAP);
-#endif /* CONFIG_PROV_TRANSPORT_BLE */
-#endif /* ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0) */
 
-    const esp_timer_create_args_t deinit_wifi_prov_mgr_timer_args = {
-        .callback = &deinit_wifi_prov_mgr_timer_callback,
-        .name = "deinit_wifi_prov_mgr"
-    };
+        const esp_timer_create_args_t deinit_wifi_prov_mgr_timer_args = {
+            .callback = &deinit_wifi_prov_mgr_timer_callback,
+            .name = "deinit_wifi_prov_mgr"
+        };
 
-    ESP_ERROR_CHECK(esp_timer_create(&deinit_wifi_prov_mgr_timer_args, &deinit_wifi_prov_mgr_timer));
-    ESP_ERROR_CHECK(esp_timer_start_once(deinit_wifi_prov_mgr_timer, 300 * 1000000));
+        ESP_ERROR_CHECK(esp_timer_create(&deinit_wifi_prov_mgr_timer_args, &deinit_wifi_prov_mgr_timer));
+        ESP_ERROR_CHECK(esp_timer_start_once(deinit_wifi_prov_mgr_timer, 300 * 1000000));
+
+    } else {
+        ESP_LOGI(TAG, "Already provisioned, starting Wi-Fi STA");
+
+        /* We don't need the manager as device is already provisioned,
+         * so let's release it's resources */
+        ESP_ERROR_CHECK(network_prov_mgr_deinit());
+    }
 }

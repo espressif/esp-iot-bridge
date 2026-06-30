@@ -18,3 +18,4 @@ jobs:
             components/iot_bridge;
           namespace: "espressif"
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
+          skip_pre_release: true
