@@ -22,6 +22,7 @@ menu "Bridge Misc Configuration"
         config APP_GPIO_BUTTON_SW1
             default 16 if IDF_TARGET_ESP32   || IDF_TARGET_ESP32H2
             default 38 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default 61 if IDF_TARGET_ESP32S31
             default 9
             int "GPIO button of switch"
             help

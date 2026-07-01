@@ -1,10 +1,14 @@
 # ChangeLog
 
-## v1.2.0-dev - 2026.07.01
+## v1.2.0-dev - 2026.07.02
 
-### Feature
+### Supported ESP-IDF Version
 
-- Add support for ESP-IDF v6.0 and v6.1
+- Add v6.0 and v6.1
+
+### Supported Socs
+
+- ESP32-S31
 
 ## v1.1.0 - 2026.06.22
 

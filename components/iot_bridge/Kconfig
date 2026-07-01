@@ -111,7 +111,7 @@ menu "Bridge Configuration"
 
         config BRIDGE_DATA_FORWARDING_NETIF_USB
             bool "Use USB interface to provide network data forwarding for other devices"
-            depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            depends on IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3 || IDF_TARGET_ESP32S31
             select TINYUSB
             select TINYUSB_NET_ENABLED
             default n
@@ -167,11 +167,16 @@ menu "Bridge Configuration"
         default 19 if IDF_TARGET_ESP32C3
         default 30 if IDF_TARGET_ESP32C5 || IDF_TARGET_ESP32C6
         default 24 if IDF_TARGET_ESP32C61
+        default 61 if IDF_TARGET_ESP32S31
         default 46 if IDF_TARGET_ESP32S2
         default 48 if IDF_TARGET_ESP32S3
 
     menu "ETH Configuration"
         depends on BRIDGE_ETHERNET_NETIF_ENABLE
+
+        # On IDF 6.0+, ethernet_init component provides Ethernet hardware Kconfig.
+        # Legacy bridge-local options are kept for IDF 5.x when ethernet_init is absent.
+        if !IDF_TARGET_ESP32S31 && !ETHERNET_SPI_SUPPORT && !ETHERNET_INTERNAL_SUPPORT
 
         choice BRIDGE_ETHERNET_TYPE
             prompt "Ethernet Type"
@@ -360,6 +365,22 @@ menu "Bridge Configuration"
                 help
                     Set the first SPI Ethernet module PHY address according your board schematic.
         endif # BRIDGE_USE_SPI_ETHERNET
+
+        endif # !ETHERNET_SPI_SUPPORT && !ETHERNET_INTERNAL_SUPPORT
+
+        config BRIDGE_ETH_PHY_YT8531_INIT
+            bool "YT8531 RGMII PHY specific initialization"
+            depends on IDF_TARGET_ESP32S31
+            default y
+            help
+                ESP32-S31 boards use YT8531 connected via RGMII. The Generic 802.3 PHY
+                driver requires chip-specific register tuning (auto-negotiation re-enable
+                and RGMII Tx/Rx delay) after driver installation.
+
+        if ETHERNET_SPI_SUPPORT || ETHERNET_INTERNAL_SUPPORT
+        comment "Ethernet hardware (type / GPIO / PHY) is configured under"
+        comment "'Component config' -> 'Ethernet Configuration'."
+        endif
     endmenu
 
     menu "Modem Configuration"

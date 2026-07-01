@@ -104,7 +104,7 @@ Notes:
     | Component Version    | ESP-IDF Version       | USB Support | RNDIS Support | Solution                  |
     |----------------------|-----------------------|-------------|---------------|---------------------------|
     | **iot_bridge ≥1.0.0** | **ESP-IDF ≥5.1.4 (incl. 6.1)**   | ✅ Supported | ❌ Unsupported | Use esp_tinyusb component |
-    | **iot_bridge ≥1.0.0** | **ESP-IDF 5.0-5.1.3** | ❌ Unsupported | ❌ Unsupported | Upgrade IDF **or** use legacy solution ↓ |
+    | **iot_bridge ≥1.0.0** | **ESP-IDF 5.0-5.1.3** | ❌ Unsupported | ❌ Unsupported | Upgrade ESP-IDF **or** downgrade to iot_bridge 0.11.9 |
     | **iot_bridge 0.11.9** | **ESP-IDF 5.0+**     | ✅ Supported | ✅ Supported (idf5.0-5.1.3) | <pre>espressif/iot_bridge:<br>  version: "0.11.9"<br>usb_device:<br>  path: components/usb/usb_device<br>  git: https://github.com/espressif/esp-iot-bridge.git<br>  rules:<br>  - if: "target in [esp32s2, esp32s3]"<br>  - if: "idf_version < 5.1.4"</pre> |
 
 ### 1.1 Wi-Fi Router
