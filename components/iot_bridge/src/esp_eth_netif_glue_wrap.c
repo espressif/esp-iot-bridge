@@ -13,8 +13,17 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_check.h"
+#include "esp_idf_version.h"
 #include "esp_netif.h"
 #include <string.h>
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#define BRIDGE_IP_EVENT_CLIENT_ASSIGNED    IP_EVENT_ASSIGNED_IP_TO_CLIENT
+typedef ip_event_assigned_ip_to_client_t bridge_ip_event_client_assigned_t;
+#else
+#define BRIDGE_IP_EVENT_CLIENT_ASSIGNED    IP_EVENT_AP_STAIPASSIGNED
+typedef ip_event_ap_staipassigned_t bridge_ip_event_client_assigned_t;
+#endif
 
 const static char *TAG = "esp_eth.netif.netif_glue";
 
@@ -188,7 +197,7 @@ static void eth_action_got_ip(void *handler_args, esp_event_base_t base, int32_t
 
 static void eth_action_assigned_ip(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
-    ip_event_ap_staipassigned_t *ip_event = (ip_event_ap_staipassigned_t *)event_data;
+    bridge_ip_event_client_assigned_t *ip_event = (bridge_ip_event_client_assigned_t *)event_data;
     esp_eth_netif_glue_t *netif_glue = handler_args;
     ESP_LOGD(TAG, "eth_action_assigned_ip: %p, %p, %" PRIi32 ", %p, %p", netif_glue, base, event_id, event_data, *(esp_eth_handle_t *)event_data);
     if (esp_bridge_get_eth_netif(IOT_BRIDGE_NETIF_LAN) == ip_event->esp_netif) {
@@ -228,7 +237,7 @@ static esp_err_t esp_eth_clear_glue_instance_handlers(esp_eth_netif_glue_handle_
     }
 
     if (eth_netif_glue->assigned_ip_ctx_handler) {
-        esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_AP_STAIPASSIGNED, eth_netif_glue->assigned_ip_ctx_handler);
+        esp_event_handler_instance_unregister(IP_EVENT, BRIDGE_IP_EVENT_CLIENT_ASSIGNED, eth_netif_glue->assigned_ip_ctx_handler);
         eth_netif_glue->assigned_ip_ctx_handler = NULL;
     }
 
@@ -264,7 +273,7 @@ static esp_err_t esp_eth_set_glue_instance_handlers(esp_eth_netif_glue_handle_t 
         goto fail;
     }
 
-    ret = esp_event_handler_instance_register(IP_EVENT, IP_EVENT_AP_STAIPASSIGNED, eth_action_assigned_ip, eth_netif_glue, &eth_netif_glue->assigned_ip_ctx_handler);
+    ret = esp_event_handler_instance_register(IP_EVENT, BRIDGE_IP_EVENT_CLIENT_ASSIGNED, eth_action_assigned_ip, eth_netif_glue, &eth_netif_glue->assigned_ip_ctx_handler);
     if (ret != ESP_OK) {
         goto fail;
     }

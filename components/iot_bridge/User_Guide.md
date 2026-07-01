@@ -24,16 +24,16 @@ ESP-IoT-Bridge solution focuses on connectivity and communication between variou
 
 ESP-IoT-Bridge is supported by various Espressif chips, as shown in the table below:
 
-| Chip     |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |  ESP-IDF Release/v5.5  |  ESP-IDF Release/v6.0  |
-| :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
-| ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C6 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C5 |                        |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C61|                        |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| Chip     |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |  ESP-IDF Release/v5.5  |  ESP-IDF Release/v6.0  |  ESP-IDF Release/v6.1  |
+| :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
+| ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C6 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C5 |                        |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32-C61|                        |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
 
 [supported]: https://img.shields.io/badge/-supported-green "supported"
 
@@ -87,7 +87,7 @@ Notes:
 
 ### Notes
 
-- Current releases require **ESP-IDF ≥5.2** (see `idf_component.yml`). CI validates against release **5.2–5.5** and **6.0**.
+- Current releases require **ESP-IDF ≥5.2** (see `idf_component.yml`). CI validates against release **5.2–5.5** and **6.0–6.1**.
 - Starting from **iot_bridge v1.0.0**, USB features require **ESP-IDF v5.1.4 or later**. For systems using **ESP-IDF 5.0-5.1.3**:
     - **Recommended**: Upgrade ESP-IDF to ≥ v5.2.0
     - **Legacy compatibility**: Downgrade iot_bridge to v0.11.9 (the latest esp_tinyusb component does not support RNDIS; use this configuration if RNDIS is required)
@@ -103,7 +103,7 @@ Notes:
         ```
     | Component Version    | ESP-IDF Version       | USB Support | RNDIS Support | Solution                  |
     |----------------------|-----------------------|-------------|---------------|---------------------------|
-    | **iot_bridge ≥1.0.0** | **ESP-IDF ≥5.1.4 (incl. 6.0)**   | ✅ Supported | ❌ Unsupported | Use esp_tinyusb component |
+    | **iot_bridge ≥1.0.0** | **ESP-IDF ≥5.1.4 (incl. 6.1)**   | ✅ Supported | ❌ Unsupported | Use esp_tinyusb component |
     | **iot_bridge ≥1.0.0** | **ESP-IDF 5.0-5.1.3** | ❌ Unsupported | ❌ Unsupported | Upgrade IDF **or** use legacy solution ↓ |
     | **iot_bridge 0.11.9** | **ESP-IDF 5.0+**     | ✅ Supported | ✅ Supported (idf5.0-5.1.3) | <pre>espressif/iot_bridge:<br>  version: "0.11.9"<br>usb_device:<br>  path: components/usb/usb_device<br>  git: https://github.com/espressif/esp-iot-bridge.git<br>  rules:<br>  - if: "target in [esp32s2, esp32s3]"<br>  - if: "idf_version < 5.1.4"</pre> |
 
@@ -258,7 +258,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
     | IDF Version               |             | Note                                                                   |
     | ------------------------- | ----------- | ---------------------------------------------------------------------- |
-    | ESP-IDF Release/v5.2-v6.0 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
+    | ESP-IDF Release/v5.2-v6.1 | **Support** | Currently, SDIO and SPI interfaces cannot be selected at the same time |
 
     ```
                                  +-- USB  <-+->  Computer

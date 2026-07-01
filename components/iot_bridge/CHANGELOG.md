@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.2.0-dev - 2026.07.01
+
+### Feature
+
+- Add support for ESP-IDF v6.0 and v6.1
+
 ## v1.1.0 - 2026.06.22
 
 ### Breaking Change
