@@ -39,11 +39,8 @@ if (CONFIG_BRIDGE_EXTERNAL_NETIF_MODEM)
     list(APPEND srcs "src/bridge_modem.c")
 endif()
 
-if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3")
-    list(APPEND requires "esp_modem_usb_dte")
-    if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}.${IDF_VERSION_PATCH}" VERSION_GREATER_EQUAL "5.1.4")
-        list(APPEND requires "esp_tinyusb")
-    endif()
+if ("${IDF_TARGET}" STREQUAL "esp32s2" OR "${IDF_TARGET}" STREQUAL "esp32s3" OR "${IDF_TARGET}" STREQUAL "esp32s31")
+    list(APPEND requires "esp_modem_usb_dte" "esp_tinyusb")
 endif()
 
 idf_component_register(SRCS "${srcs}"

@@ -194,7 +194,7 @@ esp32_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5', 'espressif/idf:release-v6.0', 'espressif/idf:release-v6.1']
 
   variables:
     <<: *global-variables
@@ -216,7 +216,7 @@ esp32c2_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5', 'espressif/idf:release-v6.0', 'espressif/idf:release-v6.1']
 
   variables:
     <<: *global-variables
@@ -238,7 +238,7 @@ esp32c3_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5', 'espressif/idf:release-v6.0', 'espressif/idf:release-v6.1']
 
   variables:
     <<: *global-variables
@@ -260,7 +260,7 @@ esp32s2_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5', 'espressif/idf:release-v6.0', 'espressif/idf:release-v6.1']
 
   variables:
     <<: *global-variables
@@ -282,7 +282,7 @@ esp32s3_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5', 'espressif/idf:release-v6.0', 'espressif/idf:release-v6.1']
 
   variables:
     <<: *global-variables
@@ -304,7 +304,7 @@ esp32c6_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.2', 'espressif/idf:release-v5.3', 'espressif/idf:release-v5.4', 'espressif/idf:release-v5.5', 'espressif/idf:release-v6.0', 'espressif/idf:release-v6.1']
 
   variables:
     <<: *global-variables
@@ -326,7 +326,7 @@ esp32c5_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.5', 'espressif/idf:release-v6.0', 'espressif/idf:release-v6.1']
 
   variables:
     <<: *global-variables
@@ -349,7 +349,7 @@ esp32c61_build:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['espressif/idf:release-v5.5']
+      - IMAGE: ['espressif/idf:release-v5.5', 'espressif/idf:release-v6.0', 'espressif/idf:release-v6.1']
 
   variables:
     <<: *global-variables
@@ -363,6 +363,29 @@ esp32c61_build:
     - *setup_esp_idf
     - *build_wifi_router_examples
     - *build_4g_hotspot_examples
+    - *build_iperf_examples
+
+esp32s31_build:
+  stage: build
+  tags:
+    - build
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['espressif/idf:release-v6.1']
+
+  variables:
+    <<: *global-variables
+    idf_target: esp32s31
+    compile_option: --preview
+
+  before_script:
+    - *before_script_preparation
+
+  script:
+    - *setup_esp_idf
+    - *build_iot_bridge_examples
+    - *build_iot_bridge_esp32s3
     - *build_iperf_examples
 
 push_master_to_github:

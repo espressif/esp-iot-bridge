@@ -8,6 +8,7 @@ menu "Bridge Driver Configuration"
             int "GPIO pin for MOSI"
             default 13 if IDF_TARGET_ESP32
             default 11 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default  9 if IDF_TARGET_ESP32S31
             default  7
             help
                 Select the GPIO pin for MOSI
@@ -16,6 +17,7 @@ menu "Bridge Driver Configuration"
             int "GPIO pin for MISO"
             default 12 if IDF_TARGET_ESP32
             default 13 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default 10 if IDF_TARGET_ESP32S31
             default  2
             help
                 Select the GPIO pin for MISO
@@ -24,6 +26,7 @@ menu "Bridge Driver Configuration"
             int "GPIO pin for SCLK"
             default 14 if IDF_TARGET_ESP32
             default 12 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+            default 11 if IDF_TARGET_ESP32S31
             default  6
             help
                 Select the GPIO pin for SCLK
@@ -31,6 +34,7 @@ menu "Bridge Driver Configuration"
         config GPIO_CS
             int "GPIO pin for CS"
             default 15 if IDF_TARGET_ESP32
+            default 12 if IDF_TARGET_ESP32S31
             default 10
             help
                 Select the GPIO pin for CS
@@ -38,12 +42,14 @@ menu "Bridge Driver Configuration"
         config ESP_SPI_GPIO_HANDSHAKE
             int "GPIO pin for handshake"
             default 3 if IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C5
+            default 13 if IDF_TARGET_ESP32S31
             default 2
             help
                 GPIO pin to use for handshake with other spi controller
 
         config ESP_SPI_GPIO_DATA_READY
             int "GPIO pin for data ready interrupt"
+            default 14 if IDF_TARGET_ESP32S31
             default 4
             help
                 GPIO pin for indicating host that SPI slave has data to be read by host

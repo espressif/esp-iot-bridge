@@ -17,6 +17,7 @@
 #include "driver/spi_slave.h"
 #include "driver/gpio.h"
 #include "endian.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "mempool.h"
 
@@ -69,6 +70,8 @@ static const char TAG[] = "SPI_DRIVER";
 #elif defined CONFIG_IDF_TARGET_ESP32S3
     #define DMA_CHAN               SPI_DMA_CH_AUTO
 #elif defined CONFIG_IDF_TARGET_ESP32C5
+    #define DMA_CHAN               SPI_DMA_CH_AUTO
+#elif defined CONFIG_IDF_TARGET_ESP32S31
     #define DMA_CHAN               SPI_DMA_CH_AUTO
 #endif
 

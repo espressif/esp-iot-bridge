@@ -20,6 +20,7 @@
 #include "interface.h"
 #include "network_adapter.h"
 
+#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #ifdef CONFIG_BRIDGE_BT_ENABLED
@@ -250,7 +251,7 @@ void process_rx_pkt(interface_buffer_handle_t *buf_handle)
 		// ESP_LOG_BUFFER_HEXDUMP("host -> slave", payload, payload_len, ESP_LOG_INFO);
 	} else if (buf_handle->if_type == ESP_AP_IF && softap_started) {
 		/* Forward data to wlan driver */
-		esp_wifi_internal_tx(ESP_IF_WIFI_AP, payload, payload_len);
+		esp_wifi_internal_tx(WIFI_IF_AP, payload, payload_len);
     }
 #if defined(CONFIG_BRIDGE_BT_ENABLED) && BLUETOOTH_HCI
     else if (buf_handle->if_type == ESP_HCI_IF) {
