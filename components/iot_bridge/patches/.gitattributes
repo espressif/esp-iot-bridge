@@ -1,0 +1,3 @@
+# Keep patch files LF-only so git apply works on all platforms.
+*.patch text eol=lf
+patches.list text eol=lf
