@@ -10,6 +10,16 @@
 
 - ESP32-S31
 
+### Feature
+
+- feat(Kconfig): Add route priority options for the Wi-Fi station, Ethernet, SPI and SDIO external netifs
+- feat(bridge_common): With `CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF` (implied by `CONFIG_BRIDGE_ENABLE`), the DNS of the data forwarding netifs follows the current default netif when multiple external netifs are used, and is re-synchronized on link up/down of the external netifs
+
+### Bugfix
+
+- fix(bridge_wifi): Use the DNS of the default netif instead of a fixed external netif when the SoftAP starts
+- fix(bridge_common): Do not block the lwIP thread when posting the DNS update event
+
 ## v1.1.0 - 2026.06.22
 
 ### Breaking Change

@@ -110,6 +110,24 @@ esp_err_t esp_bridge_netif_request_ip(esp_netif_t *netif, esp_netif_ip_info_t *i
  */
 esp_err_t esp_bridge_netif_request_mac(uint8_t *mac);
 
+/**
+ * @brief  Synchronize the DNS of the data forwarding netifs after an external netif event.
+ *
+ * With CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF, the DNS of the current default netif is used and `external_netif` is ignored.
+ * Otherwise the DNS of `external_netif` is used, and nothing is done if it is NULL.
+ *
+ * @param[in]  external_netif  external netif that triggered the event, can be NULL
+ */
+void esp_bridge_dns_sync(esp_netif_t *external_netif);
+
+/**
+ * @brief  Post an event to synchronize the DNS of the data forwarding netifs with the current default netif.
+ *
+ * Used where the default netif may not have been updated yet, e.g. in link up/down event handlers.
+ * Does nothing if CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF is disabled.
+ */
+void esp_bridge_dns_resync_post(void);
+
 #ifdef __cplusplus
 }
 #endif

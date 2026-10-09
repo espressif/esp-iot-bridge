@@ -277,7 +277,7 @@ static void spi_got_ip_handler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
 {
     ip_event_got_ip_t *event = (ip_event_got_ip_t*)event_data;
-    esp_bridge_update_dns_info(event->esp_netif, NULL);
+    esp_bridge_dns_sync(event->esp_netif);
     ESP_LOGI(TAG, "SPI connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
 }
 
@@ -310,6 +310,8 @@ esp_err_t esp_bridge_spi_set_netif_type(esp_bridge_netif_type_t type)
     if (type == IOT_BRIDGE_NETIF_WAN) {
         esp_netif_dhcpc_start(network_adapter_netif);
     }
+
+    esp_bridge_dns_resync_post();
 
     return ESP_OK;
 }
@@ -352,7 +354,11 @@ esp_netif_t* esp_bridge_create_spi_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         esp_netif_common_config.route_prio = 10;
     } else {
         esp_netif_common_config.flags = ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED;
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_SPI)
+        esp_netif_common_config.route_prio = CONFIG_BRIDGE_SPI_WAN_ROUTE_PRIO;
+#else
         esp_netif_common_config.route_prio = 50;
+#endif
     }
 
     esp_netif_config_t spi_config = {

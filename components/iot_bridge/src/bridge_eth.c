@@ -83,10 +83,13 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
         esp_eth_ioctl(eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
         ESP_LOGI(TAG, "Ethernet Link Up");
         ESP_LOGI(TAG, "Ethernet HW Addr "MACSTR"", MAC2STR(mac_addr));
+        // Registered before the netif glue handler, so the default netif is not updated yet
+        esp_bridge_dns_resync_post();
             break;
 
         case ETHERNET_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "Ethernet Link Down");
+            esp_bridge_dns_resync_post();
             break;
 
         case ETHERNET_EVENT_START:
@@ -115,7 +118,7 @@ static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
     ESP_LOGI(TAG, "ETHMASK:" IPSTR, IP2STR(&ip_info->netmask));
     ESP_LOGI(TAG, "ETHGW:" IPSTR, IP2STR(&ip_info->gw));
     ESP_LOGI(TAG, "~~~~~~~~~~~");
-    esp_bridge_update_dns_info(event->esp_netif, NULL);
+    esp_bridge_dns_sync(event->esp_netif);
     esp_bridge_netif_network_segment_conflict_update(event->esp_netif);
 }
 #endif
@@ -506,7 +509,11 @@ esp_netif_t* esp_bridge_create_eth_netif(esp_netif_ip_info_t* ip_info, uint8_t m
         .if_key = "ETH_WAN",
         .if_desc = "eth",
         .flags = (esp_netif_flags_t)(ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED),
+#if defined(CONFIG_BRIDGE_EXTERNAL_NETIF_ETHERNET) || defined(CONFIG_BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN)
+        .route_prio = CONFIG_BRIDGE_ETH_WAN_ROUTE_PRIO,
+#else
         .route_prio = 50,
+#endif
     };
 
     if (data_forwarding) {

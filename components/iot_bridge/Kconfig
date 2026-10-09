@@ -5,6 +5,11 @@ menu "Bridge Configuration"
         select LWIP_IP_FORWARD
         select LWIP_IPV4_NAPT
         select LWIP_FALLBACK_DNS_SERVER_SUPPORT
+        imply ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF
+        help
+            ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF (ESP-IDF v5.2.3, v5.3.2, v5.4 and later) is enabled by default.
+            With it, the DNS of the data forwarding netifs follows the current default netif when
+            multiple external netifs are used.
 
     config BRIDGE_WIFI_PMF_DISABLE
         bool "Wi-Fi PMF Disable"
@@ -57,6 +62,38 @@ menu "Bridge Configuration"
             default n
             help
                 "NETIF_SDIO" cannot be enabled simultaneously with "NETIF_SPI".
+
+        menu "Route priority of the external network interfaces"
+            depends on BRIDGE_EXTERNAL_NETIF_STATION || BRIDGE_EXTERNAL_NETIF_ETHERNET || BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN || BRIDGE_EXTERNAL_NETIF_SPI || BRIDGE_EXTERNAL_NETIF_SDIO
+
+            comment "The external netif with the highest priority that is up and has an IP becomes the default netif."
+            comment "If priorities are equal, the netif that gets an IP later becomes the default netif."
+            comment "Data forwarding netifs use priority 10, so external netifs must be higher."
+
+            config BRIDGE_STATION_ROUTE_PRIO
+                int "Wi-Fi station route priority"
+                depends on BRIDGE_EXTERNAL_NETIF_STATION
+                range 11 254
+                default 100
+
+            config BRIDGE_ETH_WAN_ROUTE_PRIO
+                int "Ethernet (WAN) route priority"
+                depends on BRIDGE_EXTERNAL_NETIF_ETHERNET || BRIDGE_NETIF_ETHERNET_AUTO_WAN_OR_LAN
+                range 11 254
+                default 50
+
+            config BRIDGE_SPI_WAN_ROUTE_PRIO
+                int "SPI (WAN) route priority"
+                depends on BRIDGE_EXTERNAL_NETIF_SPI
+                range 11 254
+                default 50
+
+            config BRIDGE_SDIO_WAN_ROUTE_PRIO
+                int "SDIO (WAN) route priority"
+                depends on BRIDGE_EXTERNAL_NETIF_SDIO
+                range 11 254
+                default 50
+        endmenu
     endmenu
 
     menu "The interface used to provide network data forwarding for other devices"
