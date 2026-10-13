@@ -106,6 +106,10 @@ Notes:
     | **iot_bridge ≥1.0.0** | **ESP-IDF ≥5.1.4 (incl. 6.1)**   | ✅ Supported | ❌ Unsupported | Use esp_tinyusb component |
     | **iot_bridge ≥1.0.0** | **ESP-IDF 5.0-5.1.3** | ❌ Unsupported | ❌ Unsupported | Upgrade ESP-IDF **or** downgrade to iot_bridge 0.11.9 |
     | **iot_bridge 0.11.9** | **ESP-IDF 5.0+**     | ✅ Supported | ✅ Supported (idf5.0-5.1.3) | <pre>espressif/iot_bridge:<br>  version: "0.11.9"<br>usb_device:<br>  path: components/usb/usb_device<br>  git: https://github.com/espressif/esp-iot-bridge.git<br>  rules:<br>  - if: "target in [esp32s2, esp32s3]"<br>  - if: "idf_version < 5.1.4"</pre> |
+- When multiple external netifs are enabled (e.g. Wi-Fi station + Ethernet), ESP-NETIF selects the default netif by route priority: the netif with the highest priority that is up and has an IP is used. Route priorities can be configured in `Bridge Configuration → The interface used to connect to the external network → Route priority of the external network interfaces`. Internet connectivity of the external netif is not checked.
+    - With `CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF` enabled (implied by `CONFIG_BRIDGE_ENABLE`, available since ESP-IDF v5.2.3, v5.3.2 and v5.4), the DNS of the data forwarding netifs always follows the current default netif. Otherwise, the DNS of the external netif that got an IP last is used. Existing projects with this option already set to `n` in `sdkconfig` need to enable it manually.
+    - If the application calls `esp_netif_set_default_netif()` manually, call `esp_bridge_update_dns_info(netif, NULL)` afterwards to synchronize the DNS of the data forwarding netifs. Note that after a manual setting, ESP-NETIF no longer selects the default netif automatically (even if that netif goes down) until it is destroyed. It is recommended to set it before the other external netifs get an IP.
+    - The 4G modem netif is not covered yet.
 
 ### 1.1 Wi-Fi Router
 

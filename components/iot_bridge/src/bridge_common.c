@@ -148,6 +148,18 @@ esp_err_t _esp_bridge_netif_list_add(esp_netif_t *netif, dns_change_cb_t dns_cha
         tail->next = new;
     }
 
+#if CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF && CONFIG_LWIP_FALLBACK_DNS_SERVER_SUPPORT
+    // The global fallback DNS is overwritten by the per-netif one whenever the default netif changes
+    if (DHCPC_NETIF_ID(netif)) {
+        esp_netif_dns_info_t fallback_dns = {0};
+        fallback_dns.ip.u_addr.ip4.addr = ipaddr_addr(CONFIG_LWIP_FALLBACK_DNS_SERVER_ADDRESS);
+        fallback_dns.ip.type = ESP_IPADDR_TYPE_V4;
+        if (fallback_dns.ip.u_addr.ip4.addr != IPADDR_NONE && fallback_dns.ip.u_addr.ip4.addr != IPADDR_ANY) {
+            esp_netif_set_dns_info(netif, ESP_NETIF_DNS_FALLBACK, &fallback_dns);
+        }
+    }
+#endif
+
     ESP_LOGI(TAG, "netif list add success");
 
     return ESP_OK;
@@ -761,6 +773,53 @@ esp_err_t esp_bridge_update_dns_info(esp_netif_t *external_netif, esp_netif_t *d
     return ESP_OK;
 }
 
+#if CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF
+static void esp_bridge_dns_resync(void)
+{
+    esp_netif_t *default_netif = esp_netif_get_default_netif();
+    if (default_netif && DHCPS_NETIF_ID(default_netif)) {
+        default_netif = NULL;
+    }
+
+    if (default_netif) {
+        // Per-netif DNS of the default netif is not written to the global DNS on DHCP renew or after dhcpc start
+        const esp_netif_dns_type_t types[] = { ESP_NETIF_DNS_MAIN, ESP_NETIF_DNS_BACKUP };
+        for (size_t i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
+            esp_netif_dns_info_t dns = {0};
+            if (esp_netif_get_dns_info(default_netif, types[i], &dns) == ESP_OK
+                    && dns.ip.type == ESP_IPADDR_TYPE_V4 && dns.ip.u_addr.ip4.addr != 0) {
+                esp_netif_set_dns_info(default_netif, types[i], &dns);
+            }
+        }
+    }
+
+    esp_bridge_update_dns_info(default_netif, NULL);
+}
+#endif
+
+void esp_bridge_dns_sync(esp_netif_t *external_netif)
+{
+#if CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF
+    (void)external_netif;
+    esp_bridge_dns_resync();
+#else
+    if (external_netif) {
+        esp_bridge_update_dns_info(external_netif, NULL);
+    }
+#endif
+}
+
+void esp_bridge_dns_resync_post(void)
+{
+#if CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF
+    bridge_dns_update_event_data_t data = {.esp_netif = NULL};
+    esp_err_t err = esp_event_post(BRIDGE_EVENT, BRIDGE_EVENT_ID_DNS_UPDATE, &data, sizeof(data), 0);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "BRIDGE_EVENT DNS_UPDATE post err: %s", esp_err_to_name(err));
+    }
+#endif
+}
+
 static void bridge_dns_update_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
     (void)arg;
@@ -769,10 +828,7 @@ static void bridge_dns_update_event_handler(void *arg, esp_event_base_t event_ba
         return;
     }
     const bridge_dns_update_event_data_t *d = (const bridge_dns_update_event_data_t *)event_data;
-    if (d->esp_netif == NULL) {
-        return;
-    }
-    esp_bridge_update_dns_info(d->esp_netif, NULL);
+    esp_bridge_dns_sync(d->esp_netif);
 }
 
 void dhcp_dns_update_customer_cb(struct netif *netif, void *param)
@@ -787,7 +843,8 @@ void dhcp_dns_update_customer_cb(struct netif *netif, void *param)
         return;
     }
     bridge_dns_update_event_data_t data = {.esp_netif = esp_netif};
-    esp_err_t err = esp_event_post(BRIDGE_EVENT, BRIDGE_EVENT_ID_DNS_UPDATE, &data, sizeof(data), portMAX_DELAY);
+    // Runs in the lwIP thread: blocking on a full event queue may deadlock against handlers calling esp_netif APIs
+    esp_err_t err = esp_event_post(BRIDGE_EVENT, BRIDGE_EVENT_ID_DNS_UPDATE, &data, sizeof(data), 0);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "BRIDGE_EVENT DNS_UPDATE post err: %s", esp_err_to_name(err));
     }
@@ -1046,6 +1103,11 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
             }
         }
         esp_bridge_erase_ip_info_from_nvs(esp_netif_get_ifkey(netif));
+    }
+
+    if (DHCPC_NETIF_ID(netif)) {
+        // esp_netif_set_ip_info() and esp_netif_dhcpc_start() clear the global DNS even if the netif is not the default one
+        esp_bridge_dns_resync_post();
     }
 
     return ESP_OK;

@@ -103,6 +103,10 @@ ESP-IoT-Bridge 方案提供多个网络接口，不同的网络接口可以分�
     | **iot_bridge ≥1.0.0** | **ESP-IDF ≥5.1.4** | ✅ 支持 | ❌ 不支持   | 使用 esp_tinyusb 组件 |
     | **iot_bridge ≥1.0.0** | **ESP-IDF 5.0-5.1.3** | ❌ 不支持 | ❌ 不支持   | 升级 ESP-IDF **或** 降级至 iot_bridge 0.11.9 |
     | **iot_bridge 0.11.9** | **ESP-IDF 5.0+** | ✅ 支持 | ✅ 支持（idf5.0-5.1.3） | <pre>espressif/iot_bridge:<br>  version: "0.11.9"<br>usb_device:<br>  path: components/usb/usb_device<br>  git: https://github.com/espressif/esp-iot-bridge.git<br>  rules:<br>  - if: "target in [esp32s2, esp32s3]"<br>  - if: "idf_version < 5.1.4"</pre> |
+- 同时使能多个外网接口（如 Wi-Fi station + 以太网）时，ESP-NETIF 按路由优先级选择 default netif：在已 up 且已获取 IP 的接口中选择优先级最高的。各外网接口的优先级可在 `Bridge Configuration → The interface used to connect to the external network → Route priority of the external network interfaces` 中配置。不会检测外网接口是否能访问互联网。
+    - 使能 `CONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF`（由 `CONFIG_BRIDGE_ENABLE` imply 打开，ESP-IDF v5.2.3、v5.3.2、v5.4 及以上支持）时，数据转发接口的 DNS 始终跟随当前 default netif；否则使用最后获取 IP 的外网接口的 DNS。已有工程若 `sdkconfig` 中该选项已为 `n`，需要手动打开。
+    - 如果应用手动调用 `esp_netif_set_default_netif()`，需要随后调用 `esp_bridge_update_dns_info(netif, NULL)` 同步数据转发接口的 DNS。注意手动设置后，ESP-NETIF 不再自动选择 default netif（即使该接口 down），直到该接口被销毁。建议在其他外网接口获取 IP 之前设置。
+    - 暂不涵盖 4G 模组接口。
 
 ### 1.1 Wi-Fi 路由器
 
