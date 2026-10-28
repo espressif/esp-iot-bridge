@@ -192,7 +192,7 @@ esp_err_t esp_bridge_netif_list_remove(esp_netif_t *netif)
 static __inline__ bool subnet_mask_is_valid(uint32_t mask)
 {
     mask = ntohl(mask);
-    if (mask == 0 || mask == 0xFFFFFFFF) {
+    if (mask == 0 || mask >= 0xFFFFFFFE) {
         return false;
     }
 
@@ -1056,6 +1056,7 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
             ESP_LOGI(TAG, "Set gw:" IPSTR, IP2STR(&ip_info->gw));
             err = esp_netif_dhcps_start(netif);
             if (err != ESP_OK) {
+                esp_netif_dhcps_stop(netif);
                 esp_netif_set_ip_info(netif, &ip_old);
                 esp_netif_dhcps_start(netif);
                 ESP_LOGE(TAG, "Failed to start dhcps: %x", err);

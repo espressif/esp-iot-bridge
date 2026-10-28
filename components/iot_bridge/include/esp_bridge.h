@@ -364,7 +364,7 @@ const esp_netif_ip_info_t * esp_bridge_netif_get_net_segment_ip_prefix(void);
  *
  * @param[in] ip_info A pointer to the IP information structure containing the prefix IP and netmask.
  *                    The IP address should be a valid network address (not a host address).
- *                    The netmask must be valid (not 0 or 0xFFFFFFFF, and must be contiguous).
+ *                    The netmask must be valid (not 0, 0xFFFFFFFE, or 0xFFFFFFFF, and must be contiguous).
  *                    ip_info->gw is not used, set to 0.0.0.0.
  * @param[in] save_to_nvs Whether to save the IP prefix to NVS.
  *
