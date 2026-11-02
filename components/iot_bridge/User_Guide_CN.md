@@ -14,7 +14,7 @@ ESP-IoT-Bridge 方案主要针对 IoT 应用场景下的各种网络接口之间
 - [5 配置项介绍](#5-配置项介绍)
 - [6 编译 烧写 监视输出](#6-编译-烧写-监视输出)
 - [7 配网](#7-配网)
-- [8 OTA](#8-ota)
+- [8 空中升级（OTA）](#8-空中升级ota)
 - [9 方案优势](#9-方案优势)
 - [10 GPIO Map](#10-gpio-map)
 
@@ -24,14 +24,14 @@ ESP-IoT-Bridge 方案主要针对 IoT 应用场景下的各种网络接口之间
 
 | 芯片     |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |  ESP-IDF Release/v5.5  |  ESP-IDF Release/v6.0  |  ESP-IDF Release/v6.1  |
 | :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
-| ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C6 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C5 |                        |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C61|                        |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32    | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C3 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-S2 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-S3 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C2 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C6 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C5 |                        |                        | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C61|                        |                        | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
 
 [supported]: https://img.shields.io/badge/-%E6%94%AF%E6%8C%81-green "supported"
 
@@ -67,14 +67,14 @@ ESP-IoT-Bridge 方案提供多个网络接口，不同的网络接口可以分�
 
 | ESP 设备 | Wi-Fi 路由器            | 4G 路由器               | 4G 网卡                               | 无线网卡                              | 有线网卡                              | MCU Wi-Fi 桥接                        | MCU 以太网桥接                         | MCU USB 桥接                          | Bluetooth LE 边界路由器 | Thread 边界路由器 |
 | -------- | ---------------------- | ---------------------- | ------------------------------------ | ------------------------------------ | ------------------------------------ | ------------------------------------ | ------------------------------------- | ------------------------------------ | ----------------------- | ---------------- |
-| ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI)  | *N/A*                                | TODO                    | TODO             |
-| ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)       | *N/A*                                | TODO                    | TODO             |
-| ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)      | ![alt text][supported]<br>(USB/SPI)       | ![alt text][supported]<br>(USB/SPI)      | *N/A*                   | TODO             |
-| ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)      | ![alt text][supported]<br>(USB/SPI)       | ![alt text][supported]<br>(USB/SPI)      | TODO                    | TODO             |
-| ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)       | *N/A*                                | TODO                    | TODO             |
-| ESP32-C6 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI)  | *N/A*                                | TODO                    | TODO             |
-| ESP32-C5 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI)  | *N/A*                                | TODO                    | TODO             |
-| ESP32-C61| ![alt text][supported] | ![alt text][supported] | TODO                                 | TODO                                 | TODO                                 | TODO                                 | TODO                                  | *N/A*                                | TODO                    | TODO             |
+| ESP32    | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI)  | *N/A*                                | TODO                    | TODO             |
+| ESP32-C3 | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)       | *N/A*                                | TODO                    | TODO             |
+| ESP32-S2 | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)      | ![supported][supported]<br>(USB/SPI)       | ![supported][supported]<br>(USB/SPI)      | *N/A*                   | TODO             |
+| ESP32-S3 | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)      | ![supported][supported]<br>(USB/SPI)       | ![supported][supported]<br>(USB/SPI)      | TODO                    | TODO             |
+| ESP32-C2 | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)       | *N/A*                                | TODO                    | TODO             |
+| ESP32-C6 | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI)  | *N/A*                                | TODO                    | TODO             |
+| ESP32-C5 | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI)  | *N/A*                                | TODO                    | TODO             |
+| ESP32-C61| ![supported][supported] | ![supported][supported] | TODO                                 | TODO                                 | TODO                                 | TODO                                 | TODO                                  | *N/A*                                | TODO                    | TODO             |
 
 备注：
 
@@ -367,18 +367,18 @@ I (1798) esp_bridge_wifi_prov_mgr: If QR code is not visible, copy paste the bel
 https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"PROV_806314","pop":"abcd1234","transport":"ble"}
 ```
 
-Note：
+注意：
 
 - 由于 ESP32-S2 不支持 BLE，故该配网方案不适用于 ESP32-S2
 - `PROV_MODE` 默认为 `PROV_SEC2_DEV_MODE`，量产固件建议选为 `PROV_SEC2_PROD_MODE`，并添加自己的 `salt` 和 `verifier`，具体请参考 [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41)。
 
-## 8 OTA
+## 8 空中升级（OTA）
 
 ### 使用浏览器进行 OTA 固件升级
 
 #### 简介
 
-PC 或 MCU 通过热点、USB、SPI、SDIO 或以太网连接至 ESP-IoT-Bridge 设备并成功获取到 IP 地址后，可以通过访问网关 IP 来进行网页 OTA。浏览器打开 Web Server 的网页后，可以选择进入 OTA 升级页面，通过网页升级固件。
+PC 或 MCU 通过热点、USB、SPI、SDIO 或以太网连接至 ESP-IoT-Bridge 设备并成功获取到 IP 地址后，可以通过访问网关 IP 进行网页 OTA。浏览器打开 Web Server 的网页后，可以选择进入 OTA 升级页面，通过网页升级固件。
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/web_ota.png" alt="web_ota" style="zoom: 67%;" />
 

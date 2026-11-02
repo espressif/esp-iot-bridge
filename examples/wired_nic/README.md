@@ -34,6 +34,6 @@ Run `idf.py flash monitor` to build, flash and monitor the project.
 
 Once a complete flash process has been performed, you can use `idf.py app-flash monitor` to reduce the flash time.
 
-(To exit the serial monitor, type `Ctrl-]`. Please reset the development board f you cannot exit the monitor.)
+(To exit the serial monitor, type `Ctrl-]`. Reset the development board if you cannot exit the monitor.)
 
 For more information, see [User_Guide.md](https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/User_Guide.md).

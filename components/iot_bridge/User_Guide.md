@@ -4,7 +4,7 @@
 
 This document describes how to configure and use ESP-IoT-Bridge.
 
-ESP-IoT-Bridge solution focuses on connectivity and communication between various network interfaces in IoT application scenarios, such as SPI, SDIO, USB, Wi-Fi, Ethernet and other network interfaces. In this solution, the bridge device can not only provide net access for other devices, but also be a separate equipment to connect the remote server.
+ESP-IoT-Bridge solution focuses on connectivity and communication between various network interfaces in IoT application scenarios, such as SPI, SDIO, USB, Wi-Fi, Ethernet and other network interfaces. In this solution, the bridge device can not only provide network access for other devices, but also act as a separate device to connect the remote server.
 
 
 # Table of Contents
@@ -14,9 +14,9 @@ ESP-IoT-Bridge solution focuses on connectivity and communication between variou
 - [3 Development Environment](#3-set-up-development-environment)
 - [4 SDK](#4-get-sdk)
 - [5 Configuration](#5-configuration)
-- [6 Build Flash Monitor](#6-build-flash-monitor)
+- [6 Build, Flash, and Monitor](#6-build-flash-and-monitor)
 - [7 Network Configuration](#7-network-configuration)
-- [8 OTA](#8-ota)
+- [8 Over-the-Air (OTA) Upgrade](#8-over-the-air-ota-upgrade)
 - [9 Solution Highlights](#9-solution-highlights)
 - [10 GPIO Map](#10-gpio-map)
 
@@ -26,14 +26,14 @@ ESP-IoT-Bridge is supported by various Espressif chips, as shown in the table be
 
 | Chip     |  ESP-IDF Release/v5.2  |  ESP-IDF Release/v5.3  |  ESP-IDF Release/v5.4  |  ESP-IDF Release/v5.5  |  ESP-IDF Release/v6.0  |  ESP-IDF Release/v6.1  |
 | :------- | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: | :--------------------: |
-| ESP32    | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-S2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-S3 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C2 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C6 | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C5 |                        |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
-| ESP32-C61|                        |                        | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] | ![alt text][supported] |
+| ESP32    | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C3 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-S2 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-S3 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C2 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C6 | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C5 |                        |                        | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
+| ESP32-C61|                        |                        | ![supported][supported] | ![supported][supported] | ![supported][supported] | ![supported][supported] |
 
 [supported]: https://img.shields.io/badge/-supported-green "supported"
 
@@ -43,7 +43,7 @@ The ESP-IoT-Bridge solution provides several network interfaces, which can be di
 
 - Interfaces for forwarding network packets for other devices so that they can access the Internet
 
-Users can achieve personalized network interface connection solutions through a variety of different network interface combinations to maximize the network advantages of espressif chips.
+Users can achieve personalized network interface connection solutions through a variety of different network interface combinations to maximize the network advantages of Espressif chips.
 
 <img src="docs/_static/esp_iot_bridge_en.png" alt="esp_iot_bridge_en" style="zoom:80%;" />
 
@@ -69,21 +69,21 @@ To summarize, the above table mainly involves the following application scenario
 
 | ESP Chips | Wi-Fi Router           | 4G Router              | 4G NIC                               | Wireless NIC                         | Wired NIC                            | MCU Wi-Fi Bridge                     | MCU Ethernet Bridge                  | MCU USB Bridge                       | Bluetooth LE Border Router | Thread Border Router |
 | --------- | ---------------------- | ---------------------- | ------------------------------------ | ------------------------------------ | ------------------------------------ | ------------------------------------ | ------------------------------------ | ------------------------------------ | -------------------------- | -------------------- |
-| ESP32     | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | *N/A*                                | TODO                       | TODO                 |
-| ESP32-C3  | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)    | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | *N/A*                                | TODO                       | TODO                 |
-| ESP32-S2  | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)    | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | *N/A*                      | TODO                 |
-| ESP32-S3  | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)    | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | ![alt text][supported]<br>(USB/SPI)  | TODO                       | TODO                 |
-| ESP32-C2  | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)    | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | *N/A*                                | TODO                       | TODO                 |
-| ESP32-C6  | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)    | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | *N/A*                                | TODO                       | TODO                 |
-| ESP32-C5  | ![alt text][supported] | ![alt text][supported] | ![alt text][supported]<br>(SPI)    | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SPI)      | ![alt text][supported]<br>(SDIO/SPI) | ![alt text][supported]<br>(SDIO/SPI) | *N/A*                                | TODO                       | TODO                 |
-| ESP32-C61 | ![alt text][supported] | ![alt text][supported] | TODO                                 | TODO                                 | TODO                                 | TODO                                 | TODO                                 | *N/A*                                | TODO                       | TODO                 |
+| ESP32     | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | *N/A*                                | TODO                       | TODO                 |
+| ESP32-C3  | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)    | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | *N/A*                                | TODO                       | TODO                 |
+| ESP32-S2  | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)    | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | *N/A*                      | TODO                 |
+| ESP32-S3  | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)    | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | ![supported][supported]<br>(USB/SPI)  | TODO                       | TODO                 |
+| ESP32-C2  | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)    | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | *N/A*                                | TODO                       | TODO                 |
+| ESP32-C6  | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)    | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | *N/A*                                | TODO                       | TODO                 |
+| ESP32-C5  | ![supported][supported] | ![supported][supported] | ![supported][supported]<br>(SPI)    | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SPI)      | ![supported][supported]<br>(SDIO/SPI) | ![supported][supported]<br>(SDIO/SPI) | *N/A*                                | TODO                       | TODO                 |
+| ESP32-C61 | ![supported][supported] | ![supported][supported] | TODO                                 | TODO                                 | TODO                                 | TODO                                 | TODO                                 | *N/A*                                | TODO                       | TODO                 |
 
 Notes:
 
-- **ESP32 doesn't have a USB interface and the USB interface for ESP32-C3 can't be used for application communication. If you need to use <font color=red> USB NIC </font> or <font color=red> Cat.1 4G (USB)</font> function, please choose ESP32-S2 or ESP32-S3.**
-- **Only ESP32 supports Ethernet interface. Other chips need to connect with external Ethernet chip over SPI. For ESP32 MAC & PHY configuration, please refer to [Configure MAC and PHY](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_eth.html#configure-mac-and-phy).**
+- **ESP32 does not have a USB interface and the USB interface for ESP32-C3 cannot be used for application communication. If you need to use <font color=red> USB NIC </font> or <font color=red> Cat.1 4G (USB)</font> function, choose ESP32-S2 or ESP32-S3.**
+- **Only ESP32 supports Ethernet interface. Other chips need to connect with external Ethernet chip over SPI. For ESP32 MAC & PHY configuration, see [Configure MAC and PHY](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_eth.html#configure-mac-and-phy).**
 - **When using the Thread Border Router, an 802.15.4 chip is required, such as ESP32-H2.**
-- **For ESP32 SDIO interface, the pin pull-up requirements should be applied to the hardware. For details, please refer to [SD Pull-up Requirements](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html).**
+- **For ESP32 SDIO interface, the pin pull-up requirements should be applied to the hardware. For details, see [SD Pull-up Requirements](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/sd_pullup_requirements.html).**
 
 ### Notes
 
@@ -122,7 +122,7 @@ ESP-IoT-Bridge device can connect to the network by connecting to the router via
 - You need to configure your network if the ESP-IoT-Bridge device connects to the router via Wi-Fi. Currently, the following ways are supported:
 
     > - [Configure the network on web page](#configure-network-on-web-page)
-    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#configure-network-through-wi-fi-provisioning)（ESP32-S2 not supported）
+    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#configure-network-through-wi-fi-provisioning)(ESP32-S2 is not supported)
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wifi_router_en.png" alt="wifi_router_en" style="zoom: 80%;" />
 
@@ -158,16 +158,16 @@ ESP-IoT-Bridge device can be connected to the PC or MCU through multiple network
     | ----------- | ------ | ------ |
     | ESP32-S2/S3 | GPIO20 | GPIO19 |
 
-- When using SPI/SDIO interface, it is necessary to configure the MCU (Host). For specific dependencies configuration, please refer to **[Linux_based_readme](./docs/Linux_based_readme.md)**.
+- When using SPI/SDIO interface, it is necessary to configure the MCU (Host). For specific dependencies configuration, see **[Linux_based_readme](./docs/Linux_based_readme.md)**.
 
-- For SDIO hardware connection and MCU (Host) configuration, please refer to **[SDIO_setup](./docs/SDIO_setup.md)**.
+- For SDIO hardware connection and MCU (Host) configuration, see **[SDIO_setup](./docs/SDIO_setup.md)**.
 
-- For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./docs/SPI_setup.md)**.
+- For SPI hardware connection and MCU (Host) configuration, see **[SPI_setup](./docs/SPI_setup.md)**.
 
 - This feature requires you to configure the network. Currently, the following ways are supported:
 
     > - [Configure the network on web page](#configure-network-on-web-page)
-    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#configure-network-through-wi-fi-provisioning)（not support ESP32-S2）
+    > - [Configure the network through Wi-Fi Provisioning (Bluetooth LE)](#configure-network-through-wi-fi-provisioning)(ESP32-S2 is not supported)
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wireless_nic_en.png" alt="wireless_nic_en" style="zoom: 80%;" />
 
@@ -181,11 +181,11 @@ ESP-IoT-Bridge device can connect to the network by plugging the Ethernet cable 
     | ----------- | ------ | ------ |
     | ESP32-S2/S3 | GPIO20 | GPIO19 |
 
-- Using SPI/SDIO interface needs to configure the MCU (Host). For specific dependencies configuration, please refer to **[Linux_based_readme](./docs/Linux_based_readme.md)**.
+- Using SPI/SDIO interface needs to configure the MCU (Host). For specific dependencies configuration, see **[Linux_based_readme](./docs/Linux_based_readme.md)**.
 
-- For SDIO hardware connection and MCU (Host) configuration, please refer to **[SDIO_setup](./docs/SDIO_setup.md)**.
+- For SDIO hardware connection and MCU (Host) configuration, see **[SDIO_setup](./docs/SDIO_setup.md)**.
 
-- For SPI hardware connection and MCU (Host) configuration, please refer to **[SPI_setup](./docs/SPI_setup.md)**.
+- For SPI hardware connection and MCU (Host) configuration, see **[SPI_setup](./docs/SPI_setup.md)**.
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/wired_nic_en.png" alt="wired_nic_en" style="zoom: 80%;" />
 
@@ -213,12 +213,12 @@ USB cable is used to connect PC with ESP devices, flash or download programs, an
 
 ## 3 Set Up Development Environment
 
-If you are familiar with the ESP development environment, you can easily understand the following steps. If you are not familiar with a certain part, such as building or flashing, please refer to [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/index.html).
+If you are familiar with the ESP development environment, you can easily understand the following steps. If you are not familiar with a certain part, such as building or flashing, see [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/index.html).
 
 
 ### 3.1 Download & Set up Toolchain
 
-Please refer to [Standard Toolchain Setup for Linux](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/linux-macos-setup.html#setting-up-development-environment) to download and set up the toolchain for building your project.
+See [Standard Toolchain Setup for Linux](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/linux-macos-setup.html#setting-up-development-environment) to download and set up the toolchain for building your project.
 
 ### 3.2 Flash/Download Tool
 
@@ -240,9 +240,9 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 
 - Get Espressif SDK from [ESP-IDF](https://github.com/espressif/esp-idf).
 
-- To ensure that you have successfully installed the complete ESP-IDF, please enter `idf.py --version` in the terminal. If the output is similar to `ESP-IDF v5.5-rc1`, it means the installation was successful. For detailed installation and configuration instructions, please refer to the [Quick Start Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html).
+- To ensure that you have successfully installed the complete ESP-IDF, enter `idf.py --version` in the terminal. If the output is similar to `ESP-IDF v5.5-rc1`, it means the installation was successful. For detailed installation and configuration instructions, see the [Quick Start Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html).
 
-- After successfully obtaining ESP-IDF, please switch the ESP-IDF version to `release/v5.2` or above.
+- After successfully obtaining ESP-IDF, switch the ESP-IDF version to `release/v5.2` or above.
 
 - Due to certain characteristics of the IoT-Bridge component and some limitations of ESP-IDF, the component will apply a [patch](https://github.com/espressif/esp-iot-bridge/tree/master/components/iot_bridge/patch) during compilation for the currently used ESP-IDF. To avoid impacting other projects, it is recommended to maintain a separate ESP-IDF for the IoT-Bridge project.
 
@@ -281,7 +281,7 @@ $ git clone https://github.com/espressif/esp-iot-bridge.git
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/modem.png" alt="modem" style="zoom: 80%;" />
 
 
-## 6 Build Flash Monitor
+## 6 Build, Flash, and Monitor
 
 ### 6.1 Build the Project
 
@@ -372,15 +372,15 @@ https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"P
 Note:
 
 - Since ESP32-S2 does not support Bluetooth LE, this network configuration method is not applicable to ESP32-S2.
-- By default, `PROV_MODE` is set to `PROV_SEC2_DEV_MODE`. For mass-produced firmware, it is recommended to choose `PROV_SEC2_PROD_MODE` and add your own `salt` and `verifier`. For specific instructions, please refer to [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41).
+- By default, `PROV_MODE` is set to `PROV_SEC2_DEV_MODE`. For mass-produced firmware, it is recommended to choose `PROV_SEC2_PROD_MODE` and add your own `salt` and `verifier`. For specific instructions, see [wifi_prov_mgr.c](https://github.com/espressif/esp-iot-bridge/blob/master/components/wifi_prov_mgr/src/wifi_prov_mgr.c#L41).
 
-## 8 OTA
+## 8 Over-the-Air (OTA) Upgrade
 
 ### OTA Firmware Upgrade Using a Browser
 
 #### Introduction
 
-When a PC or MCU connects to the ESP-IoT-Bridge device via hotspot, USB, SPI, SDIO, or Ethernet and successfully obtains an IP address, it can perform a web-based OTA (Over-the-Air) update by accessing the gateway IP. After opening the web page hosted on the Web Server in a browser, it can choose to enter the OTA upgrade page and proceed with firmware updates through the web interface.
+When a PC or MCU connects to the ESP-IoT-Bridge device via hotspot, USB, SPI, SDIO, or Ethernet and successfully obtains an IP address, it can perform a web-based OTA update by accessing the gateway IP. After opening the web page hosted on the Web Server in a browser, it can choose to enter the OTA upgrade page and proceed with firmware updates through the web interface.
 
 <img src="https://raw.githubusercontent.com/espressif/esp-iot-bridge/master/components/iot_bridge/docs/_static/web_ota.png" alt="web_ota" style="zoom: 67%;" />
 
@@ -468,7 +468,7 @@ When a PC or MCU connects to the ESP-IoT-Bridge device via hotspot, USB, SPI, SD
 <table>
 
 
-**Please refer to the [ESP-IoT-Bridge Video](https://www.bilibili.com/video/BV1VN411A7G3) which demonstrates some of the features of the ESP-IoT-Bridge.**
+**See the [ESP-IoT-Bridge Video](https://www.bilibili.com/video/BV1VN411A7G3) which demonstrates some of the features of the ESP-IoT-Bridge.**
 
 ## 10 GPIO Map
 
