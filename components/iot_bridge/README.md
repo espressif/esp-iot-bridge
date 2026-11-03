@@ -4,7 +4,7 @@
 
 - [User Guide](https://github.com/espressif/esp-iot-bridge/blob/master/components/iot_bridge/User_Guide.md)
 
-ESP-IoT-Bridge solution is mainly aimed at bridging between various network interfaces in IoT application scenarios, such as SPI, SDIO, USB, Wi-Fi, Ethernet and other network interfaces. ESP-IoT-Bridge is a smart bridge solution offered by Espressif. 
+ESP-IoT-Bridge connects network interfaces used in IoT applications, including SPI, SDIO, USB, Wi-Fi, and Ethernet. Espressif provides it as a bridge between those interfaces.
 
 ## Feature
 
@@ -16,15 +16,15 @@ ESP-IoT-Bridge solution is mainly aimed at bridging between various network inte
 
 ## API
 
-- The application layer only needs to call this API at the code level, and select the corresponding `external netif` and `dataforwarding netif` under menuconfig(Bridge Configuration).
+- Call this function after selecting the external netif and the data-forwarding netif in menuconfig (`Bridge Configuration`).
 
 	```
 	esp_bridge_create_all_netif()
 	```
 
-    > Note: By default, you only need to call this API, or you can manually call the corresponding netif api, such as `esp_bridge_create_xxx_netif`.
+    > By default, call this function. To create one interface, call the matching function, such as `esp_bridge_create_station_netif()`.
 
-- Registered users check network segment conflict interface.
+- Register a callback that checks network-segment conflicts.
 
 	```
 	esp_bridge_network_segment_check_register
@@ -36,10 +36,11 @@ ESP-IoT-Bridge solution is mainly aimed at bridging between various network inte
 	esp_bridge_netif_network_segment_conflict_update
 	```
 
-    > Note: Generally, it is called in the event callback when external netif (Station, Ethernet, 4G) obtains IP.
+    > Call it from the event handler when an external netif (Station, Ethernet, or 4G) gets an IP address.
 
-## Add component to your project
-Please use the component manager command `add-dependency` to add the `iot_bridge` to your project's dependency, during the CMake step the component will be downloaded automatically.
+## Add the Component to Your Project
+
+Use `add-dependency` to add `iot_bridge`. CMake downloads the component during the build.
 
 ```
 idf.py add-dependency "espressif/iot_bridge=*"
@@ -47,13 +48,13 @@ idf.py add-dependency "espressif/iot_bridge=*"
 
 ## Examples
 
-Please use the component manager command `create-project-from-example` to create the project from example template.
+Use `create-project-from-example` to create a project from an example.
 
 ```
 idf.py create-project-from-example "espressif/iot_bridge=*:wifi_router"
 ```
 
-Then the example will be downloaded in current folder, you can check into it for build and flash.
+The example is downloaded into the current directory. Build and flash it from there.
 
 > Or you can download examples from `esp-iot-bridge` repository: [wifi_router](https://github.com/espressif/esp-iot-bridge/tree/master/examples/wifi_router)
 
@@ -66,4 +67,4 @@ Executing action: create-project-from-example
 CMakeLists.txt not found in project directory /home/username
 ```
 
-A1. This is because an older version package manager was used, please run `pip install -U idf-component-manager` in ESP-IDF environment to update.
+A1. The package manager is too old. Run `pip install -U idf-component-manager` in the ESP-IDF environment.
