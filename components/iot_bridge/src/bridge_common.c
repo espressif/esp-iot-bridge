@@ -192,7 +192,7 @@ esp_err_t esp_bridge_netif_list_remove(esp_netif_t *netif)
 static __inline__ bool subnet_mask_is_valid(uint32_t mask)
 {
     mask = ntohl(mask);
-    if (mask == 0 || mask == 0xFFFFFFFF) {
+    if (mask == 0 || mask >= 0xFFFFFFFE) {
         return false;
     }
 
@@ -215,16 +215,6 @@ static __inline__ bool subnet_ip_is_valid(uint32_t mask, uint32_t ip)
 
     if (ip == end_ip || ip != start_ip) {
         return false;
-    }
-
-    for (uint32_t i = 0; i < 32; i++) {
-        if (mask & (1U << i)) {
-            if (ip & (1U << i)) {
-                return false;
-            } else {
-                break;
-            }
-        }
     }
 
     return true;
@@ -287,10 +277,14 @@ esp_err_t esp_bridge_netif_set_net_segment_ip_prefix(esp_netif_ip_info_t *ip_inf
     }
 
     if (!subnet_mask_is_valid(ip_info->netmask.addr)) {
+        ESP_LOGE(TAG, "Invalid prefix netmask " IPSTR ": must be contiguous and between /1 and /30",
+                 IP2STR(&ip_info->netmask));
         return ESP_ERR_INVALID_ARG;
     }
 
     if (!subnet_ip_is_valid(ip_info->netmask.addr, ip_info->ip.addr)) {
+        ESP_LOGE(TAG, "Invalid prefix " IPSTR "/" IPSTR ": must be a network address (host bits must be 0)",
+                 IP2STR(&ip_info->ip), IP2STR(&ip_info->netmask));
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -435,8 +429,8 @@ esp_err_t esp_bridge_netif_get_network_segment_info(uint32_t *start_ip, uint32_t
     uint32_t mask_zero_bits = __builtin_ctz(mask_host);
     uint32_t ip_zero_bits = __builtin_ctz(ip_host);
 
-    if (ip_zero_bits <= mask_zero_bits) {
-        ESP_LOGE(TAG, "IP zero bits (%ld) is less than or equal to mask zero bits (%ld)", ip_zero_bits, mask_zero_bits);
+    if (ip_zero_bits < mask_zero_bits) {
+        ESP_LOGE(TAG, "IP zero bits (%ld) is less than mask zero bits (%ld)", ip_zero_bits, mask_zero_bits);
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -1056,6 +1050,7 @@ esp_err_t esp_bridge_netif_set_ip_info(esp_netif_t *netif, esp_netif_ip_info_t *
             ESP_LOGI(TAG, "Set gw:" IPSTR, IP2STR(&ip_info->gw));
             err = esp_netif_dhcps_start(netif);
             if (err != ESP_OK) {
+                esp_netif_dhcps_stop(netif);
                 esp_netif_set_ip_info(netif, &ip_old);
                 esp_netif_dhcps_start(netif);
                 ESP_LOGE(TAG, "Failed to start dhcps: %x", err);
